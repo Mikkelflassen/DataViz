@@ -8,6 +8,7 @@ Interactive website for our Data Visualization project on Eurovision voting (fin
 | --- | --- | --- |
 | Country map (main page) | `index.html` | Pick a country to see who gives it more or fewer points than expected. Year-range slider and strongest-bonds slider. |
 | Jury vs Televote | `jury-televote.html` | Finding 3.3: scatterplot of average jury points vs televote points per country (2016–2023), the biggest gaps, and a year-by-year chart for one country. |
+| Bias over time | `bias-over-time.html` | Finding 3.4: why the raw favoritism curve jumps (points system), a scale-free measure of bloc voting over time, and jury vs televote since 2016. |
 
 The logo in the top bar always leads back to the country map.
 
@@ -35,6 +36,9 @@ js/topojson-client.min.js  topojson-client v3.1.0
 - **Map year slider:** ranges of 20+ years need at least 5 shared finals per pair, 8–19 years at least 3, shorter ranges at least 1.
 - **Strongest bonds** = the average of both directions, so both countries must favour each other.
 - **Jury vs Televote** = average jury points and average televote points each country received per voting country in 2016–2023 finals (rest-of-world televote included). Gap = jury − televote. A country's own row (it cannot vote for itself, so always 0) is left out; including it lowers every average by about 3%.
+- **Bias over time, chart 1** = average |favoritism| per year (the group's Tableau measure). "Same scale" divides each year by the standard deviation of that year's points.
+- **Bias over time, chart 2** = for each year, the correlation between every pair's favoritism that year and their average over the previous five contests (pairs that met at least twice). Shuffling each country's points at random gives about 0.
+- **Bias over time, chart 3** = the same idea for 2016–2023, comparing jury and televote favoritism with each pair's 2004–2015 average (pairs that met at least three times).
 
 ## Run locally
 

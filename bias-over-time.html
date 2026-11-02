@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bias Over Time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<style>
+[hidden]{display:none!important}
+header.intro{display:grid;gap:10px}
+h1{font:700 clamp(28px,4.4vw,44px)/1.05 var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.lede{margin:0;max-width:72ch;color:var(--fg-2)}
+.panel{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:20px;align-items:start}
+@media (max-width:920px){.panel{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;display:grid;gap:12px}
+.stage-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:10px 20px}
+.num{font:500 12px/1 var(--mono);color:var(--muted);letter-spacing:.06em}
+h2{font:700 22px/1.2 var(--display);margin:0;text-wrap:balance}
+.sub{margin:0;color:var(--fg-2);font-size:14px;max-width:70ch}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:6px;overflow:hidden}
+.seg button{font:inherit;font-size:14px;background:var(--surface);color:var(--fg-2);border:0;padding:6px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line-strong)}
+.seg button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--body)}
+.scroll{overflow-x:auto}
+.keys{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--fg-2)}
+.key{display:inline-flex;align-items:center;gap:6px}
+.key i{width:18px;height:0;border-top:2.5px solid;display:inline-block}
+.key i.dash{border-top-style:dashed}
+aside{display:grid;gap:14px;font-size:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:10px}
+.card p{margin:0;color:var(--fg-2)}
+.card p b{color:var(--fg)}
+.eras{display:grid;gap:2px;font-variant-numeric:tabular-nums;margin:0;padding:0;list-style:none}
+.eras li{display:grid;grid-template-columns:1fr auto;gap:10px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.eras li span:first-child{font-family:var(--mono);font-size:13px;color:var(--fg-2)}
+.eras li span:last-child{font-family:var(--mono);font-weight:500}
+.stats{display:flex;flex-wrap:wrap;gap:10px 32px}
+.stat{display:grid;gap:2px}
+.stat b{font:700 30px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--muted);max-width:22ch}
+.verdict{font:600 15px/1.4 var(--body);color:var(--fg)}
+</style>
+</head>
+<body>
+<header class="topbar" id="topbar"></header>
+<script src="js/nav.js"></script>
+
+<main class="wrap">
+  <header class="intro">
+    <div class="eyebrow">Finding 3.4 · Bias over time · finals 1957–2023</div>
+    <h1>Did favoritism really get stronger?</h1>
+    <p class="lede">At first glance it did, but the jumps mostly come from changes to the points system. Measured in a way that doesn't depend on the points system, there is still a real trend: countries vote far more like they did in earlier years than they used to, and since 2016 that comes almost entirely from the viewers.</p>
+  </header>
+
+  <!-- 1 -->
+  <section class="panel">
+    <div class="stage">
+      <div class="stage-head">
+        <div style="display:grid;gap:4px"><span class="num">1 · THE CURVE</span><h2 id="c1-title">Average absolute favoritism per year</h2></div>
+        <div class="seg" id="scale" role="group" aria-label="Scale">
+          <button type="button" id="sc-raw" data-s="raw" aria-pressed="true">Raw points</button>
+          <button type="button" id="sc-z" data-s="z" aria-pressed="false">Same scale every year</button>
+        </div>
+      </div>
+      <p class="sub" id="c1-sub"></p>
+      <div class="scroll"><svg id="c1" role="img" aria-label="Average absolute favoritism per year, with the points each country hands out below" style="min-width:640px"></svg></div>
+    </div>
+    <aside>
+      <div class="card">
+        <div class="lbl">By era</div>
+        <ul class="eras" id="c1-eras"></ul>
+        <p class="verdict" id="c1-verdict"></p>
+      </div>
+      <div class="card">
+        <div class="lbl">Why it jumps</div>
+        <p>Each jump lines up with the points each country hands out: about <b>10</b> before 1975, <b>58</b> from 1975 (12, 10, 8–1) and <b>116</b> from 2016, when juries and viewers each give a full set. Twice the points means twice the deviation, even if nobody votes more for their friends.</p>
+      </div>
+    </aside>
+  </section>
+
+  <!-- 2 -->
+  <section class="panel">
+    <div class="stage">
+      <div class="stage-head">
+        <div style="display:grid;gap:4px"><span class="num">2 · A BETTER MEASURE</span><h2>Do countries vote like they did before?</h2></div>
+        <div class="keys">
+          <span class="key"><i style="border-color:var(--fg)"></i>All countries</span>
+          <span class="key"><i class="dash" style="border-color:var(--fg-2)"></i>Only the 32 countries in all three eras</span>
+        </div>
+      </div>
+      <p class="sub">For every pair of countries we compare this year's favoritism with their average over the previous five contests. A correlation of 0 means past votes say nothing about this year's. 1 means every country votes exactly as before. Correlation ignores the size of the points, so changes to the points system can't move it.</p>
+      <div class="scroll"><svg id="c2" role="img" aria-label="Correlation between this year's favoritism and the previous five contests, per year" style="min-width:640px"></svg></div>
+    </div>
+    <aside>
+      <div class="card">
+        <div class="lbl">By era · all / stable</div>
+        <ul class="eras" id="c2-eras"></ul>
+        <p class="verdict">Bloc voting grew steadily from the late 1990s, peaked in 2007–2008 when only viewers voted, and dropped back when juries returned in 2009.</p>
+      </div>
+      <div class="card">
+        <div class="lbl">Checks</div>
+        <p><b>Random voting gives 0.</b> Shuffling every country's points at random gives an average of −0.01.</p>
+        <p><b>Not just new countries.</b> The dashed line keeps only countries that took part before 2004, in 2004–2015 and after 2016. It shows the same rise.</p>
+      </div>
+    </aside>
+  </section>
+
+  <!-- 3 -->
+  <section class="panel">
+    <div class="stage">
+      <div class="stage-head">
+        <div style="display:grid;gap:4px"><span class="num">3 · SINCE 2016</span><h2>Viewers keep the old friendships, juries don't</h2></div>
+        <div class="keys">
+          <span class="key"><i style="border-color:var(--jury)"></i>Jury</span>
+          <span class="key"><i style="border-color:var(--tele)"></i>Televote</span>
+        </div>
+      </div>
+      <p class="sub">Since 2016 juries and viewers give separate points, so we can measure them apart. How well does each one follow the pair's favoritism from 2004–2015?</p>
+      <div class="stats" id="c3-stats"></div>
+      <div class="scroll"><svg id="c3" role="img" aria-label="Correlation with 2004–2015 favoritism for jury and televote points, per year" style="min-width:560px"></svg></div>
+    </div>
+    <aside>
+      <div class="card">
+        <div class="lbl">What it means</div>
+        <p>In every year from 2016 to 2023 the televote follows the old pattern more than twice as closely as the juries do.</p>
+        <p>This ties back to the jury vs televote page: the countries viewers like much more than juries do are often the ones with strong neighbours and diaspora votes.</p>
+      </div>
+    </aside>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script src="js/d3.min.js"></script>
+<script>
+const D = {"years":[{"y":1957,"raw":1.03,"z":0.623,"ppv":10},{"y":1958,"raw":1.022,"z":0.573,"ppv":10},{"y":1959,"raw":0.904,"z":0.661,"ppv":10},{"y":1960,"raw":0.81,"z":0.594,"ppv":10},{"y":1961,"raw":0.774,"z":0.589,"ppv":10},{"y":1962,"raw":0.474,"z":0.538,"ppv":6},{"y":1963,"raw":0.859,"z":0.525,"ppv":15},{"y":1964,"raw":0.677,"z":0.481,"ppv":9},{"y":1965,"raw":0.72,"z":0.534,"ppv":9},{"y":1966,"raw":0.787,"z":0.589,"ppv":9},{"y":1967,"raw":0.605,"z":0.521,"ppv":10},{"y":1968,"raw":0.723,"z":0.585,"ppv":10},{"y":1969,"raw":0.776,"z":0.707,"ppv":10},{"y":1970,"raw":0.891,"z":0.592,"ppv":10},{"y":1971,"raw":1.486,"z":0.696,"ppv":83},{"y":1972,"raw":1.357,"z":0.653,"ppv":86},{"y":1973,"raw":1.218,"z":0.601,"ppv":87},{"y":1974,"raw":0.683,"z":0.668,"ppv":10},{"y":1975,"raw":2.282,"z":0.598,"ppv":58},{"y":1976,"raw":2.161,"z":0.563,"ppv":58},{"y":1977,"raw":2.388,"z":0.622,"ppv":58},{"y":1978,"raw":2.188,"z":0.579,"ppv":58},{"y":1979,"raw":2.56,"z":0.671,"ppv":58},{"y":1980,"raw":2.353,"z":0.617,"ppv":58},{"y":1981,"raw":2.404,"z":0.636,"ppv":58},{"y":1982,"raw":2.314,"z":0.602,"ppv":58},{"y":1983,"raw":2.237,"z":0.592,"ppv":58},{"y":1984,"raw":2.601,"z":0.682,"ppv":58},{"y":1985,"raw":2.511,"z":0.658,"ppv":58},{"y":1986,"raw":2.282,"z":0.603,"ppv":58},{"y":1987,"raw":2.334,"z":0.63,"ppv":58},{"y":1988,"raw":2.385,"z":0.637,"ppv":58},{"y":1989,"raw":2.5,"z":0.674,"ppv":58},{"y":1990,"raw":2.33,"z":0.629,"ppv":58},{"y":1991,"raw":2.078,"z":0.561,"ppv":58},{"y":1992,"raw":2.342,"z":0.639,"ppv":58},{"y":1993,"raw":2.055,"z":0.573,"ppv":58},{"y":1994,"raw":1.97,"z":0.55,"ppv":58},{"y":1995,"raw":2.36,"z":0.644,"ppv":58},{"y":1996,"raw":2.468,"z":0.673,"ppv":58},{"y":1997,"raw":1.999,"z":0.558,"ppv":58},{"y":1998,"raw":1.77,"z":0.494,"ppv":58},{"y":1999,"raw":2.181,"z":0.595,"ppv":58},{"y":2000,"raw":2.113,"z":0.583,"ppv":58},{"y":2001,"raw":1.897,"z":0.518,"ppv":58},{"y":2002,"raw":2.284,"z":0.63,"ppv":58},{"y":2003,"raw":2.024,"z":0.571,"ppv":58},{"y":2004,"raw":1.837,"z":0.509,"ppv":58},{"y":2005,"raw":2.425,"z":0.672,"ppv":58},{"y":2006,"raw":1.981,"z":0.549,"ppv":58},{"y":2007,"raw":2.405,"z":0.667,"ppv":58},{"y":2008,"raw":2.302,"z":0.646,"ppv":58},{"y":2009,"raw":2.239,"z":0.628,"ppv":58},{"y":2010,"raw":2.473,"z":0.693,"ppv":58},{"y":2011,"raw":2.673,"z":0.75,"ppv":58},{"y":2012,"raw":2.188,"z":0.62,"ppv":58},{"y":2013,"raw":2.109,"z":0.597,"ppv":58},{"y":2014,"raw":2.165,"z":0.613,"ppv":58},{"y":2015,"raw":1.479,"z":0.424,"ppv":58},{"y":2016,"raw":3.561,"z":0.622,"ppv":116},{"y":2017,"raw":2.844,"z":0.477,"ppv":116},{"y":2018,"raw":3.534,"z":0.649,"ppv":116},{"y":2019,"raw":3.286,"z":0.572,"ppv":116},{"y":2021,"raw":3.083,"z":0.522,"ppv":116},{"y":2022,"raw":2.963,"z":0.511,"ppv":116},{"y":2023,"raw":3.281,"z":0.565,"ppv":116}],"persist":[{"y":1962,"all":-0.026,"stable":-0.006},{"y":1963,"all":0.067,"stable":0.045},{"y":1964,"all":0.115,"stable":0.1},{"y":1965,"all":0.166,"stable":0.164},{"y":1966,"all":0.04,"stable":0.1},{"y":1967,"all":0.045,"stable":0.065},{"y":1968,"all":0.102,"stable":0.164},{"y":1969,"all":0.058,"stable":0.061},{"y":1970,"all":-0.009,"stable":-0.016},{"y":1971,"all":0.026,"stable":0.075},{"y":1972,"all":0.177,"stable":0.22},{"y":1973,"all":0.293,"stable":0.369},{"y":1974,"all":0.164,"stable":0.142},{"y":1975,"all":0.035,"stable":0.039},{"y":1976,"all":0.136,"stable":0.13},{"y":1977,"all":0.05,"stable":0.146},{"y":1978,"all":0.169,"stable":0.199},{"y":1979,"all":0.121,"stable":0.171},{"y":1980,"all":0.085,"stable":0.088},{"y":1981,"all":0.089,"stable":0.075},{"y":1982,"all":0.117,"stable":0.044},{"y":1983,"all":0.066,"stable":0.121},{"y":1984,"all":0.079,"stable":0.097},{"y":1985,"all":0.265,"stable":0.269},{"y":1986,"all":0.092,"stable":0.006},{"y":1987,"all":0.255,"stable":0.244},{"y":1988,"all":0.189,"stable":0.208},{"y":1989,"all":0.228,"stable":0.26},{"y":1990,"all":0.205,"stable":0.165},{"y":1991,"all":0.194,"stable":0.268},{"y":1992,"all":0.228,"stable":0.248},{"y":1993,"all":0.183,"stable":0.21},{"y":1994,"all":0.307,"stable":0.308},{"y":1995,"all":0.292,"stable":0.282},{"y":1996,"all":0.283,"stable":0.262},{"y":1997,"all":0.286,"stable":0.275},{"y":1998,"all":0.207,"stable":0.21},{"y":1999,"all":0.218,"stable":0.211},{"y":2000,"all":0.325,"stable":0.332},{"y":2001,"all":0.347,"stable":0.362},{"y":2002,"all":0.358,"stable":0.391},{"y":2003,"all":0.413,"stable":0.43},{"y":2004,"all":0.492,"stable":0.489},{"y":2005,"all":0.508,"stable":0.48},{"y":2006,"all":0.605,"stable":0.569},{"y":2007,"all":0.71,"stable":0.723},{"y":2008,"all":0.722,"stable":0.677},{"y":2009,"all":0.623,"stable":0.554},{"y":2010,"all":0.6,"stable":0.455},{"y":2011,"all":0.564,"stable":0.533},{"y":2012,"all":0.583,"stable":0.477},{"y":2013,"all":0.417,"stable":0.292},{"y":2014,"all":0.411,"stable":0.332},{"y":2015,"all":0.531,"stable":0.398},{"y":2016,"all":0.464,"stable":0.34},{"y":2017,"all":0.424,"stable":0.388},{"y":2018,"all":0.389,"stable":0.324},{"y":2019,"all":0.521,"stable":0.588},{"y":2021,"all":0.439,"stable":0.419},{"y":2022,"all":0.361,"stable":0.365},{"y":2023,"all":0.433,"stable":0.423}],"jt":[{"y":2016,"jury":0.263,"tele":0.618,"n":863},{"y":2017,"jury":0.274,"tele":0.512,"n":899},{"y":2018,"jury":0.17,"tele":0.595,"n":898},{"y":2019,"jury":0.242,"tele":0.564,"n":849},{"y":2021,"jury":0.195,"tele":0.498,"n":850},{"y":2022,"jury":0.156,"tele":0.468,"n":833},{"y":2023,"jury":0.228,"tele":0.538,"n":799}],"eraRaw":{"1957–1974":0.88,"1975–2003":2.25,"2004–2015":2.19,"2016–2023":3.22},"eraZ":{"1957–1974":0.6,"1975–2003":0.61,"2004–2015":0.61,"2016–2023":0.56},"eraP":{"1957–1974":{"all":0.09,"stable":0.11},"1975–2003":{"all":0.2,"stable":0.21},"2004–2015":{"all":0.56,"stable":0.5},"2016–2023":{"all":0.43,"stable":0.41}},"jtMean":{"jury":0.22,"tele":0.54}};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const st = {scale:'raw'};
+const REFORMS1 = [[1975,'12-point system'],[2004,'Semi-finals'],[2016,'Jury/televote split']];
+const REFORMS2 = [[1975,'12-point system'],[1998,'Televoting'],[2004,'Semi-finals'],[2009,'Juries return'],[2016,'Split']];
+const ERAS = ['1957–1974','1975–2003','2004–2015','2016–2023'];
+
+// tooltip
+const tip = document.getElementById('tip');
+function showTip(ev, html){
+  tip.innerHTML = html; tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  let x = ev.clientX+14, y = ev.clientY+14;
+  if(x+r.width > innerWidth-8) x = ev.clientX-r.width-14;
+  if(y+r.height > innerHeight-8) y = ev.clientY-r.height-14;
+  tip.style.left = Math.max(8,x)+'px'; tip.style.top = Math.max(8,y)+'px';
+}
+const hideTip = () => tip.hidden = true;
+
+// shared pieces
+function grid(svg, y, x0, x1, fmt){
+  y.ticks(5).forEach(t=>{
+    svg.append('line').attr('x1',x0).attr('x2',x1).attr('y1',y(t)).attr('y2',y(t)).attr('stroke',css('--line')).attr('stroke-width',t?0.8:1.2);
+    svg.append('text').attr('x',x0-8).attr('y',y(t)+4).attr('text-anchor','end').attr('font-size',11).style('font-family','var(--mono)').attr('fill',css('--muted')).text(fmt(t));
+  });
+}
+function xAxis(svg, x, yPos, ticks){
+  ticks.forEach(t=>svg.append('text').attr('x',x(t)).attr('y',yPos).attr('text-anchor','middle').attr('font-size',11).style('font-family','var(--mono)').attr('fill',css('--muted')).text(t));
+}
+function reforms(svg, x, list, top, bottom){
+  list.forEach(([yr,l],i)=>{
+    svg.append('line').attr('x1',x(yr)).attr('x2',x(yr)).attr('y1',top).attr('y2',bottom).attr('stroke',css('--line-strong')).attr('stroke-dasharray','3 3');
+    svg.append('text').attr('x',x(yr)+4).attr('y',top+10+(i%2)*13).attr('font-size',10.5).attr('fill',css('--muted')).text(l);
+  });
+}
+// hover: nearest year
+function hover(svg, xpos, data, left, right, top, bottom, html){
+  const guide = svg.append('line').attr('y1',top).attr('y2',bottom).attr('stroke',css('--fg-2')).attr('stroke-width',1).attr('visibility','hidden');
+  svg.append('rect').attr('x',left).attr('y',top).attr('width',right-left).attr('height',bottom-top).attr('fill','transparent')
+    .on('mousemove',function(e){
+      const [mx] = d3.pointer(e,this);
+      const d = data.reduce((a,b)=>Math.abs(xpos(b)-mx)<Math.abs(xpos(a)-mx)?b:a);
+      guide.attr('x1',xpos(d)).attr('x2',xpos(d)).attr('visibility','visible'); showTip(e, html(d));
+    })
+    .on('mouseleave',()=>{ guide.attr('visibility','hidden'); hideTip(); });
+}
+
+// ---------- 1: raw vs same scale, with points-per-country strip below
+function chart1(){
+  const W=900, H=420, M={l:48,r:20,t:34}, stripH=60, gapH=34, mainB=H-stripH-gapH-22;
+  const svg=d3.select('#c1').attr('viewBox',`0 0 ${W} ${H}`); svg.selectAll('*').remove();
+  const x=d3.scaleLinear([1956,2024],[M.l,W-M.r]);
+  const k = st.scale, data = D.years;
+  const y=d3.scaleLinear([0, k==='raw'?4:1],[mainB,M.t]).nice();
+  grid(svg,y,M.l,W-M.r,d3.format('.1f'));
+  reforms(svg,x,REFORMS1,M.t-24,mainB);
+  // era means as faint steps
+  const eraSpan = {'1957–1974':[1957,1974],'1975–2003':[1975,2003],'2004–2015':[2004,2015],'2016–2023':[2016,2023]};
+  const means = k==='raw'?D.eraRaw:D.eraZ;
+  ERAS.forEach(e=>{ const [a,b]=eraSpan[e];
+    svg.append('line').attr('x1',x(a)).attr('x2',x(b)).attr('y1',y(means[e])).attr('y2',y(means[e])).attr('stroke',css('--accent')).attr('stroke-width',3).attr('stroke-opacity',.45).attr('stroke-linecap','round'); });
+  const line=d3.line().x(d=>x(d.y)).y(d=>y(d[k]));   // no 2020 in the data, so 2019 joins 2021
+  svg.append('path').datum(data).attr('d',line).attr('fill','none').attr('stroke',css('--fg')).attr('stroke-width',2).attr('stroke-linejoin','round');
+  svg.append('text').attr('x',4).attr('y',M.t-14).attr('font-size',10.5).attr('fill',css('--muted')).text(k==='raw'?'points':'std. units');
+  // strip: points handed out per country
+  const sTop = mainB+gapH, sBot = sTop+stripH;
+  const ys=d3.scaleLinear([0,120],[sBot,sTop]);
+  svg.append('text').attr('x',M.l).attr('y',sTop-8).attr('font-size',11).attr('font-weight',600).attr('fill',css('--fg-2')).text('Points each country hands out in the final');
+  const area=d3.area().curve(d3.curveStepAfter).x(d=>x(d.y)).y0(sBot).y1(d=>ys(Math.min(d.ppv,120)));
+  const pts=[...data, {y:2024, ppv:data[data.length-1].ppv}];
+  svg.append('path').datum(pts).attr('d',area).attr('fill',css('--accent')).attr('fill-opacity',.18);
+  svg.append('path').datum(pts).attr('d',d3.line().curve(d3.curveStepAfter).x(d=>x(d.y)).y(d=>ys(Math.min(d.ppv,120)))).attr('fill','none').attr('stroke',css('--accent')).attr('stroke-width',1.5);
+  [[1960,'≈10'],[1989,'58'],[2019.5,'116']].forEach(([yr,t])=>svg.append('text').attr('x',x(yr)).attr('y',ys(t==='≈10'?10:+t)-5).attr('text-anchor','middle').attr('font-size',11).style('font-family','var(--mono)').attr('font-weight',500).attr('fill',css('--fg')).text(t));
+  xAxis(svg,x,H-4,d3.range(1960,2030,10));
+  hover(svg,d=>x(d.y),data,M.l,W-M.r,M.t-24,sBot,d=>`<b>${d.y}</b><br><span class="m">raw ${d.raw.toFixed(2)} pts</span><br><span class="m">same scale ${d.z.toFixed(2)}</span><br><span class="m">${d.ppv} pts handed out per country</span>`);
+  // text
+  document.getElementById('c1-title').textContent = k==='raw' ? 'Average absolute favoritism per year' : 'Same curve, on the same scale every year';
+  document.getElementById('c1-sub').textContent = k==='raw'
+    ? 'How far each vote is from what the receiving country usually gets, positive or negative, averaged per year. This is the group’s Tableau measure. The teal steps are era averages.'
+    : 'Each year divided by how spread out that year’s points were (its standard deviation), so 1975 and 2016 count on equal terms with every other year. The teal steps are era averages.';
+  document.getElementById('c1-eras').innerHTML = ERAS.map(e=>`<li><span>${e}</span><span>${means[e].toFixed(2)}</span></li>`).join('');
+  document.getElementById('c1-verdict').textContent = k==='raw'
+    ? 'Raw: it looks like favoritism grew from 0.88 to 3.22.'
+    : 'Same scale: flat. 0.60, 0.61, 0.61, 0.56. The growth was the points system.';
+}
+
+// ---------- 2: persistence
+function chart2(){
+  const W=900, H=380, M={l:48,r:70,t:40,b:28};
+  const svg=d3.select('#c2').attr('viewBox',`0 0 ${W} ${H}`); svg.selectAll('*').remove();
+  const x=d3.scaleLinear([1956,2024],[M.l,W-M.r]), y=d3.scaleLinear([-0.1,0.8],[H-M.b,M.t]);
+  grid(svg,y,M.l,W-M.r,d3.format('.1f'));
+  reforms(svg,x,REFORMS2,M.t-30,H-M.b);
+  // random baseline
+  svg.append('text').attr('x',W-M.r+6).attr('y',y(0)+4).attr('font-size',11).attr('fill',css('--muted')).text('random');
+  const data=D.persist, line=k=>d3.line().x(d=>x(d.y)).y(d=>y(d[k]));
+  svg.append('path').datum(data).attr('d',line('stable')).attr('fill','none').attr('stroke',css('--fg-2')).attr('stroke-width',1.6).attr('stroke-dasharray','5 4');
+  svg.append('path').datum(data).attr('d',line('all')).attr('fill','none').attr('stroke',css('--fg')).attr('stroke-width',2.4).attr('stroke-linejoin','round');
+  // peak annotation
+  const pk = data.reduce((a,b)=>b.all>a.all?b:a);
+  svg.append('circle').attr('cx',x(pk.y)).attr('cy',y(pk.all)).attr('r',5).attr('fill',css('--fg')).attr('stroke',css('--surface')).attr('stroke-width',2);
+  svg.append('text').attr('x',x(pk.y)-8).attr('y',y(pk.all)-10).attr('text-anchor','end').attr('font-size',12).attr('font-weight',600).attr('fill',css('--fg')).text(`Peak ${pk.y}: ${pk.all.toFixed(2)}`);
+  const last=data[data.length-1];
+  svg.append('text').attr('x',x(last.y)+8).attr('y',y(last.all)+4).attr('font-size',12).attr('font-weight',600).attr('fill',css('--fg')).text(last.all.toFixed(2));
+  xAxis(svg,x,H-6,d3.range(1960,2030,10));
+  hover(svg,d=>x(d.y),data,M.l,W-M.r,M.t-30,H-M.b,d=>`<b>${d.y}</b><br><span class="m">all countries ${d.all.toFixed(2)}</span><br><span class="m">stable countries ${d.stable.toFixed(2)}</span>`);
+  document.getElementById('c2-eras').innerHTML = ERAS.map(e=>`<li><span>${e}</span><span>${D.eraP[e].all.toFixed(2)} / ${D.eraP[e].stable.toFixed(2)}</span></li>`).join('');
+}
+
+// ---------- 3: jury vs televote since 2016
+function chart3(){
+  const W=900, H=300, M={l:48,r:96,t:20,b:28};
+  const svg=d3.select('#c3').attr('viewBox',`0 0 ${W} ${H}`); svg.selectAll('*').remove();
+  const data=D.jt, x=d3.scalePoint(data.map(d=>d.y),[M.l+24,W-M.r]), y=d3.scaleLinear([0,0.8],[H-M.b,M.t]);
+  grid(svg,y,M.l,W-M.r+20,d3.format('.1f'));
+  [['jury','--jury','Jury'],['tele','--tele','Televote']].forEach(([k,c,l])=>{
+    svg.append('path').datum(data).attr('d',d3.line().x(d=>x(d.y)).y(d=>y(d[k]))).attr('fill','none').attr('stroke',css(c)).attr('stroke-width',2.4);
+    svg.append('g').selectAll('circle').data(data).join('circle').attr('cx',d=>x(d.y)).attr('cy',d=>y(d[k])).attr('r',4.5).attr('fill',css(c)).attr('stroke',css('--surface')).attr('stroke-width',2);
+    const last=data[data.length-1];
+    svg.append('text').attr('x',x(last.y)+10).attr('y',y(last[k])+4).attr('font-size',12).attr('font-weight',600).attr('fill',css('--fg')).text(`${l} ${last[k].toFixed(2)}`);
+  });
+  data.forEach(d=>svg.append('text').attr('x',x(d.y)).attr('y',H-6).attr('text-anchor','middle').attr('font-size',11).style('font-family','var(--mono)').attr('fill',css('--muted')).text(d.y));
+  hover(svg,d=>x(d.y),data,M.l,W-M.r,M.t,H-M.b,d=>`<b>${d.y}</b><br><span class="m">jury ${d.jury.toFixed(2)}</span><br><span class="m">televote ${d.tele.toFixed(2)}</span><br><span class="m">${d.n} country pairs</span>`);
+  document.getElementById('c3-stats').innerHTML = `
+    <div class="stat"><b style="color:var(--tele)">${D.jtMean.tele.toFixed(2)}</b><span>televote, average 2016–2023</span></div>
+    <div class="stat"><b style="color:var(--jury)">${D.jtMean.jury.toFixed(2)}</b><span>jury, average 2016–2023</span></div>
+    <div class="stat"><b>${(D.jtMean.tele/D.jtMean.jury).toFixed(1)}×</b><span>more of the old pattern in the televote</span></div>`;
+}
+
+function render(){ hideTip(); chart1(); chart2(); chart3(); }
+document.querySelectorAll('#scale button').forEach(b=>b.onclick=()=>{ st.scale=b.dataset.s; document.querySelectorAll('#scale button').forEach(o=>o.setAttribute('aria-pressed',o===b)); chart1(); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
+render();
+</script>
+</body>
+</html>

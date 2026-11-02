@@ -2,7 +2,8 @@
 // To add a page: create the .html file, then add one line to PAGES below.
 (function(){
   var PAGES = [
-    { href: 'jury-televote.html', label: 'Jury vs Televote' }
+    { href: 'jury-televote.html', label: 'Jury vs Televote' },
+    { href: 'bias-over-time.html', label: 'Bias over time' }
     // { href: 'greece-cyprus.html', label: 'Greece & Cyprus' },
   ];
 
