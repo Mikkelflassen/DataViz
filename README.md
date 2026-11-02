@@ -34,7 +34,7 @@ js/topojson-client.min.js  topojson-client v3.1.0
 - **Favoritism** = points given − the receiver's average points from all voters that year, averaged over the years both countries were in the final. "Rest of world" televote is excluded, and there was no contest in 2020.
 - **Map year slider:** ranges of 20+ years need at least 5 shared finals per pair, 8–19 years at least 3, shorter ranges at least 1.
 - **Strongest bonds** = the average of both directions, so both countries must favour each other.
-- **Jury vs Televote** = average jury points and average televote points each country received per voting country in 2016–2023 finals. Gap = jury − televote.
+- **Jury vs Televote** = average jury points and average televote points each country received per voting country in 2016–2023 finals (rest-of-world televote included). Gap = jury − televote. A country's own row (it cannot vote for itself, so always 0) is left out; including it lowers every average by about 3%.
 
 ## Run locally
 
