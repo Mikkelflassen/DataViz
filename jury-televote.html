@@ -113,7 +113,7 @@ aside{display:grid;gap:18px;font-size:14px}
 
   <section class="stage">
     <div class="stage-head">
-      <div style="display:grid;gap:4px"><h2 id="yr-title">Sweden, year by year</h2><p class="sub">Average points per voting country in each final. Shading marks the years picked above.</p></div>
+      <div style="display:grid;gap:4px"><h2 id="yr-title">Sweden, year by year</h2><p class="sub">Average points per voting country in each final (no contest in 2020). Shading marks the years picked above.</p></div>
       <div class="keys">
         <span class="key"><i class="line" style="border-color:var(--jury)"></i>Jury</span>
         <span class="key"><i class="line" style="border-color:var(--tele)"></i>Televote</span>
@@ -152,6 +152,7 @@ function byCountry(){
 function byYear(id){
   const out = [];
   for(let y=2016;y<=2023;y++){
+    if(y===2020) continue;   // no contest in 2020
     let j=0,nj=0,t=0,n=0;
     for(let o=0;o<RAW.length;o+=5){ if(RAW[o+2]+2016!==y || IDS[RAW[o+1]]!==id) continue; if(RAW[o+3]!==255){ j+=RAW[o+3]; nj++; } t+=RAW[o+4]; n++; }
     out.push({y, j:nj?j/nj:null, t:n?t/n:null, n});
@@ -182,6 +183,11 @@ function renderScatter(rows){
   const max = Math.max(6, Math.ceil(d3.max(rows, d=>Math.max(d.j,d.t))||6));
   const x = d3.scaleLinear([0,max],[M.l,S-M.r]), y = d3.scaleLinear([0,max],[S-M.b,M.t]);
   const ink = css('--fg'), muted = css('--muted'), surf = css('--surface');
+  // background: a faint diagonal gradient, orange towards the top-left (viewers give more), clear on the
+  // identity line, blue towards the bottom-right (juries give more). The plot is square, so 50% = the line.
+  const grad = svg.append('defs').append('linearGradient').attr('id','sides').attr('x1',0).attr('y1',0).attr('x2',1).attr('y2',1);
+  [[0,'--tele',.16],[.5,'--tele',0],[.5,'--jury',0],[1,'--jury',.16]].forEach(([o,c,a])=>grad.append('stop').attr('offset',o).attr('stop-color',css(c)).attr('stop-opacity',a));
+  svg.append('rect').attr('x',x(0)).attr('y',y(max)).attr('width',x(max)-x(0)).attr('height',y(0)-y(max)).attr('fill','url(#sides)');
   // grid + axes
   const ticks = d3.range(0, max+1, max>8?2:1);
   const g = svg.append('g');
@@ -201,8 +207,6 @@ function renderScatter(rows){
       .attr('fill',col).attr('paint-order','stroke').attr('stroke',surf).attr('stroke-width',3.5).text(txt);
   };
   along(.92, 8, 'jury = televote', muted);
-  along(.7, 20, '↑ Viewers give more', css('--tele'), true);
-  along(.7, -30, 'Juries give more ↓', css('--jury'), true);
 
   // dots (focus drawn last so it sits on top)
   const R = 8;
@@ -251,22 +255,22 @@ function renderYears(){
   const F=st.focus, data=byYear(F);
   const W=960, H=300, M={l:44,r:96,t:18,b:34};
   const svg = d3.select('#years').attr('viewBox',`0 0 ${W} ${H}`); svg.selectAll('*').remove();
-  const x = d3.scalePoint(d3.range(2016,2024),[M.l+20,W-M.r]);
+  const YEARS = data.map(d=>d.y);
+  const x = d3.scalePoint(YEARS,[M.l+20,W-M.r]);
   const max = Math.max(6, Math.ceil(d3.max(data,d=>Math.max(d.j??0,d.t??0))));
   const y = d3.scaleLinear([0,max],[H-M.b,M.t]).nice();
   // selected range band
   const step = x.step();
-  if(st.y0>2016 || st.y1<2023) svg.append('rect').attr('x',x(st.y0)-step/2).attr('width',x(st.y1)-x(st.y0)+step).attr('y',M.t-6).attr('height',H-M.b-M.t+6).attr('fill',css('--surface-2')).attr('rx',6);
-  // 2020
-  svg.append('text').attr('x',x(2020)).attr('y',(y(0)+y(max))/2).attr('text-anchor','middle').attr('font-size',11).attr('fill',css('--muted')).text('no contest');
+  const inSel = YEARS.filter(v=>v>=st.y0 && v<=st.y1);
+  if((st.y0>2016 || st.y1<2023) && inSel.length) svg.append('rect').attr('x',x(inSel[0])-step/2).attr('width',x(inSel[inSel.length-1])-x(inSel[0])+step).attr('y',M.t-6).attr('height',H-M.b-M.t+6).attr('fill',css('--surface-2')).attr('rx',6);
   // grid
   y.ticks(5).forEach(t=>{
     svg.append('line').attr('x1',M.l).attr('x2',W-M.r+10).attr('y1',y(t)).attr('y2',y(t)).attr('stroke',css('--line')).attr('stroke-width',.8);
     svg.append('text').attr('x',M.l-8).attr('y',y(t)+4).attr('text-anchor','end').attr('font-size',11).style('font-family','var(--mono)').attr('fill',css('--muted')).text(t);
   });
-  d3.range(2016,2024).forEach(yr=>svg.append('text').attr('x',x(yr)).attr('y',H-10).attr('text-anchor','middle').attr('font-size',11.5).style('font-family','var(--mono)').attr('fill',css('--fg-2')).text(yr));
+  YEARS.forEach(yr=>svg.append('text').attr('x',x(yr)).attr('y',H-10).attr('text-anchor','middle').attr('font-size',11.5).style('font-family','var(--mono)').attr('fill',css('--fg-2')).text(yr));
   // not in final markers
-  data.filter(d=>!d.n && d.y!==2020).forEach(d=>svg.append('text').attr('x',x(d.y)).attr('y',y(0)-8).attr('text-anchor','middle').attr('font-size',10.5).attr('fill',css('--muted')).text('not in final'));
+  data.filter(d=>!d.n).forEach(d=>svg.append('text').attr('x',x(d.y)).attr('y',y(0)-8).attr('text-anchor','middle').attr('font-size',10.5).attr('fill',css('--muted')).text('not in final'));
   // lines
   [['j','--jury','Jury'],['t','--tele','Televote']].forEach(([k,col,lbl])=>{
     const ln = d3.line().defined(d=>d[k]!=null).x(d=>x(d.y)).y(d=>y(d[k]));
