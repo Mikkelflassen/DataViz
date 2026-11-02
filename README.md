@@ -9,7 +9,7 @@ Interactive map of Europe for our Data Visualization project. Pick a country to 
 Favoritism = points given − the receiver's average points from all voters that year, averaged over the years both countries were in the final.
 
 - Data: `votes.csv`, finals only, 1957–2023 (no contest in 2020). The "rest of world" televote is excluded.
-- All-years pairs need at least 5 shared finals. A single period needs at least 3.
+- Pick any year range with the two-handle slider. Ranges of 20+ years need at least 5 shared finals per pair, 8–19 years at least 3, shorter ranges at least 1.
 - Strongest bonds = the average of both directions, so both countries must favour each other.
 
 ## Run locally
