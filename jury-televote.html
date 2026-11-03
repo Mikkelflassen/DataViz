@@ -70,9 +70,7 @@ aside{display:grid;gap:18px;font-size:14px}
 
 <main class="wrap">
   <header class="intro">
-    <div class="eyebrow">Finding 3.3 · Jury vs televote · 2016–2023</div>
     <h1>Juries and viewers don't like the same songs</h1>
-    <p class="lede">Since 2016 every country gives two separate sets of points: one from a professional jury and one from the viewers' televote. Each dot is a country that reached the final. Its position shows the average points it got per voting country from juries (across) and from viewers (up). The further a dot sits from the line, the more juries and viewers disagree.</p>
   </header>
 
   <div class="controls">
@@ -81,10 +79,10 @@ aside{display:grid;gap:18px;font-size:14px}
       <span class="lbl" id="yrs-lbl">Years: <span class="mono yrs-v" id="yrs-v">2016–2023</span></span>
       <div class="range" role="group" aria-labelledby="yrs-lbl">
         <div class="track"></div><div class="fill" id="yrs-fill"></div>
-        <input type="range" id="y0" min="2016" max="2023" step="1" value="2016" aria-label="From year">
-        <input type="range" id="y1" min="2016" max="2023" step="1" value="2023" aria-label="To year">
+        <input type="range" id="y0" min="0" max="6" step="1" value="0" aria-label="From year">
+        <input type="range" id="y1" min="0" max="6" step="1" value="6" aria-label="To year">
       </div>
-      <div class="ticks" aria-hidden="true"><span>2016</span><span>2023</span></div>
+      <div class="ticks" aria-hidden="true"><span>16</span><span>17</span><span>18</span><span>19</span><span>21</span><span>22</span><span>23</span></div>
     </div>
   </div>
 
@@ -94,9 +92,10 @@ aside{display:grid;gap:18px;font-size:14px}
         <h2>Jury points vs televote points <span class="yr" id="sc-yrs">2016–2023</span></h2>
       </div>
       <div class="keys">
-        <span class="key"><i style="background:var(--tele)"></i>Viewers give more (above the line)</span>
-        <span class="key"><i style="background:var(--jury)"></i>Juries give more (below the line)</span>
-        <span class="key"><i class="ring"></i>Only 1 final in these years</span>
+        <span class="key"><i style="background:var(--tele)"></i>Viewers give more</span>
+        <span class="key"><i style="background:var(--jury)"></i>Juries give more</span>
+        <span class="key"><i class="ring"></i>1 final only</span>
+        <span class="key" style="color:var(--muted)">Named: gap &gt; 1.25 SD from the average</span>
       </div>
       <div class="scatter-box"><svg id="scatter" role="img" aria-label="Scatterplot of average jury points against average televote points per country"></svg></div>
     </div>
@@ -106,20 +105,18 @@ aside{display:grid;gap:18px;font-size:14px}
         <ol class="rank" id="jlist"></ol>
         <div class="lbl lbl-j" style="margin-top:6px"><i style="background:var(--tele)"></i>Viewers give more</div>
         <ol class="rank" id="tlist"></ol>
-        <p class="sub" style="font-size:13px">Gap = average jury points − average televote points. Click a name to see it year by year.</p>
       </div>
     </aside>
   </section>
 
   <section class="stage">
     <div class="stage-head">
-      <div style="display:grid;gap:4px"><h2 id="yr-title">Sweden, year by year</h2><p class="sub">Average points per voting country in each final (no contest in 2020). Shading marks the years picked above.</p></div>
+      <h2 id="yr-title">Sweden, year by year</h2>
       <div class="keys">
         <span class="key"><i class="line" style="border-color:var(--jury)"></i>Jury</span>
         <span class="key"><i class="line" style="border-color:var(--tele)"></i>Televote</span>
       </div>
     </div>
-    <div class="stats" id="stats"></div>
     <svg id="years" role="img" aria-label="Line chart of jury and televote points per year for the selected country"></svg>
   </section>
 </main>
@@ -218,28 +215,43 @@ function renderScatter(rows){
     .attr('stroke-width',d=>d.id===F?3:2)
     .on('mousemove',(e,d)=>showTip(e,countryTip(d))).on('mouseleave',hideTip).on('click',(e,d)=>setFocus(d.id));
 
-  // direct labels: the 6 biggest gaps on each side + the selected country, placed greedily so no two
-  // labels overlap each other or a dot (tries right, left, above, below; skips a label if nothing fits)
-  const s = [...rows].sort((a,b)=>b.gap-a.gap);
-  const want = [...new Set([F, ...s.slice(0,6).map(d=>d.id), ...s.slice(-6).reverse().map(d=>d.id)])];
-  const byId = new Map(rows.map(d=>[d.id,d]));
+  // Labels follow one rule: name a country when its gap (jury − televote) is more than 1.25 standard
+  // deviations from the average gap for the selected years, plus the selected country. The rule is
+  // recomputed for every year range, so the named countries are always the outliers of what is shown.
+  const gm = d3.mean(rows,d=>d.gap), gsd = d3.deviation(rows,d=>d.gap) || 1;
+  const want = rows.filter(d=>d.id===F || Math.abs(d.gap-gm)/gsd > 1.25).sort((a,b)=>(b.id===F)-(a.id===F) || Math.abs(b.gap-gm)-Math.abs(a.gap-gm));
   const boxes = rows.map(d=>({x0:x(d.j)-R, x1:x(d.j)+R, y0:y(d.t)-R, y1:y(d.t)+R}));
-  const hit = (b) => b.x0<M.l+2 || b.x1>S-M.r-2 || b.y0<M.t-4 || b.y1>y(0)-2 || boxes.some(o=>b.x0<o.x1 && b.x1>o.x0 && b.y0<o.y1 && b.y1>o.y0);
+  const out = b => b.x0<M.l+2 || b.x1>S-M.r-2 || b.y0<M.t-4 || b.y1>y(0)-2;
+  const hit = b => out(b) || boxes.some(o=>b.x0<o.x1 && b.x1>o.x0 && b.y0<o.y1 && b.y1>o.y0);
   const lab = svg.append('g').attr('pointer-events','none');
-  want.forEach(id=>{
-    const d = byId.get(id); if(!d) return;
-    const txt = name(id), fs = id===F?13:12.5, w = txt.length*fs*0.56, h = fs+2, cx=x(d.j), cy=y(d.t), gap=R+5;
-    const cands = [
-      {x:cx+gap, y:cy+fs*0.35, a:'start', b:{x0:cx+gap, x1:cx+gap+w, y0:cy-h/2, y1:cy+h/2}},
-      {x:cx-gap, y:cy+fs*0.35, a:'end',   b:{x0:cx-gap-w, x1:cx-gap, y0:cy-h/2, y1:cy+h/2}},
-      {x:cx, y:cy-gap-2, a:'middle', b:{x0:cx-w/2, x1:cx+w/2, y0:cy-gap-h, y1:cy-gap}},
-      {x:cx, y:cy+gap+fs-1, a:'middle', b:{x0:cx-w/2, x1:cx+w/2, y0:cy+gap, y1:cy+gap+h}},
-    ];
-    const c = cands.find(c=>!hit(c.b)); if(!c) return;
+  // 8 directions, tried close to the dot first, then further out with a leader line
+  const DIRS = [[1,0],[-1,0],[0,-1],[0,1],[1,-1],[-1,-1],[1,1],[-1,1]];
+  want.forEach(d=>{
+    const id=d.id, txt=name(id), fs=id===F?13:12.5, w=txt.length*fs*0.56, h=fs+2, cx=x(d.j), cy=y(d.t);
+    const place = (dx,dy,r) => {
+      const ax = cx+dx*r, ay = cy+dy*r;
+      const a = dx>0?'start':dx<0?'end':'middle';
+      const x0 = a==='start'?ax : a==='end'?ax-w : ax-w/2;
+      const ty = dy<0 ? ay-2 : dy>0 ? ay+fs-1 : ay+fs*0.35;
+      return {x:ax, y:ty, a, r, b:{x0, x1:x0+w, y0:ty-fs+1, y1:ty+3}};
+    };
+    // a leader line may not pass another dot, or the label could be read as belonging to it
+    const crosses = k => { if(k.r<=R+6) return false;
+      const ex = k.a==='start'?k.b.x0 : k.a==='end'?k.b.x1 : k.x, ey=(k.b.y0+k.b.y1)/2;
+      return rows.some(o=>{ if(o===d) return false; const px=x(o.j), py=y(o.t), vx=ex-cx, vy=ey-cy, L=vx*vx+vy*vy||1;
+        const u=Math.max(0,Math.min(1,((px-cx)*vx+(py-cy)*vy)/L)); return Math.hypot(cx+u*vx-px, cy+u*vy-py) < R+2; }); };
+    let c=null;
+    for(const r of [R+5, R+18, R+34, R+52]){ for(const [dx,dy] of DIRS){ const k=place(dx,dy,r); if(!hit(k.b) && !crosses(k)){ c=k; break; } } if(c) break; }
+    if(!c){ for(const [dx,dy] of DIRS){ const k=place(dx,dy,R+20); if(!out(k.b)){ c=k; break; } } }
+    if(!c) c = place(-1,0,R+5);
     boxes.push(c.b);
+    if(c.r>R+6) lab.append('line').attr('x1',cx).attr('y1',cy).attr('x2',c.a==='start'?c.b.x0-2:c.a==='end'?c.b.x1+2:c.x).attr('y2',(c.b.y0+c.b.y1)/2)
+      .attr('stroke',css('--fg-2')).attr('stroke-width',.8);
     lab.append('text').attr('x',c.x).attr('y',c.y).attr('text-anchor',c.a).attr('font-size',fs).attr('font-weight',id===F?700:500)
       .attr('fill',ink).attr('paint-order','stroke').attr('stroke',surf).attr('stroke-width',3).text(txt);
   });
+  // dots go on top of leader lines
+  svg.selectAll('circle.dot').raise();
 }
 
 // ---------- ranked lists
@@ -286,24 +298,14 @@ function renderYears(){
     svg.append('text').attr('x',x(last.y)+10).attr('y',yj+4).attr('font-size',12).attr('font-weight',600).attr('fill',css('--fg')).text('Jury '+last.j.toFixed(1));
     svg.append('text').attr('x',x(last.y)+10).attr('y',yt+4).attr('font-size',12).attr('font-weight',600).attr('fill',css('--fg')).text('Televote '+last.t.toFixed(1));
   }
-  // headline + stats
   document.getElementById('yr-title').textContent = `${name(F)}, year by year`;
-  const inR = data.filter(d=>d.n && d.y>=st.y0 && d.y<=st.y1);
-  const n = d3.sum(inR,d=>d.n), J = n? d3.sum(inR,d=>d.j*d.n)/n : null, T = n? d3.sum(inR,d=>d.t*d.n)/n : null;
-  const yrs = st.y0===st.y1?st.y0:`${st.y0}–${st.y1}`;
-  document.getElementById('stats').innerHTML = n ? `
-    <div class="stat"><b style="color:var(--jury)">${J.toFixed(2)}</b><span>avg jury points, ${yrs}</span></div>
-    <div class="stat"><b style="color:var(--tele)">${T.toFixed(2)}</b><span>avg televote points, ${yrs}</span></div>
-    <div class="stat"><b>${f1(J-T)}</b><span>${J>=T?'juries':'viewers'} give more</span></div>
-    <div class="stat"><b>${inR.length}</b><span>finals in ${yrs}</span></div>`
-    : `<div class="stat"><span>${name(F)} was not in a final in ${yrs}.</span></div>`;
 }
 
 // ---------- wiring
 function render(){
   hideTip();
   const rows = byCountry();
-  document.getElementById('sc-yrs').textContent = st.y0===st.y1 ? st.y0 : `${st.y0}–${st.y1}`;
+  document.getElementById('sc-yrs').textContent = `${st.y0}–${st.y1}`;
   renderScatter(rows); renderLists(rows); renderYears();
 }
 function setFocus(id){ st.focus=id; document.getElementById('country').value=id; render(); }
@@ -314,20 +316,22 @@ sel.value = st.focus; sel.onchange = ()=>setFocus(sel.value);
 document.querySelector('aside').addEventListener('click',e=>{ const b=e.target.closest('button[data-id]'); if(b) setFocus(b.dataset.id); });
 
 const y0 = document.getElementById('y0'), y1 = document.getElementById('y1');
+const CONTESTS = [2016,2017,2018,2019,2021,2022,2023];   // no contest in 2020; the range always spans at least 2 contests
 function syncYears(){
-  y0.value=st.y0; y1.value=st.y1;
-  const pct = v => (v-2016)/(2023-2016);
+  const a=CONTESTS.indexOf(st.y0), b=CONTESTS.indexOf(st.y1);
+  y0.value=a; y1.value=b;
+  const pct = i => i/(CONTESTS.length-1);
   const fill = document.getElementById('yrs-fill');
-  fill.style.left = `calc(9px + ${pct(st.y0)} * (100% - 18px))`;
-  fill.style.width = `calc(${pct(st.y1)-pct(st.y0)} * (100% - 18px))`;
-  y0.style.zIndex = st.y0 > 2020 ? 3 : 1;
-  document.getElementById('yrs-v').textContent = st.y0===st.y1 ? st.y0 + (st.y0===2020?' (no contest)':'') : `${st.y0}–${st.y1}`;
+  fill.style.left = `calc(9px + ${pct(a)} * (100% - 18px))`;
+  fill.style.width = `calc(${pct(b)-pct(a)} * (100% - 18px))`;
+  y0.style.zIndex = a >= CONTESTS.length-2 ? 3 : 1;
+  document.getElementById('yrs-v').textContent = `${st.y0}–${st.y1}`;
 }
 let raf=0;
 function onYears(which){
   let a=+y0.value, b=+y1.value;
-  if(a>b){ if(which==='y0') a=b; else b=a; }
-  st.y0=a; st.y1=b; syncYears(); cancelAnimationFrame(raf); raf=requestAnimationFrame(render);
+  if(b-a<1){ if(which==='y0'){ a=Math.min(a,CONTESTS.length-2); b=a+1; } else { b=Math.max(b,1); a=b-1; } }
+  st.y0=CONTESTS[a]; st.y1=CONTESTS[b]; syncYears(); cancelAnimationFrame(raf); raf=requestAnimationFrame(render);
 }
 y0.oninput=()=>onYears('y0'); y1.oninput=()=>onYears('y1');
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);

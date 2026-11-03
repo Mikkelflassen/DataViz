@@ -51,86 +51,44 @@ aside{display:grid;gap:14px;font-size:14px}
 <script src="js/nav.js"></script>
 
 <main class="wrap">
-  <header class="intro">
-    <div class="eyebrow">Finding 3.4 · Bias over time · finals 1957–2023</div>
-    <h1>Did favoritism really get stronger?</h1>
-    <p class="lede">At first glance it did, but the jumps mostly come from changes to the points system. Measured in a way that doesn't depend on the points system, there is still a real trend: countries vote far more like they did in earlier years than they used to, and since 2016 that comes almost entirely from the viewers.</p>
-  </header>
+  <h1>Did favoritism really get stronger?</h1>
 
-  <!-- 1 -->
-  <section class="panel">
-    <div class="stage">
-      <div class="stage-head">
-        <div style="display:grid;gap:4px"><span class="num">1 · THE CURVE</span><h2 id="c1-title">Average absolute favoritism per year</h2></div>
-        <div class="seg" id="scale" role="group" aria-label="Scale">
-          <button type="button" id="sc-raw" data-s="raw" aria-pressed="true">Raw points</button>
-          <button type="button" id="sc-z" data-s="z" aria-pressed="false">Same scale every year</button>
-        </div>
+  <section class="stage">
+    <div class="stage-head">
+      <h2 id="c1-title">Raw favoritism jumps when the points change</h2>
+      <div class="seg" id="scale" role="group" aria-label="Scale">
+        <button type="button" id="sc-raw" data-s="raw" aria-pressed="true">Raw points</button>
+        <button type="button" id="sc-z" data-s="z" aria-pressed="false">Same scale every year</button>
       </div>
-      <p class="sub" id="c1-sub"></p>
-      <div class="scroll"><svg id="c1" role="img" aria-label="Average absolute favoritism per year, with the points each country hands out below" style="min-width:640px"></svg></div>
     </div>
-    <aside>
-      <div class="card">
-        <div class="lbl">By era</div>
-        <ul class="eras" id="c1-eras"></ul>
-        <p class="verdict" id="c1-verdict"></p>
-      </div>
-      <div class="card">
-        <div class="lbl">Why it jumps</div>
-        <p>Each jump lines up with the points each country hands out: about <b>10</b> before 1975, <b>58</b> from 1975 (12, 10, 8–1) and <b>116</b> from 2016, when juries and viewers each give a full set. Twice the points means twice the deviation, even if nobody votes more for their friends.</p>
-      </div>
-    </aside>
+    <div class="keys">
+      <span class="key"><i style="border-color:var(--fg)"></i>Average |favoritism| per year</span>
+      <span class="key"><i style="border-color:var(--accent);border-top-width:4px;opacity:.6"></i>Era average</span>
+      <span class="key"><i style="border-color:var(--accent);border-top-width:8px;opacity:.25"></i>Points each country hands out</span>
+    </div>
+    <div class="scroll"><svg id="c1" role="img" aria-label="Average absolute favoritism per year, with the points each country hands out below" style="min-width:640px"></svg></div>
   </section>
 
-  <!-- 2 -->
-  <section class="panel">
-    <div class="stage">
-      <div class="stage-head">
-        <div style="display:grid;gap:4px"><span class="num">2 · A BETTER MEASURE</span><h2>Do countries vote like they did before?</h2></div>
-        <div class="keys">
-          <span class="key"><i style="border-color:var(--fg)"></i>All countries</span>
-          <span class="key"><i class="dash" style="border-color:var(--fg-2)"></i>Only the 32 countries in all three eras</span>
-        </div>
+  <section class="stage">
+    <div class="stage-head">
+      <h2>Bloc voting peaked when only viewers voted</h2>
+      <div class="keys">
+        <span class="key"><i style="border-color:var(--fg)"></i>All countries</span>
+        <span class="key"><i class="dash" style="border-color:var(--fg-2)"></i>32 countries in every era</span>
       </div>
-      <p class="sub">For every pair of countries we compare this year's favoritism with their average over the previous five contests. A correlation of 0 means past votes say nothing about this year's. 1 means every country votes exactly as before. Correlation ignores the size of the points, so changes to the points system can't move it.</p>
-      <div class="scroll"><svg id="c2" role="img" aria-label="Correlation between this year's favoritism and the previous five contests, per year" style="min-width:640px"></svg></div>
     </div>
-    <aside>
-      <div class="card">
-        <div class="lbl">By era · all / stable</div>
-        <ul class="eras" id="c2-eras"></ul>
-        <p class="verdict">Bloc voting grew steadily from the late 1990s, peaked in 2007–2008 when only viewers voted, and dropped back when juries returned in 2009.</p>
-      </div>
-      <div class="card">
-        <div class="lbl">Checks</div>
-        <p><b>Random voting gives 0.</b> Shuffling every country's points at random gives an average of −0.01.</p>
-        <p><b>Not just new countries.</b> The dashed line keeps only countries that took part before 2004, in 2004–2015 and after 2016. It shows the same rise.</p>
-      </div>
-    </aside>
+    <div class="scroll"><svg id="c2" role="img" aria-label="Correlation between this year's favoritism and the previous five contests, per year" style="min-width:640px"></svg></div>
   </section>
 
-  <!-- 3 -->
-  <section class="panel">
-    <div class="stage">
-      <div class="stage-head">
-        <div style="display:grid;gap:4px"><span class="num">3 · SINCE 2016</span><h2>Viewers keep the old friendships, juries don't</h2></div>
-        <div class="keys">
-          <span class="key"><i style="border-color:var(--jury)"></i>Jury</span>
-          <span class="key"><i style="border-color:var(--tele)"></i>Televote</span>
-        </div>
+  <section class="stage">
+    <div class="stage-head">
+      <h2>Viewers keep the old friendships, juries don't</h2>
+      <div class="keys">
+        <span class="key"><i style="border-color:var(--jury)"></i>Jury</span>
+        <span class="key"><i style="border-color:var(--tele)"></i>Televote</span>
       </div>
-      <p class="sub">Since 2016 juries and viewers give separate points, so we can measure them apart. How well does each one follow the pair's favoritism from 2004–2015?</p>
-      <div class="stats" id="c3-stats"></div>
-      <div class="scroll"><svg id="c3" role="img" aria-label="Correlation with 2004–2015 favoritism for jury and televote points, per year" style="min-width:560px"></svg></div>
     </div>
-    <aside>
-      <div class="card">
-        <div class="lbl">What it means</div>
-        <p>In every year from 2016 to 2023 the televote follows the old pattern more than twice as closely as the juries do.</p>
-        <p>This ties back to the jury vs televote page: the countries viewers like much more than juries do are often the ones with strong neighbours and diaspora votes.</p>
-      </div>
-    </aside>
+    <div class="scroll"><svg id="c3" role="img" aria-label="Correlation with 2004–2015 favoritism for jury and televote points, per year" style="min-width:560px"></svg></div>
   </section>
 </main>
 <div class="tip" id="tip" hidden></div>
@@ -197,14 +155,15 @@ function chart1(){
   const eraSpan = {'1957–1974':[1957,1974],'1975–2003':[1975,2003],'2004–2015':[2004,2015],'2016–2023':[2016,2023]};
   const means = k==='raw'?D.eraRaw:D.eraZ;
   ERAS.forEach(e=>{ const [a,b]=eraSpan[e];
-    svg.append('line').attr('x1',x(a)).attr('x2',x(b)).attr('y1',y(means[e])).attr('y2',y(means[e])).attr('stroke',css('--accent')).attr('stroke-width',3).attr('stroke-opacity',.45).attr('stroke-linecap','round'); });
+    svg.append('line').attr('x1',x(a)).attr('x2',x(b)).attr('y1',y(means[e])).attr('y2',y(means[e])).attr('stroke',css('--accent')).attr('stroke-width',3).attr('stroke-opacity',.45).attr('stroke-linecap','round');
+    svg.append('text').attr('x',(x(a)+x(b))/2).attr('y',mainB-12).attr('text-anchor','middle').attr('font-size',13).attr('font-weight',700).style('font-family','var(--mono)')
+      .attr('fill',css('--accent')).attr('paint-order','stroke').attr('stroke',css('--surface')).attr('stroke-width',4).text(means[e].toFixed(2)); });
   const line=d3.line().x(d=>x(d.y)).y(d=>y(d[k]));   // no 2020 in the data, so 2019 joins 2021
   svg.append('path').datum(data).attr('d',line).attr('fill','none').attr('stroke',css('--fg')).attr('stroke-width',2).attr('stroke-linejoin','round');
   svg.append('text').attr('x',4).attr('y',M.t-14).attr('font-size',10.5).attr('fill',css('--muted')).text(k==='raw'?'points':'std. units');
   // strip: points handed out per country
   const sTop = mainB+gapH, sBot = sTop+stripH;
   const ys=d3.scaleLinear([0,120],[sBot,sTop]);
-  svg.append('text').attr('x',M.l).attr('y',sTop-8).attr('font-size',11).attr('font-weight',600).attr('fill',css('--fg-2')).text('Points each country hands out in the final');
   const area=d3.area().curve(d3.curveStepAfter).x(d=>x(d.y)).y0(sBot).y1(d=>ys(Math.min(d.ppv,120)));
   const pts=[...data, {y:2024, ppv:data[data.length-1].ppv}];
   svg.append('path').datum(pts).attr('d',area).attr('fill',css('--accent')).attr('fill-opacity',.18);
@@ -212,20 +171,12 @@ function chart1(){
   [[1960,'≈10'],[1989,'58'],[2019.5,'116']].forEach(([yr,t])=>svg.append('text').attr('x',x(yr)).attr('y',ys(t==='≈10'?10:+t)-5).attr('text-anchor','middle').attr('font-size',11).style('font-family','var(--mono)').attr('font-weight',500).attr('fill',css('--fg')).text(t));
   xAxis(svg,x,H-4,d3.range(1960,2030,10));
   hover(svg,d=>x(d.y),data,M.l,W-M.r,M.t-24,sBot,d=>`<b>${d.y}</b><br><span class="m">raw ${d.raw.toFixed(2)} pts</span><br><span class="m">same scale ${d.z.toFixed(2)}</span><br><span class="m">${d.ppv} pts handed out per country</span>`);
-  // text
-  document.getElementById('c1-title').textContent = k==='raw' ? 'Average absolute favoritism per year' : 'Same curve, on the same scale every year';
-  document.getElementById('c1-sub').textContent = k==='raw'
-    ? 'How far each vote is from what the receiving country usually gets, positive or negative, averaged per year. This is the group’s Tableau measure. The teal steps are era averages.'
-    : 'Each year divided by how spread out that year’s points were (its standard deviation), so 1975 and 2016 count on equal terms with every other year. The teal steps are era averages.';
-  document.getElementById('c1-eras').innerHTML = ERAS.map(e=>`<li><span>${e}</span><span>${means[e].toFixed(2)}</span></li>`).join('');
-  document.getElementById('c1-verdict').textContent = k==='raw'
-    ? 'Raw: it looks like favoritism grew from 0.88 to 3.22.'
-    : 'Same scale: flat. 0.60, 0.61, 0.61, 0.56. The growth was the points system.';
+  document.getElementById('c1-title').textContent = k==='raw' ? 'Raw favoritism jumps when the points change' : 'On the same scale, favoritism is flat';
 }
 
 // ---------- 2: persistence
 function chart2(){
-  const W=900, H=380, M={l:48,r:70,t:40,b:28};
+  const W=900, H=390, M={l:48,r:70,t:52,b:28};
   const svg=d3.select('#c2').attr('viewBox',`0 0 ${W} ${H}`); svg.selectAll('*').remove();
   const x=d3.scaleLinear([1956,2024],[M.l,W-M.r]), y=d3.scaleLinear([-0.1,0.8],[H-M.b,M.t]);
   grid(svg,y,M.l,W-M.r,d3.format('.1f'));
@@ -243,12 +194,12 @@ function chart2(){
   svg.append('text').attr('x',x(last.y)+8).attr('y',y(last.all)+4).attr('font-size',12).attr('font-weight',600).attr('fill',css('--fg')).text(last.all.toFixed(2));
   xAxis(svg,x,H-6,d3.range(1960,2030,10));
   hover(svg,d=>x(d.y),data,M.l,W-M.r,M.t-30,H-M.b,d=>`<b>${d.y}</b><br><span class="m">all countries ${d.all.toFixed(2)}</span><br><span class="m">stable countries ${d.stable.toFixed(2)}</span>`);
-  document.getElementById('c2-eras').innerHTML = ERAS.map(e=>`<li><span>${e}</span><span>${D.eraP[e].all.toFixed(2)} / ${D.eraP[e].stable.toFixed(2)}</span></li>`).join('');
+  svg.append('text').attr('x',4).attr('y',M.t-34).attr('font-size',11).attr('fill',css('--muted')).text('↑ votes match the last 5 contests (correlation)');
 }
 
 // ---------- 3: jury vs televote since 2016
 function chart3(){
-  const W=900, H=300, M={l:48,r:96,t:20,b:28};
+  const W=900, H=310, M={l:48,r:96,t:30,b:28};
   const svg=d3.select('#c3').attr('viewBox',`0 0 ${W} ${H}`); svg.selectAll('*').remove();
   const data=D.jt, x=d3.scalePoint(data.map(d=>d.y),[M.l+24,W-M.r]), y=d3.scaleLinear([0,0.8],[H-M.b,M.t]);
   grid(svg,y,M.l,W-M.r+20,d3.format('.1f'));
@@ -260,7 +211,8 @@ function chart3(){
   });
   data.forEach(d=>svg.append('text').attr('x',x(d.y)).attr('y',H-6).attr('text-anchor','middle').attr('font-size',11).style('font-family','var(--mono)').attr('fill',css('--muted')).text(d.y));
   hover(svg,d=>x(d.y),data,M.l,W-M.r,M.t,H-M.b,d=>`<b>${d.y}</b><br><span class="m">jury ${d.jury.toFixed(2)}</span><br><span class="m">televote ${d.tele.toFixed(2)}</span><br><span class="m">${d.n} country pairs</span>`);
-  document.getElementById('c3-stats').innerHTML = `
+  svg.append('text').attr('x',4).attr('y',12).attr('font-size',11).attr('fill',css('--muted')).text('↑ votes match the 2004–2015 pattern (correlation)');
+  const _unused = `
     <div class="stat"><b style="color:var(--tele)">${D.jtMean.tele.toFixed(2)}</b><span>televote, average 2016–2023</span></div>
     <div class="stat"><b style="color:var(--jury)">${D.jtMean.jury.toFixed(2)}</b><span>jury, average 2016–2023</span></div>
     <div class="stat"><b>${(D.jtMean.tele/D.jtMean.jury).toFixed(1)}×</b><span>more of the old pattern in the televote</span></div>`;

@@ -89,8 +89,9 @@ input[type=range]{width:200px;accent-color:var(--fg);margin:6px 0 2px}
 .presets button{font:500 12px/1 var(--mono);background:var(--surface);color:var(--fg-2);border:1px solid var(--line-strong);border-radius:999px;padding:5px 9px;cursor:pointer}
 .presets button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 #bondlist{max-height:330px;overflow-y:auto}
-.bond li{grid-template-columns:22px 1fr auto}
-.bond .n{font:600 12px/1 var(--mono);width:20px;height:20px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center}
+.bond li{grid-template-columns:1fr auto;row-gap:3px}
+.bond .dirs{grid-column:1 / -1;display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;align-items:center;font:12px/1.2 var(--mono);color:var(--fg-2)}
+.bond .bar{height:6px;border-radius:3px;background:var(--fg)}
 .key .ln{width:18px;height:0;border:0;border-top:2.5px solid var(--fg);border-radius:0}
 .mono{font-family:var(--mono)}
 .tip{position:fixed;z-index:40;pointer-events:none;background:var(--surface);color:var(--fg);border:1px solid var(--line-strong);border-radius:6px;padding:7px 10px;font-size:13px;line-height:1.4;box-shadow:0 4px 14px rgb(0 0 0 / .14);max-width:260px}
@@ -106,9 +107,7 @@ footer{font-size:13px;color:var(--muted);max-width:84ch;border-top:1px solid var
 
 <div class="wrap">
   <header>
-    <div class="eyebrow">Data Visualization · Eurovision favoritism</div>
     <h1>Who gives points to whom?</h1>
-    <p class="lede">Pick a country, or click one on the map. Every other country is coloured by how many more or fewer points it gives that country than you would expect from how popular the entry was that year.</p>
   </header>
 
   <div class="controls">
@@ -127,9 +126,8 @@ footer{font-size:13px;color:var(--muted);max-width:84ch;border-top:1px solid var
         <button type="button" data-r="1957-2023">All</button><button type="button" data-r="1957-2003">1957–2003</button><button type="button" data-r="2004-2015">2004–2015</button><button type="button" data-r="2016-2023">2016–2023</button>
       </div>
     </div>
-    <div class="ctl"><label for="bonds">Strongest bonds: <span id="bonds-v" class="mono" style="color:var(--fg)">5</span> pairs</label>
-      <input type="range" id="bonds" min="0" max="20" step="1" value="5" aria-describedby="bonds-hint">
-      <div id="bonds-hint" style="font-size:12px;color:var(--muted)">Slide to 0 to hide the lines.</div></div>
+    <div class="ctl"><label for="bonds">Strongest bonds: <span id="bonds-v" class="mono" style="color:var(--fg)">5</span></label>
+      <input type="range" id="bonds" min="0" max="20" step="1" value="5"></div>
   </div>
 
   <section class="panel">
@@ -143,7 +141,7 @@ footer{font-size:13px;color:var(--muted);max-width:84ch;border-top:1px solid var
         <span class="key"><i style="background:var(--fg)"></i>Selected country</span>
         <span class="key"><i id="hatchkey"></i><span id="hatchtxt">Fewer than 5 shared finals</span></span>
         <span class="key"><i style="background:var(--land)"></i>Not in Eurovision</span>
-        <span class="key" id="bondkey"><i class="ln"></i>Strongest two-way bonds, numbered by rank</span>
+        <span class="key" id="bondkey"><svg style="width:40px;height:12px;display:inline-block" viewBox="0 0 40 12" aria-hidden="true"><path d="M1,1 L1,11 L39,6 Z" fill="var(--fg)"/></svg>Bond: gives → receives, width = extra points</span>
       </div>
     </div>
     <aside>
@@ -173,6 +171,7 @@ const C = new Map(DATA.countries.map(c=>[c.id,c]));
 const name = id => C.get(id).name;
 const st = {focus:'cy', dir:'in', y0:1957, y1:2023, bonds:5};
 const POS = {};
+const IDS_UP = id => id.toUpperCase();
 const f1 = d3.format('+.1f');
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
@@ -292,15 +291,15 @@ function render(){
 
   part.forEach(f=>POS[f.properties.c]=f.a);
   Object.entries(DOT).forEach(([c,ll])=>POS[c]=proj(ll));
-  // labels: code + score on countries large enough to hold them
+  // labels: country codes; for countries with a bond, the code moves below the arc's end point
+  const B = st.bonds ? bonds() : [];
+  const inBond = new Set(B.flatMap(d=>[d.a,d.b]));
   const lab = g.append('g').attr('pointer-events','none');
   part.filter(f=>f.big).forEach(f=>{
     const c=f.properties.c, v=valFor(c), [x,y]=f.a;
     const ink = c===F ? css('--bg') : (v ? inkOn(v.f) : css('--muted'));
     const small = areaPx(f) < 2200;
-    lab.append('text').attr('x',x).attr('y',v||c===F?y-2:y+4).attr('text-anchor','middle').attr('font-size',small?9:11).attr('font-weight',600).attr('fill',ink).text(c.toUpperCase());
-    if(c===F) lab.append('text').attr('x',x).attr('y',y+10).attr('text-anchor','middle').attr('font-size',small?8.5:10).style('font-family','var(--mono)').attr('fill',ink).text('selected');
-    else if(v) lab.append('text').attr('x',x).attr('y',y+10).attr('text-anchor','middle').attr('font-size',small?8.5:10).style('font-family','var(--mono)').attr('fill',ink).text(f1(v.f));
+    lab.append('text').attr('x',x).attr('y',inBond.has(c)?y+15:y+4).attr('text-anchor','middle').attr('font-size',small?9:11).attr('font-weight',600).attr('fill',ink).text(c.toUpperCase());
   });
 
   // Atlantic boxes: historical + Australia
@@ -314,7 +313,7 @@ function render(){
     t.append('rect').attr('width',58).attr('height',50).attr('rx',5).attr('fill',fillFor(c)).attr('stroke',css('--line-strong'));
     const ink = c===F?css('--bg'):(v?inkOn(v.f):css('--muted'));
     t.append('text').attr('x',7).attr('y',17).attr('font-size',11).attr('font-weight',600).attr('fill',ink).text(c.toUpperCase());
-    t.append('text').attr('x',7).attr('y',40).attr('font-size',10).style('font-family','var(--mono)').attr('fill',ink).text(c===F?'selected':(v?f1(v.f):''));
+    
   });
   const ax=bx, ay=by+80, aw=124, ah=104;
   ob.append('text').attr('x',ax).attr('y',ay-8).attr('font-size',11).attr('fill',css('--muted')).text('Australia, since 2015');
@@ -325,7 +324,7 @@ function render(){
     .on('mousemove',e=>showTip(e,tipFor('au'))).on('mouseleave',hideTip).on('click',()=>setFocus('au'));
   const ac = d3.geoPath(ap).centroid(auF); POS.au=ac;
   ob.append('text').attr('x',ac[0]).attr('y',ac[1]+4).attr('text-anchor','middle').attr('pointer-events','none').attr('font-size',10).style('font-family','var(--mono)')
-    .attr('fill','au'===F?css('--bg'):(av?inkOn(av.f):css('--muted'))).text('au'===F?'selected':(av?f1(av.f):''));
+    .attr('fill','au'===F?css('--bg'):(av?inkOn(av.f):css('--muted'))).text('AU');
 
   // title + ranking
   document.getElementById('title').innerHTML = (st.dir==='in' ? `Who favours ${name(F)}?` : `Who does ${name(F)} favour?`) + ` <span class="mono" style="font-size:15px;font-weight:500;color:var(--muted)">${yrsText()}</span>`;
@@ -338,27 +337,41 @@ function render(){
   document.getElementById('low').innerHTML = all.length ? all.slice(-3).reverse().map(li).join('') : empty;
 
   // bonds
-  const B = st.bonds ? bonds() : [];
   document.getElementById('bondcard').hidden = !st.bonds;
   document.getElementById('bondkey').hidden = !st.bonds;
   document.getElementById('bond-era').textContent = '· '+yrsText();
-  document.getElementById('bondlist').innerHTML = B.map((d,i)=>`<li><span class="n">${i+1}</span><button type="button" data-id="${d.a}">${name(d.a)} ↔ ${name(d.b)}</button><span class="pill" style="background:${div(d.w)};color:${inkOn(d.w)}">${f1(d.w)}</span></li>`).join('');
+  const bw = v => Math.max(1.5, Math.min(v,13))/13*100;
+  document.getElementById('bondlist').innerHTML = B.map(d=>`<li><button type="button" data-id="${d.a}">${name(d.a)} ⇄ ${name(d.b)}</button><span class="pill" style="background:${div(d.w)};color:${inkOn(d.w)}">${f1(d.w)}</span>
+    <div class="dirs"><span>${IDS_UP(d.a)} →</span><span class="bar" style="width:${bw(d.ab)}%"></span><span>${f1(d.ab)}</span><span>${IDS_UP(d.b)} →</span><span class="bar" style="width:${bw(d.ba)}%"></span><span>${f1(d.ba)}</span></div></li>`).join('');
   if(!st.bonds) return;
   const bl = svg.append('g').attr('class','bonds');
-  B.map((d,i)=>({d,i})).reverse().forEach(({d,i})=>{
+  // Each direction is its own tapered arc: wide at the giver, a point at the receiver (tapered edges
+  // read direction better than arrowheads). Width = favoritism in that direction, so the strongest
+  // pairs are the thickest and a one-sided friendship shows as one thick and one thin arc.
+  // Arcs bend to the right of travel, so A→B and B→A never overlap.
+  const wScale = v => 1.2 + Math.max(0, Math.min(v,13))/13*8.8;
+  const wedge = (p, q, wBase) => {
+    const dx=q[0]-p[0], dy=q[1]-p[1], len=Math.hypot(dx,dy)||1, nx=-dy/len, ny=dx/len;
+    const k=Math.max(17, Math.min(36, 8+len*.18)), c=[(p[0]+q[0])/2+nx*k, (p[1]+q[1])/2+ny*k];
+    const s=6/len, e=1-7/len, N=28, L=[], R=[];
+    for(let i=0;i<=N;i++){
+      const t=s+(e-s)*i/N, u=1-t;
+      const x=u*u*p[0]+2*u*t*c[0]+t*t*q[0], y=u*u*p[1]+2*u*t*c[1]+t*t*q[1];
+      let tx=2*u*(c[0]-p[0])+2*t*(q[0]-c[0]), ty=2*u*(c[1]-p[1])+2*t*(q[1]-c[1]); const tl=Math.hypot(tx,ty)||1;
+      const hw=wBase/2*(1-i/N)+0.4;
+      L.push([x-ty/tl*hw, y+tx/tl*hw]); R.push([x+ty/tl*hw, y-tx/tl*hw]);
+    }
+    return 'M'+L.map(p=>p.join(',')).join('L')+'L'+R.reverse().map(p=>p.join(',')).join('L')+'Z';
+  };
+  const dirTip = (a,b,v,back) => `<b>${name(a)} → ${name(b)}</b><br><span class="m">${f1(v)} pts vs expected</span><br><span class="m">back: ${f1(back)}</span>`;
+  [...B].reverse().forEach(d=>{
     const p=POS[d.a], q=POS[d.b]; if(!p||!q) return;
-    const dx=q[0]-p[0], dy=q[1]-p[1], len=Math.hypot(dx,dy)||1, k=Math.min(46, 14+len*.22);
-    const cx=(p[0]+q[0])/2 - dy/len*k, cy=(p[1]+q[1])/2 + dx/len*k;
-    const dpath=`M${p[0]},${p[1]} Q${cx},${cy} ${q[0]},${q[1]}`;
-    const mid=[.25*p[0]+.5*cx+.25*q[0], .25*p[1]+.5*cy+.25*q[1]];
-    const g=bl.append('g').style('cursor','pointer')
-      .on('mousemove',e=>showTip(e,bondTip(d))).on('mouseleave',hideTip).on('click',()=>setFocus(d.a));
-    g.append('path').attr('d',dpath).attr('fill','none').attr('stroke',css('--surface')).attr('stroke-width',5.5).attr('stroke-linecap','round');
-    g.append('path').attr('d',dpath).attr('fill','none').attr('stroke',css('--fg')).attr('stroke-width',2.4).attr('stroke-linecap','round');
-    g.append('path').attr('d',dpath).attr('fill','none').attr('stroke','transparent').attr('stroke-width',14);
-    [p,q].forEach(e=>g.append('circle').attr('cx',e[0]).attr('cy',e[1]).attr('r',3.4).attr('fill',css('--fg')).attr('stroke',css('--surface')).attr('stroke-width',1.5));
-    g.append('circle').attr('cx',mid[0]).attr('cy',mid[1]).attr('r',i<9?9:10.5).attr('fill',css('--fg')).attr('stroke',css('--surface')).attr('stroke-width',1.5);
-    g.append('text').attr('x',mid[0]).attr('y',mid[1]+4).attr('text-anchor','middle').attr('font-size',i<9?11:10).attr('font-weight',700).style('font-family','var(--mono)').attr('fill',css('--bg')).text(i+1);
+    [[d.a,d.b,p,q,d.ab,d.ba],[d.b,d.a,q,p,d.ba,d.ab]].forEach(([a,b,P,Q,v,back])=>{
+      const dp = wedge(P,Q,wScale(v));
+      bl.append('path').attr('d',dp).attr('fill',css('--fg')).attr('stroke',css('--surface')).attr('stroke-width',1.2).attr('stroke-linejoin','round')
+        .style('cursor','pointer').on('mousemove',e=>showTip(e,dirTip(a,b,v,back))).on('mouseleave',hideTip).on('click',()=>setFocus(b));
+    });
+    [p,q].forEach(e=>bl.append('circle').attr('cx',e[0]).attr('cy',e[1]).attr('r',2.6).attr('fill',css('--surface')).attr('stroke',css('--fg')).attr('stroke-width',1.4).attr('pointer-events','none'));
   });
 }
 
