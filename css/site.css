@@ -58,3 +58,12 @@ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--body)}
 .tip{position:fixed;z-index:40;pointer-events:none;background:var(--surface);color:var(--fg);border:1px solid var(--line-strong);border-radius:6px;padding:7px 10px;font-size:13px;line-height:1.4;box-shadow:0 4px 14px rgb(0 0 0 / .14);max-width:260px}
 .tip b{font-weight:600} .tip .m{font-family:var(--mono);color:var(--fg-2)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* "?" help buttons: hover or focus to peek, click/tap to pin, Esc or click elsewhere to close */
+.help{all:unset;box-sizing:border-box;display:inline-grid;place-items:center;width:20px;height:20px;flex:none;border-radius:50%;border:1.5px solid var(--line-strong);color:var(--fg-2);font:600 12px/1 var(--body);cursor:help;vertical-align:middle;text-transform:none;letter-spacing:0}
+.help:hover,.help[aria-expanded=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.help:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.help-pop{position:fixed;z-index:50;max-width:calc(100vw - 24px);background:var(--surface);color:var(--fg-2);border:1px solid var(--line-strong);border-radius:8px;padding:12px 14px;font:400 13.5px/1.5 var(--body);box-shadow:0 8px 24px rgb(0 0 0 / .18)}
+.help-pop b{color:var(--fg);font-weight:600}
+.help-pop p{margin:0 0 7px} .help-pop p:last-child{margin:0}
+.ttl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}

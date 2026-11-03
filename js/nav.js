@@ -35,3 +35,37 @@
       '<nav aria-label="Pages"><ul>' + links + '</ul></nav>' +
     '</div>';
 })();
+
+// "?" help buttons, shared by every page.
+// Markup: <button type="button" class="help" aria-label="..." aria-controls="h-x" aria-expanded="false">?</button>
+//         <div class="help-pop" id="h-x" role="tooltip" hidden>...</div>
+// Hover or keyboard focus shows the text; a click or tap pins it open; Esc, a second click or a click
+// elsewhere closes it.
+(function(){
+  var open = null, pinned = false;
+  var popFor = function(b){ return document.getElementById(b.getAttribute('aria-controls')); };
+  function place(b, pop){
+    pop.hidden = false;
+    var r = b.getBoundingClientRect(), w = Math.min(340, innerWidth - 24);
+    pop.style.width = w + 'px';
+    var x = Math.max(12, Math.min(r.left + r.width/2 - w/2, innerWidth - w - 12));
+    var h = pop.offsetHeight, y = r.bottom + 8;
+    if(y + h > innerHeight - 8 && r.top - h - 8 > 8) y = r.top - h - 8;
+    pop.style.left = x + 'px'; pop.style.top = y + 'px';
+  }
+  function show(b, pin){ var pop = popFor(b); if(!pop) return; if(open && open !== b) hide(); open = b; pinned = !!pin; b.setAttribute('aria-expanded','true'); place(b, pop); }
+  function hide(){ if(!open) return; var pop = popFor(open); if(pop) pop.hidden = true; open.setAttribute('aria-expanded','false'); open = null; pinned = false; }
+  var canHover = function(){ return matchMedia('(hover: hover)').matches; };
+  document.addEventListener('mouseover', function(e){ var b = e.target.closest && e.target.closest('.help'); if(b && canHover() && !pinned) show(b, false); });
+  document.addEventListener('mouseout', function(e){ var b = e.target.closest && e.target.closest('.help'); if(b && b === open && !pinned && !b.contains(e.relatedTarget)) hide(); });
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('.help');
+    if(b){ e.preventDefault(); if(open === b && pinned) hide(); else show(b, true); return; }
+    if(open && !(e.target.closest && e.target.closest('.help-pop'))) hide();
+  });
+  document.addEventListener('focusin', function(e){ var b = e.target.closest && e.target.closest('.help'); if(b && !pinned) show(b, false); });
+  document.addEventListener('focusout', function(e){ var b = e.target.closest && e.target.closest('.help'); if(b && b === open && !pinned) hide(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') hide(); });
+  addEventListener('scroll', function(){ if(open) place(open, popFor(open)); }, {passive:true});
+  addEventListener('resize', hide);
+})();

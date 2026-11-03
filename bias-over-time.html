@@ -51,11 +51,11 @@ aside{display:grid;gap:14px;font-size:14px}
 <script src="js/nav.js"></script>
 
 <main class="wrap">
-  <h1>Did favoritism really get stronger?</h1>
+  <div class="ttl"><h1>Did favoritism really get stronger?</h1><button type="button" class="help" aria-label="The short answer" aria-controls="h-page" aria-expanded="false">?</button></div>
 
   <section class="stage">
     <div class="stage-head">
-      <h2 id="c1-title">Raw favoritism jumps when the points change</h2>
+      <div class="ttl"><h2 id="c1-title">Raw favoritism jumps when the points change</h2><button type="button" class="help" aria-label="About this chart" aria-controls="h-c1" aria-expanded="false">?</button></div>
       <div class="seg" id="scale" role="group" aria-label="Scale">
         <button type="button" id="sc-raw" data-s="raw" aria-pressed="true">Raw points</button>
         <button type="button" id="sc-z" data-s="z" aria-pressed="false">Same scale every year</button>
@@ -71,7 +71,7 @@ aside{display:grid;gap:14px;font-size:14px}
 
   <section class="stage">
     <div class="stage-head">
-      <h2>Bloc voting peaked when only viewers voted</h2>
+      <div class="ttl"><h2>Bloc voting peaked when only viewers voted</h2><button type="button" class="help" aria-label="About this chart" aria-controls="h-c2" aria-expanded="false">?</button></div>
       <div class="keys">
         <span class="key"><i style="border-color:var(--fg)"></i>All countries</span>
         <span class="key"><i class="dash" style="border-color:var(--fg-2)"></i>32 countries in every era</span>
@@ -82,7 +82,7 @@ aside{display:grid;gap:14px;font-size:14px}
 
   <section class="stage">
     <div class="stage-head">
-      <h2>Viewers keep the old friendships, juries don't</h2>
+      <div class="ttl"><h2>Viewers keep the old friendships, juries don't</h2><button type="button" class="help" aria-label="About this chart" aria-controls="h-c3" aria-expanded="false">?</button></div>
       <div class="keys">
         <span class="key"><i style="border-color:var(--jury)"></i>Jury</span>
         <span class="key"><i style="border-color:var(--tele)"></i>Televote</span>
@@ -92,6 +92,26 @@ aside{display:grid;gap:14px;font-size:14px}
   </section>
 </main>
 <div class="tip" id="tip" hidden></div>
+
+<div class="help-pop" id="h-page" role="tooltip" hidden>
+  <p>At first glance favoritism grew a lot, but the jumps come from changes to the points system (chart 1).</p>
+  <p>Measured in a way the points system can't affect, bloc voting did grow: it rose once viewers voted, peaked in 2008 and fell when juries returned (chart 2).</p>
+  <p>Since 2016 the bias comes mostly from the viewers (chart 3).</p>
+</div>
+<div class="help-pop" id="h-c1" role="tooltip" hidden>
+  <p><b>Absolute favoritism</b> = how far each vote is from what the receiving country usually got that year, ignoring whether it is above or below. Averaged per year. This is the measure from the group's Tableau work.</p>
+  <p>The strip below shows the points each country hands out: about <b>10</b> before 1975, <b>58</b> from 1975 (12, 10, 8–1) and <b>116</b> from 2016, when juries and viewers each give a full set. 1971–73 used a different system. Twice the points means twice the deviation, even if nobody votes more for their friends.</p>
+  <p><b>Same scale every year</b> divides each year by the standard deviation of its points. Then the eras are almost equal.</p>
+</div>
+<div class="help-pop" id="h-c2" role="tooltip" hidden>
+  <p>For every pair of countries, this year's favoritism is compared with their average over the <b>previous five contests</b> (pairs that met at least twice). The line is the correlation: 0 = past votes say nothing about this year's, 1 = everyone votes exactly as before. Because it is a correlation, the size of the points doesn't matter.</p>
+  <p>Shuffling everyone's points at random gives −0.01. The dashed line keeps only the 32 countries that took part before 2004, in 2004–2015 and after 2016, so new countries joining can't explain the rise.</p>
+  <p>Reforms: televoting in most countries from 1998, semi-finals 2004, juries back alongside viewers 2009, separate jury and televote 2016.</p>
+</div>
+<div class="help-pop" id="h-c3" role="tooltip" hidden>
+  <p>Since 2016 jury and televote points are published separately. Each line shows how well that year's jury (or televote) favoritism matches each pair's average from <b>2004–2015</b> (pairs that met at least three times).</p>
+  <p>On average the televote matches 0.54 and the juries 0.22, so the viewers follow the old friendships about 2.5 times as closely, in every year.</p>
+</div>
 
 <script src="js/d3.min.js"></script>
 <script>

@@ -70,13 +70,13 @@ aside{display:grid;gap:18px;font-size:14px}
 
 <main class="wrap">
   <header class="intro">
-    <h1>Juries and viewers don't like the same songs</h1>
+    <div class="ttl"><h1>Juries and viewers don't like the same songs</h1><button type="button" class="help" aria-label="How to read this page" aria-controls="h-page" aria-expanded="false">?</button></div>
   </header>
 
   <div class="controls">
     <div class="ctl"><label for="country" class="lbl">Country</label><select id="country"></select></div>
     <div class="ctl">
-      <span class="lbl" id="yrs-lbl">Years: <span class="mono yrs-v" id="yrs-v">2016–2023</span></span>
+      <span class="ttl"><span class="lbl" id="yrs-lbl">Years: <span class="mono yrs-v" id="yrs-v">2016–2023</span></span><button type="button" class="help" aria-label="About the years" aria-controls="h-years" aria-expanded="false">?</button></span>
       <div class="range" role="group" aria-labelledby="yrs-lbl">
         <div class="track"></div><div class="fill" id="yrs-fill"></div>
         <input type="range" id="y0" min="0" max="6" step="1" value="0" aria-label="From year">
@@ -89,19 +89,19 @@ aside{display:grid;gap:18px;font-size:14px}
   <section class="panel">
     <div class="stage">
       <div class="stage-head">
-        <h2>Jury points vs televote points <span class="yr" id="sc-yrs">2016–2023</span></h2>
+        <div class="ttl"><h2>Jury points vs televote points <span class="yr" id="sc-yrs">2016–2023</span></h2><button type="button" class="help" aria-label="How to read the scatterplot" aria-controls="h-scatter" aria-expanded="false">?</button></div>
       </div>
       <div class="keys">
         <span class="key"><i style="background:var(--tele)"></i>Viewers give more</span>
         <span class="key"><i style="background:var(--jury)"></i>Juries give more</span>
         <span class="key"><i class="ring"></i>1 final only</span>
-        <span class="key" style="color:var(--muted)">Named: gap &gt; 1.25 SD from the average</span>
+        <span class="key">Named = outlier <button type="button" class="help" aria-label="Which countries are named" aria-controls="h-named" aria-expanded="false">?</button></span>
       </div>
       <div class="scatter-box"><svg id="scatter" role="img" aria-label="Scatterplot of average jury points against average televote points per country"></svg></div>
     </div>
     <aside>
       <div class="card">
-        <div class="lbl lbl-j"><i style="background:var(--jury)"></i>Juries give more</div>
+        <div class="ttl" style="justify-content:space-between"><div class="lbl lbl-j"><i style="background:var(--jury)"></i>Juries give more</div><button type="button" class="help" aria-label="About the gap" aria-controls="h-gap" aria-expanded="false">?</button></div>
         <ol class="rank" id="jlist"></ol>
         <div class="lbl lbl-j" style="margin-top:6px"><i style="background:var(--tele)"></i>Viewers give more</div>
         <ol class="rank" id="tlist"></ol>
@@ -111,7 +111,7 @@ aside{display:grid;gap:18px;font-size:14px}
 
   <section class="stage">
     <div class="stage-head">
-      <h2 id="yr-title">Sweden, year by year</h2>
+      <div class="ttl"><h2 id="yr-title">Sweden, year by year</h2><button type="button" class="help" aria-label="About the year chart" aria-controls="h-years2" aria-expanded="false">?</button></div>
       <div class="keys">
         <span class="key"><i class="line" style="border-color:var(--jury)"></i>Jury</span>
         <span class="key"><i class="line" style="border-color:var(--tele)"></i>Televote</span>
@@ -121,6 +121,31 @@ aside{display:grid;gap:18px;font-size:14px}
   </section>
 </main>
 <div class="tip" id="tip" hidden></div>
+
+<div class="help-pop" id="h-page" role="tooltip" hidden>
+  <p>Since 2016 every country gives <b>two separate sets of points</b>: one from a professional jury and one from the viewers' televote. That lets us compare who juries and viewers like.</p>
+  <p>Pick a country to follow it in the year-by-year chart, or click any dot or name.</p>
+</div>
+<div class="help-pop" id="h-years" role="tooltip" hidden>
+  <p>Finals 2016–2023. There was no contest in 2020, so it isn't on the slider. The range always covers at least two contests, so one year's result can't dominate.</p>
+  <p>The televote includes the "rest of world" online vote (2023). A country's own row, where it can't vote for itself, is left out.</p>
+</div>
+<div class="help-pop" id="h-scatter" role="tooltip" hidden>
+  <p>Each dot is a country that reached the final. <b>Across</b>: average points it got from juries per voting country. <b>Up</b>: average points from viewers.</p>
+  <p>On the <b>diagonal</b> juries and viewers agree. The further a dot is from it, the more they disagree. Orange dots (top-left) get more from viewers, blue dots (bottom-right) more from juries. The background tint shows the same split.</p>
+  <p>A <b>hollow dot</b> reached only one final in the selected years, so its position rests on a single contest.</p>
+</div>
+<div class="help-pop" id="h-named" role="tooltip" hidden>
+  <p>A country is named when its gap (jury − televote) is more than <b>1.25 standard deviations</b> from the average gap for the selected years. The selected country is always named.</p>
+  <p>The rule is recalculated for every year range, so the names always mark the outliers of what you see.</p>
+</div>
+<div class="help-pop" id="h-gap" role="tooltip" hidden>
+  <p><b>Gap</b> = average jury points − average televote points, per voting country. The five biggest gaps in each direction are listed.</p>
+</div>
+<div class="help-pop" id="h-years2" role="tooltip" hidden>
+  <p>Average points per voting country in each final, from juries and from viewers. A missing point means the country wasn't in that final. 2020 had no contest, so the lines run straight from 2019 to 2021.</p>
+  <p>The shaded band marks the years picked with the slider.</p>
+</div>
 
 <script src="js/d3.min.js"></script>
 <script>
