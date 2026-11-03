@@ -91,7 +91,12 @@ input[type=range]{width:200px;accent-color:var(--fg);margin:6px 0 2px}
 .legend-wrap{display:flex;align-items:center;gap:8px}
 #legend{width:280px;height:auto;display:block}
 .yr{font:500 15px/1 var(--mono);color:var(--muted)}
-.fr-ctl{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:end}
+.bond{cursor:pointer}
+.bonds-dim .bond{opacity:.12}
+.bonds-dim .bond.on{opacity:1}
+.blist li{grid-template-columns:1fr auto;row-gap:2px}
+.blist .dirs{grid-column:1 / -1;font:11.5px/1.3 var(--mono);color:var(--fg-2);display:flex;gap:12px}
+.blist li.on button{text-decoration:underline}
 .row-hit{cursor:pointer}
 .scroll{overflow-x:auto;min-width:0}
 .key .ln{width:18px;height:0;border:0;border-top:2.5px solid var(--fg);border-radius:0}
@@ -129,6 +134,10 @@ footer{font-size:13px;color:var(--muted);max-width:84ch;border-top:1px solid var
         <button type="button" data-r="1957-2023">All</button><button type="button" data-r="1957-2003">1957–2003</button><button type="button" data-r="2004-2015">2004–2015</button><button type="button" data-r="2016-2023">2016–2023</button>
       </div>
     </div>
+    <div class="ctl"><span class="ttl"><label for="bonds">Strongest bonds: <span id="bonds-v" class="mono" style="color:var(--fg)">6</span></label><button type="button" class="help" aria-label="How to read the bond lines" aria-controls="h-bonds" aria-expanded="false">?</button></span>
+      <input type="range" id="bonds" min="0" max="15" step="1" value="6">
+      <div class="seg" id="frmode" role="group" aria-label="Which bonds" style="margin-top:4px"><button type="button" data-m="all" aria-pressed="true">All of Europe</button><button type="button" data-m="focus" id="fr-focus" aria-pressed="false">With Cyprus</button></div>
+    </div>
   </div>
 
   <section class="panel">
@@ -142,6 +151,9 @@ footer{font-size:13px;color:var(--muted);max-width:84ch;border-top:1px solid var
         <span class="key"><i style="background:var(--fg)"></i>Selected country</span>
         <span class="key"><i id="hatchkey"></i><span id="hatchtxt">Fewer than 5 shared finals</span></span>
         <span class="key"><i style="background:var(--land)"></i>Not in Eurovision</span>
+        <span class="key" id="bondkey"><svg style="width:64px;height:16px;display:inline-block" viewBox="0 0 64 16" aria-hidden="true">
+          <defs><linearGradient id="kg" x1="0" x2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".25"/><stop offset="1" stop-color="var(--accent)"/></linearGradient></defs>
+          <path d="M3,8 L50,8" stroke="url(#kg)" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M48,2.5 L61,8 L48,13.5 Z" fill="var(--accent)"/></svg>gives → receives, thicker = more extra points</span>
         <button type="button" class="help" aria-label="About the map" aria-controls="h-keys" aria-expanded="false">?</button>
       </div>
     </div>
@@ -152,19 +164,13 @@ footer{font-size:13px;color:var(--muted);max-width:84ch;border-top:1px solid var
         <div class="lbl" id="low-h" style="margin-top:6px">Least keen</div>
         <ol class="rank low" id="low"></ol>
       </div>
+      <div class="card" id="bondcard">
+        <div class="lbl">Strongest bonds <span id="fr-yrs" style="text-transform:none;letter-spacing:0"></span></div>
+        <ol class="rank blist" id="bondlist"></ol>
+      </div>
     </aside>
   </section>
 
-  <section class="stage" id="friends">
-    <div class="stage-head">
-      <div class="ttl"><h2>Strongest friendships <span class="yr" id="fr-yrs">1957–2023</span></h2><button type="button" class="help" aria-label="How to read the friendships" aria-controls="h-friends" aria-expanded="false">?</button></div>
-      <div class="fr-ctl">
-        <div class="seg" id="frmode" role="group" aria-label="Which pairs"><button type="button" data-m="all" aria-pressed="true">All of Europe</button><button type="button" data-m="focus" id="fr-focus" aria-pressed="false">With Cyprus</button></div>
-        <div class="ctl"><label for="bonds">Pairs: <span id="bonds-v" class="mono" style="color:var(--fg)">8</span></label><input type="range" id="bonds" min="3" max="20" step="1" value="8"></div>
-      </div>
-    </div>
-    <div class="scroll"><svg id="friends-svg" role="img" aria-label="Butterfly chart of the strongest two-way friendships" style="min-width:600px"></svg></div>
-  </section>
 
 </div>
 <div class="tip" id="tip" hidden></div>
@@ -189,10 +195,10 @@ footer{font-size:13px;color:var(--muted);max-width:84ch;border-top:1px solid var
   <p>Micro-states (Andorra, Monaco, San Marino, Malta, Luxembourg) are drawn as dots.</p>
   <p>Australia, Yugoslavia and Serbia &amp; Montenegro sit in the boxes on the left. Grey countries never took part. Hover any country for its exact value.</p>
 </div>
-<div class="help-pop" id="h-friends" role="tooltip" hidden>
-  <p>Each row is a pair of countries, ranked by how much they favour each other on average.</p>
-  <p>Each bar is what <b>that side's country gives the other</b>. Equal bars mean a mutual friendship; one long and one short bar mean it is one-sided.</p>
-  <p>Hover a row to find the two countries on the map, click it to select one. <b>With …</b> shows only pairs that include the selected country.</p>
+<div class="help-pop" id="h-bonds" role="tooltip" hidden>
+  <p>The teal lines join the pairs of countries that favour <b>each other</b> most, ranked by the average of both directions.</p>
+  <p>Each pair has <b>two lines, one per direction</b>. A line starts faint at the country giving the points and ends in an arrow at the country receiving them. Its <b>thickness</b> is how many extra points flow that way, so the strongest friendships are the thickest, and a one-sided friendship has one thick and one thin line.</p>
+  <p>Hover a line or a name in the list to pick out one pair. <b>With …</b> shows only the selected country's strongest bonds. Slide to 0 to hide the lines.</p>
 </div>
 
 <script src="js/d3.min.js"></script>
@@ -233,7 +239,7 @@ function detectCountry(){
   if(fromTz && fromLang && (merged[fromTz]||[]).includes(fromLang)) return fromLang;
   return fromTz || fromLang || 'cy';
 }
-const st = {focus:detectCountry(), dir:'in', y0:1957, y1:2023, bonds:8, fmode:'all'};
+const st = {focus:detectCountry(), dir:'in', y0:1957, y1:2023, bonds:6, fmode:'all'};
 const POS = {};
 const IDS_UP = id => id.toUpperCase();
 const f1 = d3.format('+.1f');
@@ -334,12 +340,15 @@ function friendPairs(){
     out.push(p); });
   return out.sort((x,y)=>y.w-x.w).slice(0,st.bonds);
 }
-// outline two countries on the map and fade the rest (used when hovering a friendship row)
-function highlight(ids){
+// pick out one pair: dim the other bond lines and outline the two countries
+function highlight(pair){
+  const svg = d3.select('#map');
+  svg.classed('bonds-dim', !!pair);
+  svg.selectAll('.bond').classed('on', d=> !!pair && d.a===pair.a && d.b===pair.b);
+  d3.selectAll('#bondlist li').classed('on', function(){ return !!pair && this.dataset.k===pair.a+'>'+pair.b; });
   d3.selectAll('#map [data-c]').each(function(){
-    const on = ids && ids.includes(this.getAttribute('data-c')), el=d3.select(this);
-    el.attr('stroke', on ? css('--fg') : this.dataset.s0).attr('stroke-width', on ? 2.6 : this.dataset.w0).attr('opacity', ids && !on ? .3 : 1);
-    if(on && this.tagName==='path') el.raise();
+    const on = pair && (this.getAttribute('data-c')===pair.a || this.getAttribute('data-c')===pair.b);
+    d3.select(this).attr('stroke', on ? css('--fg') : this.dataset.s0).attr('stroke-width', on ? 2.2 : this.dataset.w0);
   });
 }
 
@@ -379,13 +388,15 @@ function render(){
 
   part.forEach(f=>POS[f.properties.c]=f.a);
   Object.entries(DOT).forEach(([c,ll])=>POS[c]=proj(ll));
-  // labels: country codes
+  // labels: country codes (moved just below the dot for countries that have a bond line)
+  const B = st.bonds ? friendPairs() : [];
+  const inBond = new Set(B.flatMap(d=>[d.a,d.b]));
   const lab = g.append('g').attr('pointer-events','none');
   part.filter(f=>f.big).forEach(f=>{
     const c=f.properties.c, v=valFor(c), [x,y]=f.a;
     const ink = c===F ? css('--bg') : (v ? inkOn(v.f) : css('--muted'));
     const small = areaPx(f) < 2200;
-    lab.append('text').attr('x',x).attr('y',y+4).attr('text-anchor','middle').attr('font-size',small?9:11).attr('font-weight',600).attr('fill',ink).text(c.toUpperCase());
+    lab.append('text').attr('x',x).attr('y',inBond.has(c)?y+16:y+4).attr('text-anchor','middle').attr('font-size',small?9:11).attr('font-weight',600).attr('fill',ink).text(c.toUpperCase());
   });
 
   // Atlantic boxes: historical + Australia
@@ -422,42 +433,62 @@ function render(){
   document.getElementById('top').innerHTML = all.length ? all.slice(0,5).map(li).join('') : empty;
   document.getElementById('low').innerHTML = all.length ? all.slice(-3).reverse().map(li).join('') : empty;
 
-  renderFriends();
+  renderBonds(svg, B);
 }
 
-// ---------- friendships butterfly chart
-function renderFriends(){
-  const P = friendPairs(), F = st.focus;
-  document.getElementById('fr-yrs').textContent = yrsText();
+// ---------- bond lines
+// One curved line per direction. Width = favoritism that way (thicker = stronger friendship); the line
+// fades in from the giver and ends in an arrowhead at the receiver. The two directions of a pair bow to
+// opposite sides, with a minimum bend so neighbours stay readable. Teal is outside the red/blue scale.
+function renderBonds(svg, B){
+  const F = st.focus;
   document.getElementById('fr-focus').textContent = 'With ' + name(F);
-  const W2=900, rh=30, top=40, n=Math.max(P.length,1), H2=top+n*rh+6, cx=W2/2, bmax=240;
-  const svg = d3.select('#friends-svg').attr('viewBox',`0 0 ${W2} ${H2}`); svg.selectAll('*').remove();
-  const s = d3.scaleLinear([0,13],[0,bmax]).clamp(true);
-  const mut = css('--muted');
-  svg.append('text').attr('x',cx-10).attr('y',12).attr('text-anchor','end').attr('font-size',11).attr('fill',mut).text('left country gives');
-  svg.append('text').attr('x',cx+10).attr('y',12).attr('font-size',11).attr('fill',mut).text('right country gives');
-  [0,5,10].forEach(v=>[-1,1].forEach(sg=>{
-    if(v===0 && sg>0) return;
-    const x = cx + sg*(2+s(v));
-    svg.append('line').attr('x1',x).attr('x2',x).attr('y1',top-8).attr('y2',H2-4).attr('stroke',v?css('--line'):css('--line-strong')).attr('stroke-dasharray',v?'3 3':null);
-    if(v) svg.append('text').attr('x',x).attr('y',top-12).attr('text-anchor','middle').attr('font-size',10.5).style('font-family','var(--mono)').attr('fill',mut).text('+'+v);
-  }));
-  if(!P.length){ svg.append('text').attr('x',cx).attr('y',top+18).attr('text-anchor','middle').attr('font-size',13).attr('fill',mut).text('No pairs with enough shared finals in these years'); return; }
-  const tipP = d => `<b>${name(d.a)} ⇄ ${name(d.b)}</b><br><span class="m">${name(d.a)} → ${f1(d.ab)}</span><br><span class="m">${name(d.b)} → ${f1(d.ba)}</span><br><span class="m">average ${f1(d.w)}</span>`;
-  const rows = svg.append('g').selectAll('g').data(P).join('g').attr('class','row-hit').attr('transform',(d,i)=>`translate(0,${top+i*rh})`)
-    .on('mouseenter',(e,d)=>highlight([d.a,d.b])).on('mousemove',(e,d)=>showTip(e,tipP(d)))
-    .on('mouseleave',()=>{ highlight(null); hideTip(); })
-    .on('click',(e,d)=>setFocus(st.fmode==='focus' ? d.b : d.a));
-  rows.append('rect').attr('x',0).attr('width',W2).attr('height',rh).attr('fill','transparent');
-  rows.append('rect').attr('x',d=>cx-2-s(Math.abs(d.ab))).attr('y',6).attr('height',rh-12).attr('width',d=>s(Math.abs(d.ab))).attr('rx',3).attr('fill',d=>div(d.ab));
-  rows.append('rect').attr('x',cx+2).attr('y',6).attr('height',rh-12).attr('width',d=>s(Math.abs(d.ba))).attr('rx',3).attr('fill',d=>div(d.ba));
-  const ink=css('--fg');
-  const lt = rows.append('text').attr('x',d=>cx-2-s(Math.abs(d.ab))-8).attr('y',rh/2+4.5).attr('text-anchor','end').attr('font-size',13).attr('fill',ink);
-  lt.append('tspan').attr('font-weight',d=>d.a===F?700:500).text(d=>name(d.a));
-  lt.append('tspan').attr('dx',7).style('font-family','var(--mono)').attr('font-size',11.5).attr('fill',mut).text(d=>f1(d.ab));
-  const rt = rows.append('text').attr('x',d=>cx+2+s(Math.abs(d.ba))+8).attr('y',rh/2+4.5).attr('font-size',13).attr('fill',ink);
-  rt.append('tspan').style('font-family','var(--mono)').attr('font-size',11.5).attr('fill',mut).text(d=>f1(d.ba));
-  rt.append('tspan').attr('dx',7).attr('font-weight',d=>d.b===F?700:500).text(d=>name(d.b));
+  document.getElementById('fr-yrs').textContent = '· ' + yrsText();
+  document.getElementById('bondcard').hidden = !st.bonds;
+  document.getElementById('bondkey').hidden = !st.bonds;
+  document.getElementById('bondlist').innerHTML = B.map(d=>`<li data-k="${d.a}>${d.b}"><button type="button" data-id="${d.a}">${name(d.a)} ⇄ ${name(d.b)}</button><span class="pill" style="background:${div(d.w)};color:${inkOn(d.w)}">${f1(d.w)}</span>
+    <div class="dirs"><span>${d.a.toUpperCase()} → ${f1(d.ab)}</span><span>${d.b.toUpperCase()} → ${f1(d.ba)}</span></div></li>`).join('') || '<li><span style="color:var(--muted)">No pairs in these years</span><span></span></li>';
+  if(!B.length) return;
+  const acc = css('--accent'), halo = css('--surface');
+  const wOf = v => 1.5 + Math.max(0, Math.min(v,13))/13*7;      // 1.5 px … 8.5 px
+  const defs = svg.select('defs');
+  const layer = svg.append('g').attr('class','bond-layer');
+  const tipB = d => `<b>${name(d.a)} ⇄ ${name(d.b)}</b><br><span class="m">${name(d.a)} → ${f1(d.ab)}</span><br><span class="m">${name(d.b)} → ${f1(d.ba)}</span>`;
+  // geometry of one direction: quadratic curve from P to Q bowing to the right of travel
+  const arc = (P, Q) => {
+    const dx=Q[0]-P[0], dy=Q[1]-P[1], len=Math.hypot(dx,dy)||1, nx=-dy/len, ny=dx/len;
+    const k = Math.max(19, Math.min(42, len*.2));
+    const C = [(P[0]+Q[0])/2+nx*k, (P[1]+Q[1])/2+ny*k];
+    const at = t => { const u=1-t; return [u*u*P[0]+2*u*t*C[0]+t*t*Q[0], u*u*P[1]+2*u*t*C[1]+t*t*Q[1]]; };
+    const tan = t => { const u=1-t, x=2*u*(C[0]-P[0])+2*t*(Q[0]-C[0]), y=2*u*(C[1]-P[1])+2*t*(Q[1]-C[1]), l=Math.hypot(x,y)||1; return [x/l,y/l]; };
+    return {len, at, tan};
+  };
+  let gid = 0;
+  [...B].reverse().forEach(d=>{
+    const p=POS[d.a], q=POS[d.b]; if(!p||!q) return;
+    const g = layer.append('g').datum(d).attr('class','bond')
+      .on('mouseenter',()=>highlight(d)).on('mousemove',e=>showTip(e,tipB(d))).on('mouseleave',()=>{ highlight(null); hideTip(); })
+      .on('click',()=>setFocus(d.a===F ? d.b : d.a));
+    [[p,q,d.ab],[q,p,d.ba]].forEach(([P,Q,v])=>{
+      const a = arc(P,Q), w = wOf(v), head = Math.min(4 + w*1.1, 3 + a.len*.16);
+      const t0 = Math.min(.3, 7/a.len), t1 = 1 - Math.min(.35, (7+head)/a.len);   // stop short of the dots, leave room for the arrow
+      const pts = d3.range(0,1.0001,1/24).map(s=>a.at(t0+(t1-t0)*s));
+      const id = 'bg'+(gid++), s0=pts[0], s1=pts[pts.length-1];
+      const lg = defs.append('linearGradient').attr('id',id).attr('gradientUnits','userSpaceOnUse').attr('x1',s0[0]).attr('y1',s0[1]).attr('x2',s1[0]).attr('y2',s1[1]);
+      lg.append('stop').attr('offset',0).attr('stop-color',acc).attr('stop-opacity',.22);
+      lg.append('stop').attr('offset',1).attr('stop-color',acc).attr('stop-opacity',1);
+      const line = d3.line().curve(d3.curveBasis)(pts);
+      g.append('path').attr('d',line).attr('fill','none').attr('stroke',halo).attr('stroke-opacity',.85).attr('stroke-width',w+3).attr('stroke-linecap','round');
+      g.append('path').attr('d',line).attr('fill','none').attr('stroke',`url(#${id})`).attr('stroke-width',w).attr('stroke-linecap','round');
+      // arrowhead along the curve's direction at the end
+      const tp = a.tan(t1), e = s1, tip=[e[0]+tp[0]*head, e[1]+tp[1]*head], hw = head*.62;
+      g.append('path').attr('d',`M${tip[0]},${tip[1]}L${e[0]-tp[1]*hw},${e[1]+tp[0]*hw}L${e[0]+tp[1]*hw},${e[1]-tp[0]*hw}Z`)
+        .attr('fill',acc).attr('stroke',halo).attr('stroke-width',1).attr('stroke-linejoin','round');
+      // wide invisible hit area
+      g.append('path').attr('d',line).attr('fill','none').attr('stroke','transparent').attr('stroke-width',Math.max(12,w+8));
+    });
+    [p,q].forEach(e=>g.append('circle').attr('cx',e[0]).attr('cy',e[1]).attr('r',3).attr('fill',halo).attr('stroke',acc).attr('stroke-width',1.6));
+  });
 }
 
 function setFocus(id){ st.focus=id; document.getElementById('focus').value=id; render(); }
@@ -488,10 +519,13 @@ y0.oninput = ()=>onYears('y0'); y1.oninput = ()=>onYears('y1');
 document.getElementById('presets').addEventListener('click',e=>{ const b=e.target.closest('button[data-r]'); if(!b) return;
   [st.y0,st.y1] = b.dataset.r.split('-').map(Number); syncYears(); render(); });
 syncYears();
-document.getElementById('bonds').oninput = e=>{ st.bonds=+e.target.value; document.getElementById('bonds-v').textContent=st.bonds; hideTip(); renderFriends(); };
-document.querySelectorAll('#frmode button').forEach(b=>b.onclick=()=>{ st.fmode=b.dataset.m; document.querySelectorAll('#frmode button').forEach(x=>x.setAttribute('aria-pressed',x===b)); renderFriends(); });
+document.getElementById('bonds').oninput = e=>{ st.bonds=+e.target.value; document.getElementById('bonds-v').textContent=st.bonds; render(); };
+document.querySelectorAll('#frmode button').forEach(b=>b.onclick=()=>{ st.fmode=b.dataset.m; document.querySelectorAll('#frmode button').forEach(x=>x.setAttribute('aria-pressed',x===b)); render(); });
 addEventListener('hashchange',()=>{ const h=location.hash.slice(1).toLowerCase(); if(C.has(h)) setFocus(h); });
 document.querySelectorAll('#dir button').forEach(b=>b.onclick=()=>{ st.dir=b.dataset.d; document.querySelectorAll('#dir button').forEach(x=>x.setAttribute('aria-pressed',x===b)); render(); });
+const bl = document.getElementById('bondlist');
+bl.addEventListener('mouseover',e=>{ const li=e.target.closest('li[data-k]'); if(!li) return; const [a,b]=li.dataset.k.split('>'); highlight({a,b}); });
+bl.addEventListener('mouseleave',()=>highlight(null));
 document.querySelector('aside').addEventListener('click',e=>{ const b=e.target.closest('button[data-id]'); if(b) setFocus(b.dataset.id); });
 function retheme(){ makeScale(); render(); }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',retheme);
