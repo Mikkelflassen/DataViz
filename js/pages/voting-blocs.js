@@ -1,6 +1,7 @@
 // Voting blocs: which countries keep giving each other more points than expected?
 //
-// Two linked views of the same grouping: a matrix sorted by the clustering, and the map.
+// Two linked views of the same blocs: a matrix sorted by the clustering, and the map.
+// Only strong blocs are marked. Countries that favour nobody in particular stay unmarked.
 /* global d3 */
 
 import { startPage, onThemeChange } from '../shared/page.js';
@@ -13,17 +14,17 @@ import { clusterBySimilarity } from '../analysis/cluster.js';
 
 const $ = id => document.getElementById(id);
 
-// Each region has a colour it gets first, so "the Nordic group" stays blue when the slider moves.
+// Each region has a colour it gets first, so "the Nordic bloc" keeps its colour when the slider moves.
 const REGION_SLOT = { Nordic: 1, Balkan: 2, 'Ex-Soviet': 3, Southern: 4, Western: 5, Central: 6 };
-const SLOTS = 8;
-const DARK_INK_SLOTS = new Set([4, 5]);   // yellow and pink need dark text
+const MAX_BLOCS = 8;                            // one per colour in css/site.css
+const DARK_INK_SLOTS = new Set([2, 4, 5, 8]);   // amber, green, pink and olive need dark text
 
 startPage(async () => {
   const [countries, votes, topology] = await Promise.all([loadCountries(), loadVotes(), d3.json('data/europe.topo.json')]);
   const byId = new Map(countries.map(c => [c.id, c]));
   const nameOf = id => byId.get(id).name;
 
-  const state = { from: FIRST_YEAR, to: LAST_YEAR, groups: 6 };
+  const state = { from: FIRST_YEAR, to: LAST_YEAR, threshold: 2.5 };   // threshold: points of mutual favoritism a bloc needs
   const tooltip = createTooltip();
   let colour = createFavoritismScale();
   let model = null;   // the current clustering, see analyse()
@@ -53,20 +54,28 @@ startPage(async () => {
     return { ids, fav, mutual, tree, included: new Set(ids) };
   }
 
-  /** Split the tree into the chosen number of blocs and describe each one. */
+  /**
+   * The blocs for the current threshold. Most countries end up in none, which is fine:
+   * they vote differently from year to year. If more blocs clear the threshold than there
+   * are colours, the strongest ones are kept.
+   */
   function describeBlocs() {
-    const { tree, fav, ids } = model;
-    const used = new Set();
-    const blocs = tree.cut(Math.min(state.groups, ids.length)).map(members => {
+    const { tree, fav } = model;
+    const all = tree.strongGroups(state.threshold).map(members => {
       const regions = d3.rollups(members, group => group.length, id => byId.get(id).region).sort((a, b) => b[1] - a[1]);
       const inside = d3.mean(d3.cross(members, members).filter(([a, b]) => a !== b && fav(a, b)), ([a, b]) => fav(a, b).fav);
-      return { members, regions, inside, set: new Set(members) };
+      // what a member gets from the rest of its bloc in one final: bigger blocs and closer blocs both count
+      return { members, regions, inside, pull: inside * (members.length - 1), set: new Set(members) };
     });
+    const kept = new Set(d3.sort(all, b => -b.pull).slice(0, MAX_BLOCS));
+    const blocs = all.filter(b => kept.has(b));
+    hiddenBlocs = all.length - blocs.length;
 
-    // colours: biggest groups choose first, each takes its main region's colour if it is still free
+    // colours: biggest blocs choose first, each takes its main region's colour if it is still free
+    const used = new Set();
     for (const bloc of d3.sort(blocs, b => -b.members.length)) {
       const preferred = bloc.regions.map(([region]) => REGION_SLOT[region]);
-      bloc.slot = [...preferred, ...d3.range(1, SLOTS + 1)].find(slot => !used.has(slot));
+      bloc.slot = [...preferred, ...d3.range(1, MAX_BLOCS + 1)].find(slot => !used.has(slot));
       used.add(bloc.slot);
     }
     blocs.forEach((bloc, i) => {
@@ -96,10 +105,11 @@ startPage(async () => {
   });
 
   let blocs = [];
+  let hiddenBlocs = 0;   // blocs that cleared the threshold but were left out because of MAX_BLOCS
   const blocOf = id => blocs.find(b => b.set.has(id));
   const countryTip = id => {
     const bloc = blocOf(id);
-    return `<b>${nameOf(id)}</b><br><span class="m">${bloc ? `group ${bloc.letter}: ${bloc.name}` : 'too few shared finals in these years'}</span>`;
+    return `<b>${nameOf(id)}</b><br><span class="m">${bloc ? `bloc ${bloc.letter}: ${bloc.name}` : model.included.has(id) ? 'in no bloc' : 'too few shared finals in these years'}</span>`;
   };
 
   // ---------- the matrix
@@ -108,16 +118,33 @@ startPage(async () => {
 
   function renderMatrix() {
     const { tree, fav } = model;
-    const order = tree.order, n = order.length;
-    const cell = (SIZE - LEFT - 6 - GAP * (blocs.length - 1)) / n;
+    // Display order: the tree's order, with the members of a bloc pulled together where its
+    // first member stands. Countries in no bloc keep their place between the blocs.
+    const segments = [];        // runs of loose countries and whole blocs, in display order
+    const placed = new Set();
+    for (const id of tree.order) {
+      if (placed.has(id)) continue;
+      const bloc = blocOf(id);
+      if (bloc) {
+        segments.push({ ids: bloc.members, bloc });
+        bloc.members.forEach(member => placed.add(member));
+      } else {
+        if (!segments.length || segments.at(-1).bloc) segments.push({ ids: [] });
+        segments.at(-1).ids.push(id);
+        placed.add(id);
+      }
+    }
+    const order = segments.flatMap(segment => segment.ids);
+    const n = order.length;
+    const cell = (SIZE - LEFT - 6 - GAP * (segments.length - 1)) / n;
 
-    // position of each country along the axis, with a small gap between groups
+    // position of each country along the axis, with a small gap around every bloc
     const offset = new Map();
     let cursor = 0;
-    blocs.forEach(bloc => {
-      bloc.start = cursor;
-      bloc.members.forEach(id => { offset.set(id, cursor); cursor += cell; });
-      bloc.size = cursor - bloc.start;
+    segments.forEach(segment => {
+      if (segment.bloc) segment.bloc.start = cursor;
+      segment.ids.forEach(id => { offset.set(id, cursor); cursor += cell; });
+      if (segment.bloc) segment.bloc.size = cursor - segment.bloc.start;
       cursor += GAP;
     });
     const height = TOP + cursor - GAP + 8;
@@ -192,29 +219,32 @@ startPage(async () => {
     d3.selectAll('#blocs li').classed('is-on', b => b === bloc);
     map.spotlight(bloc ? bloc.set : null);
   }
-  const focusCountry = id => focusBloc(blocOf(id) ?? null);
+  const focusCountry = id => focusBloc(blocOf(id) ?? null);   // a country in no bloc puts nothing in focus
 
   // ---------- the list of groups and the headline numbers
 
   function renderList() {
-    d3.select('#blocs').selectAll('li').data(blocs).join('li')
-      .html(b => `
+    d3.select('#blocs').selectAll('li').data(blocs.length ? blocs : [null]).join('li')
+      .html(b => (!b ? '<span></span><span class="members">No blocs at this strength.</span>' : `
         <span class="badge" style="background:${b.colour};color:${b.ink}">${b.letter}</span>
         <span class="name">${b.name}</span>
         ${b.inside == null ? '<span></span>' : `<span class="inside" style="background:${colour(b.inside)};color:${colour.ink(b.inside)}" title="Average favoritism between members">${signed(b.inside)}</span>`}
-        <span class="members">${b.members.map(id => `<a href="index.html#${id}">${nameOf(id)}</a>`).join(', ')}</span>`)
-      .on('mouseenter', (e, b) => focusBloc(b))
+        <span class="members">${b.members.map(id => `<a href="index.html#${id}">${nameOf(id)}</a>`).join(', ')}</span>`))
+      .on('mouseenter', (e, b) => focusBloc(b ?? null))
       .on('mouseleave', () => focusBloc(null));
   }
 
   function renderVerdict() {
     const { ids, fav } = model;
     const pairs = d3.cross(ids, ids).filter(([a, b]) => a !== b && fav(a, b));
-    const sameBloc = ([a, b]) => blocOf(a) === blocOf(b);
+    const sameBloc = ([a, b]) => blocOf(a) && blocOf(a) === blocOf(b);
     const within = d3.mean(pairs.filter(sameBloc), ([a, b]) => fav(a, b).fav);
-    const across = d3.mean(pairs.filter(p => !sameBloc(p)), ([a, b]) => fav(a, b).fav);
-    $('verdict').innerHTML = within == null || across == null ? '' :
-      `Inside a group a country gets <b>${signed(within)} points</b> compared with what was expected. From countries outside its group it gets <b>${signed(across)}</b>.`;
+    const others = d3.mean(pairs.filter(p => !sameBloc(p)), ([a, b]) => fav(a, b).fav);
+    const members = d3.sum(blocs, b => b.members.length);
+    $('verdict').innerHTML = !blocs.length
+      ? 'No group of countries favours each other this strongly in these years. Lower the bar to see the weaker blocs.'
+      : `<b>${members} of ${ids.length}</b> countries are in a bloc. Inside a bloc a country gets <b>${signed(within)} points</b> more than expected; all other pairs average ${signed(others)}.` +
+        (hiddenBlocs ? ` ${hiddenBlocs} weaker bloc${hiddenBlocs > 1 ? 's are' : ' is'} not shown.` : '');
   }
 
   // ---------- wiring
@@ -224,20 +254,20 @@ startPage(async () => {
     if (reanalyse) model = analyse();
     blocs = describeBlocs();
     $('matrix-years').textContent = yearsLabel(state.from, state.to);
-    $('groups').max = Math.min(SLOTS, model.ids.length);
     renderMatrix();
     renderList();
     renderVerdict();
     map.paint({
-      fill: id => blocOf(id)?.colour ?? null,
+      fill: id => blocOf(id)?.colour ?? (model.included.has(id) ? 'var(--no-bloc)' : null),
       ink: id => blocOf(id)?.ink ?? 'var(--muted)',
     });
+    map.relabel(id => blocOf(id)?.letter ?? '', 22);   // the letter says which bloc, so colour is not the only cue
   }
 
-  $('groups').addEventListener('input', e => {
-    state.groups = +e.target.value;
-    $('groups-value').textContent = state.groups;
-    render({ reanalyse: false });   // same tree, cut somewhere else
+  $('strength').addEventListener('input', e => {
+    state.threshold = +e.target.value;
+    $('strength-value').textContent = `+${state.threshold.toFixed(1)}`;
+    render({ reanalyse: false });   // same tree, read at another threshold
   });
 
   const markPreset = wirePresets($('presets'), (from, to) => { slider.set(from, to); setYears(from, to); });

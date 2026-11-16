@@ -121,14 +121,16 @@ startPage(async () => {
   }
 
   // Which dots get a name.
-  //  1. Outliers and the selected country always do (bold), with a leader line if the name
-  //     has to sit further away.
+  //  1. Outliers and the selected country (bold). The name goes beside the dot, or further out
+  //     on a leader line when the dot is crowded.
   //  2. Any other dot gets a grey name when that is free: it is clear of the diagonal, no
-  //     other dot is close, and the name fits right beside it. In the crowded middle nothing
-  //     is added, because names there would cover dots.
+  //     other dot is close, and the name fits right beside it.
+  // In both cases the name must stay well away from every other dot, so there is no doubt
+  // which dot it belongs to. If that can't be done the dot stays unnamed (see label-placement.js).
   function renderLabels(dots, floor) {
     const CLEAR_OF_DIAGONAL = 24;   // px, measured at right angles to the line
     const NO_NEIGHBOUR_WITHIN = 30; // px between dot centres
+    const BESIDE = RADIUS + 4, FURTHER_OUT = [RADIUS + 20, RADIUS + 36, RADIUS + 54];
     const fromDiagonal = d => Math.abs((d.x - MARGIN.left) - (floor - d.y)) / Math.SQRT2;
     // a name may not sit across the diagonal either
     const onDiagonal = box => {
@@ -143,28 +145,30 @@ startPage(async () => {
     const meanGap = d3.mean(dots, d => d.gap), sdGap = d3.deviation(dots, d => d.gap) || 1;
     const isOutlier = d => Math.abs(d.gap - meanGap) / sdGap > OUTLIER_SD;
     const isFocus = d => d.id === state.focus;
+    const fontFor = (d, strong) => ({ size: isFocus(d) ? 13 : strong ? 12.5 : 11.5, weight: isFocus(d) ? 700 : strong ? 600 : 400 });
 
+    const placed = [];
     const required = dots.filter(d => isFocus(d) || isOutlier(d))
       .sort((a, b) => isFocus(b) - isFocus(a) || Math.abs(b.gap - meanGap) - Math.abs(a.gap - meanGap));
-    const placed = required.map(d => ({ d, strong: true, spot: placer.place(d, nameOf(d.id), isFocus(d) ? 13 : 12.5, [RADIUS + 5, RADIUS + 18, RADIUS + 34, RADIUS + 52], true) }));
+    for (const d of required) {
+      const spot = placer.place(d, nameOf(d.id), fontFor(d, true), [BESIDE, ...FURTHER_OUT], 7);
+      if (spot) placed.push({ d, strong: true, spot });
+    }
 
     const optional = dots.filter(d => !required.includes(d) && fromDiagonal(d) >= CLEAR_OF_DIAGONAL &&
       !dots.some(o => o !== d && Math.hypot(o.x - d.x, o.y - d.y) < NO_NEIGHBOUR_WITHIN))
       .sort((a, b) => fromDiagonal(b) - fromDiagonal(a));
     for (const d of optional) {
-      const text = nameOf(d.id);
-      // try right beside the dot only, and skip spots that would cross the diagonal
-      const spot = placer.place(d, text, 11.5, [RADIUS + 4], false, 4);
+      const spot = placer.place(d, nameOf(d.id), fontFor(d, false), [BESIDE], 10);
       if (spot && !onDiagonal(spot.box)) placed.push({ d, strong: false, spot });
     }
 
     layer.leaders.selectAll('line').data(placed.filter(p => p.spot.leaderEnd), p => p.d.id).join('line')
       .attr('x1', p => p.d.x).attr('y1', p => p.d.y).attr('x2', p => p.spot.leaderEnd[0]).attr('y2', p => p.spot.leaderEnd[1])
-      .attr('stroke', 'var(--fg-2)').attr('stroke-width', 0.8);
+      .attr('stroke', 'var(--fg-2)').attr('stroke-width', 1);
     layer.labels.selectAll('text').data(placed, p => p.d.id).join('text').attr('class', 'plot-label')
       .attr('x', p => p.spot.x).attr('y', p => p.spot.y).attr('text-anchor', p => p.spot.anchor)
-      .attr('font-size', p => (isFocus(p.d) ? 13 : p.strong ? 12.5 : 11.5))
-      .attr('font-weight', p => (isFocus(p.d) ? 700 : p.strong ? 600 : 400))
+      .attr('font-size', p => fontFor(p.d, p.strong).size).attr('font-weight', p => fontFor(p.d, p.strong).weight)
       .attr('fill', p => (p.strong ? 'var(--fg)' : 'var(--muted)'))
       .text(p => nameOf(p.d.id));
     // names appear once the dots have arrived

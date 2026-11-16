@@ -13,7 +13,7 @@ const REFORMS = { 1975: '12-point system', 1998: 'Televoting', 2004: 'Semi-final
 startPage(async () => {
   const [data, systems] = await Promise.all([d3.json('data/bias-over-time.json'), d3.json('data/voting-systems.json')]);
   const tooltip = createTooltip();
-  const state = { scale: 'raw', system: null, pinned: false };
+  const state = { scale: 'raw' };
 
   // ---------- pieces the three charts share
 
@@ -86,14 +86,13 @@ startPage(async () => {
     });
 
     // The strip: one block per voting system, as tall as the points a country handed out.
-    // Each block is a button: hover, focus or tap shows the rules below the chart.
+    // Hovering a block (or focusing it with the keyboard) pops up a short note on its rules.
     const height = d3.scaleLinear([0, 120], [0, stripHeight]).clamp(true);
     const points = s => Math.round(d3.mean(yearsIn(s), d => d.ppv));
     svg.append('text').attr('class', 'note').attr('x', M.left).attr('y', stripTop - 8).text('points each country hands out, by voting system');
     const blocks = svg.append('g').selectAll('g').data(systems).join('g')
-      .attr('class', 'system').attr('tabindex', 0).attr('role', 'button')
-      .attr('aria-label', s => `${systemLabel(s)}: ${s.title}, ${points(s)} points per country`)
-      .classed('is-on', s => s === state.system);
+      .attr('class', 'system').attr('tabindex', 0)
+      .attr('aria-label', s => `${systemLabel(s)}: ${s.title}, ${points(s)} points per country`);
     blocks.append('rect').attr('x', s => x(s.from)).attr('width', s => x(s.to + 1) - x(s.from)).attr('y', stripTop - 14).attr('height', stripHeight + 14).attr('fill', 'transparent');   // easy to hit, even for the 6-point year
     blocks.append('rect').attr('class', 'block').attr('x', s => x(s.from)).attr('width', s => x(s.to + 1) - x(s.from))
       .attr('y', s => stripBottom - height(points(s))).attr('height', s => height(points(s)));
@@ -103,50 +102,34 @@ startPage(async () => {
       .attr('x', s => (x(s.from) + x(s.to + 1)) / 2).attr('y', s => Math.min(stripBottom - 6, stripBottom - height(points(s)) + 15))
       .text(s => (points(s) > 80 ? `≈${points(s)}` : points(s)));
 
-    function show(system) {
-      state.system = system;
+    function show(system, block) {
       blocks.classed('is-on', s => s === system);
       band.attr('visibility', system ? 'visible' : 'hidden');
       if (system) band.attr('x', x(system.from)).attr('width', x(system.to + 1) - x(system.from));
-      describe(system);
+      describe(system, block);
     }
+    // the note is there while the pointer (or keyboard focus, or a finger) is on the block, and gone after
     blocks
-      .on('mouseenter focus', (e, s) => { if (!state.pinned) show(s); })
-      .on('mouseleave blur', () => { if (!state.pinned) show(null); })
-      .on('click', (e, s) => {                       // a click or tap keeps it open; the same one again lets go
-        state.pinned = !(state.pinned && state.system === s);
-        show(state.pinned ? s : null);
-      })
-      .on('keydown', (e, s) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); state.pinned = true; show(s); }
-        if (e.key === 'Escape') { state.pinned = false; show(null); }
-      });
-    if (state.system) show(state.system);
+      .on('mouseenter focus touchstart', function (e, s) { show(s, this); })
+      .on('mouseleave blur touchend', () => show(null));
 
     yearLabels(svg, x, H - 4, DECADES);
     $('raw-title').textContent = key === 'raw' ? 'Raw favoritism jumps when the points change' : 'On the same scale, favoritism is flat';
   }
 
-  // The text under chart 1 for one voting system.
-  function describe(system) {
-    const box = d3.select('#period');
-    if (!system) {
-      box.html('<p class="period-hint">Hover or tap a period in the strip under the chart to see which voting rules applied and what they did to the curve.</p>');
-      return;
-    }
+  // The small note for one voting system. It sits just above the block it belongs to.
+  function describe(system, block) {
+    const pop = $('system-pop');
+    if (!system) { pop.hidden = true; return; }
     const rows = yearsIn(system);
-    box.html(`
-      <div>
-        <h3><span>${systemLabel(system)}</span>${system.title}</h3>
-        <p><b>What happened.</b> ${system.rules}</p>
-        <p><b>Why the curve moves.</b> ${system.effect}</p>
-      </div>
-      <dl>
-        <dt>Points per country</dt><dd>${Math.round(d3.mean(rows, d => d.ppv))}</dd>
-        <dt>Raw favoritism</dt><dd>${d3.mean(rows, d => d.raw).toFixed(2)}</dd>
-        <dt>On the same scale</dt><dd>${d3.mean(rows, d => d.z).toFixed(2)}</dd>
-        <dt>Contests</dt><dd>${rows.length}</dd>
-      </dl>`);
+    pop.innerHTML = `<b>${systemLabel(system)} · ${system.title}</b><p>${system.rules}</p><p>${system.effect}</p>` +
+      `<span class="m">${Math.round(d3.mean(rows, d => d.ppv))} pts per country · raw ${d3.mean(rows, d => d.raw).toFixed(2)} · same scale ${d3.mean(rows, d => d.z).toFixed(2)}</span>`;
+    pop.hidden = false;
+    const at = block.getBoundingClientRect(), size = pop.getBoundingClientRect();
+    const left = Math.max(8, Math.min(at.left + at.width / 2 - size.width / 2, innerWidth - size.width - 8));
+    const above = at.top - size.height - 8;
+    pop.style.left = `${left}px`;
+    pop.style.top = `${above > 8 ? above : at.bottom + 8}px`;
   }
 
   // ---------- chart 2: do countries vote the way they did in the previous five contests?

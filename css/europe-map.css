@@ -2,11 +2,11 @@
 .mapbox { border-radius: 8px; overflow: hidden; background: var(--sea); }
 .map-context path { fill: var(--land); stroke: var(--sea); stroke-width: .6; }
 .country { stroke: var(--surface); stroke-width: .8; }
-.country:hover, .country.is-on { stroke: var(--fg); stroke-width: 1.8; }
 .country.micro { stroke: var(--fg-2); stroke-width: 1; }
 .country.micro.is-selected { r: 7px; }
 .country.boxed { stroke: var(--line-strong); stroke-width: 1; }
-.country.micro:hover, .country.micro.is-on, .country.boxed:hover, .country.boxed.is-on { stroke: var(--fg); stroke-width: 2; }
+/* outline of the hovered country: a copy of its shape, drawn above all the others */
+.country-outline { fill: none; stroke: var(--fg); stroke-width: 3; stroke-linejoin: round; pointer-events: none; }
 .country.is-dim { opacity: .25; }
 .map-frame { fill: var(--surface); stroke: var(--line-strong); }
 .map-note { font-size: 11px; fill: var(--muted); }

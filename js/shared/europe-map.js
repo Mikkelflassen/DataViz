@@ -49,10 +49,25 @@ export function createEuropeMap(svg, topology, handlers = {}) {
     return path.centroid(geometry);
   }
 
+  // The outline of a hovered or picked-out country is a copy of its shape drawn above all
+  // countries. A stroke on the shape itself gets half covered by whichever neighbour is drawn later.
+  let hovered = null, pickedOut = null;
+  function drawOutlines() {
+    const ids = new Set(pickedOut ?? []);
+    if (hovered) ids.add(hovered);
+    outlines.selectAll('*').remove();
+    countries.filter(id => ids.has(id)).each(function () {
+      const copy = this.cloneNode(false);
+      copy.removeAttribute('data-c');
+      copy.setAttribute('class', 'country-outline');
+      outlines.node().append(copy);
+    });
+  }
+
   const listen = selection => selection
-    .on('mouseenter', (e, id) => handlers.enter?.(e, id))
+    .on('mouseenter', (e, id) => { hovered = id; drawOutlines(); handlers.enter?.(e, id); })
     .on('mousemove', (e, id) => handlers.move?.(e, id))
-    .on('mouseleave', (e, id) => handlers.leave?.(e, id))
+    .on('mouseleave', (e, id) => { hovered = null; drawOutlines(); handlers.leave?.(e, id); })
     .on('click', (e, id) => handlers.click?.(e, id));
 
   svg.attr('viewBox', `0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`);
@@ -71,7 +86,6 @@ export function createEuropeMap(svg, topology, handlers = {}) {
   const shapes = root.append('g').selectAll('path').data(participants.map(idOf)).join('path')
     .attr('class', 'country').attr('data-c', id => id)
     .attr('d', (id, i) => path(participants[i]))
-    .on('mouseenter.raise', function () { d3.select(this).raise(); })   // so the hover outline isn't cut by neighbours
     .call(listen);
 
   participants.forEach(f => {
@@ -109,8 +123,9 @@ export function createEuropeMap(svg, topology, handlers = {}) {
     .attr('x', id => position[id][0]).attr('y', id => position[id][1] + 4)
     .text(id => id.toUpperCase());
 
-  const overlay = svg.append('g').attr('class', 'map-overlay');
   const countries = svg.selectAll('[data-c]');
+  const outlines = svg.append('g').attr('class', 'map-outlines');
+  const overlay = svg.append('g').attr('class', 'map-overlay');
 
   return {
     position,
@@ -124,13 +139,19 @@ export function createEuropeMap(svg, topology, handlers = {}) {
       countries.attr('fill', id => fill(id) ?? 'url(#hatch)');
       labels.attr('fill', id => ink(id));
     },
+    /** Replace the two-letter codes with other text, e.g. a group letter. text(id) may return ''. */
+    relabel(text, fontSize) {
+      labels.text(id => text(id));
+      if (fontSize) labels.attr('font-size', fontSize);
+    },
     /** Push some labels down so a line can start at the centre of the country. */
     lowerLabels(ids) {
       labels.attr('y', id => position[id][1] + (ids.has(id) ? 16 : 4));
     },
     /** Outline a set of countries, or pass null to clear. */
     outline(ids) {
-      countries.classed('is-on', id => !!ids && ids.has(id));
+      pickedOut = ids;
+      drawOutlines();
     },
     /** Dim every country outside the set, or pass null to clear. */
     spotlight(ids) {

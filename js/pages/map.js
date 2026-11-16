@@ -1,7 +1,7 @@
 // Country map: pick a country and see who gives it more or fewer points than expected.
 /* global d3 */
 
-import { startPage, onThemeChange, segmented } from '../shared/page.js';
+import { startPage, onThemeChange, segmented, cssVar } from '../shared/page.js';
 import { loadCountries, loadVotes, pairAverages, pairKey, minSharedFinals, signed, yearsLabel, FIRST_YEAR, LAST_YEAR } from '../shared/data.js';
 import { createEuropeMap } from '../shared/europe-map.js';
 import { createFavoritismScale, drawFavoritismLegend } from '../shared/favoritism-scale.js';
@@ -86,7 +86,7 @@ startPage(async () => {
   // Pick out one pair: fade the other wedges and outline the two countries.
   function highlight(pair) {
     d3.select('#map').classed('bonds-dim', !!pair);
-    map.overlay.selectAll('.bond').classed('is-on', d => samePair(d, pair));
+    map.overlay.selectAll('.bond, .bond-rank').classed('is-on', d => samePair(d, pair));
     d3.selectAll('#bond-list li').classed('is-on', d => samePair(d, pair));
     map.outline(pair ? new Set([pair.a, pair.b]) : null);
   }
@@ -98,7 +98,7 @@ startPage(async () => {
   function wedgePath(from, to, baseWidth) {
     const dx = to[0] - from[0], dy = to[1] - from[1];
     const length = Math.hypot(dx, dy) || 1;
-    const bend = Math.max(12, Math.min(34, length * 0.16));
+    const bend = Math.max(13, Math.min(36, length * 0.17));
     const control = [(from[0] + to[0]) / 2 - dy / length * bend, (from[1] + to[1]) / 2 + dx / length * bend];
     const at = t => [
       (1 - t) ** 2 * from[0] + 2 * (1 - t) * t * control[0] + t * t * to[0],
@@ -117,20 +117,49 @@ startPage(async () => {
     return { outline: `M${[...left, ...right.reverse()].join('L')}Z`, centre: d3.line()(d3.range(0, 1.01, 0.1).map(s => at(start + (end - start) * s))) };
   }
 
-  const wedgeWidth = fav => 2.5 + Math.max(0, Math.min(fav, 13)) / 13 * 9.5;   // 2.5 to 12 px at the base
+  // Width and colour of a wedge.
+  //
+  // The strongest bonds are all strong: with six shown they run from about +8 to +10, and on a
+  // scale that starts at zero they look the same. So both scales stretch over the bonds that
+  // are on screen right now, weakest to strongest, and the key under the map prints the two
+  // end values so nobody reads the thinnest wedge as "nearly zero".
+  function bondScales(bonds) {
+    const values = bonds.flatMap(d => [d.ab, d.ba]);
+    const domain = values.length > 1 && d3.min(values) < d3.max(values) ? d3.extent(values) : [0, d3.max(values) || 1];
+    const width = d3.scaleLinear(domain, [2.5, 15]).clamp(true);
+    const shade = d3.scaleLinear(domain, [cssVar('--bond-weak'), cssVar('--bond-strong')]).interpolate(d3.interpolateLab).clamp(true);
+    return { domain, width, shade };
+  }
+
+  function renderBondKey({ domain, width, shade }) {
+    const svg = d3.select('#bond-key-svg');
+    svg.selectAll('*').remove();
+    const wedge = (x, value) => {
+      const half = width(value) / 2;
+      svg.append('path').attr('d', `M${x},${9 - half}L${x + 44},9L${x},${9 + half}Z`).attr('fill', shade(value));
+    };
+    wedge(2, domain[0]);
+    wedge(104, domain[1]);
+    svg.append('text').attr('class', 'tick-label').attr('x', 50).attr('y', 13).text(signed(domain[0]));
+    svg.append('text').attr('class', 'tick-label').attr('x', 152).attr('y', 13).text(signed(domain[1]));
+  }
 
   function renderBonds(bonds) {
     $('bond-scope-focus').textContent = `With ${nameOf(state.focus)}`;
     $('bond-years').textContent = `· ${yearsLabel(state.from, state.to)}`;
     $('bond-card').hidden = !state.bonds;
-    $('bond-key').hidden = !state.bonds;
+    $('bond-key').hidden = !bonds.length;
 
-    const bondTip = d => `<b>${nameOf(d.a)} ⇄ ${nameOf(d.b)}</b><br>` +
+    const scales = bondScales(bonds);
+    if (bonds.length) renderBondKey(scales);
+    const rank = new Map(bonds.map((d, i) => [d, i + 1]));   // 1 = strongest, same number in the list and on the map
+
+    const bondTip = d => `<b>${rank.get(d)}. ${nameOf(d.a)} ⇄ ${nameOf(d.b)}</b><br>` +
       `<span class="m">${nameOf(d.a)} gives ${signed(d.ab)}</span><br><span class="m">${nameOf(d.b)} gives ${signed(d.ba)}</span>`;
 
     d3.select('#bond-list').selectAll('li').data(bonds.length ? bonds : [null]).join('li')
       .html(d => (d
-        ? `<button type="button" data-id="${d.a}">${nameOf(d.a)} ⇄ ${nameOf(d.b)}</button>` +
+        ? `<button type="button" data-id="${d.a}"><span class="rank-no">${rank.get(d)}</span>${nameOf(d.a)} ⇄ ${nameOf(d.b)}</button>` +
           `<span class="pill" style="background:${colour(d.mutual)};color:${colour.ink(d.mutual)}">${signed(d.mutual)}</span>` +
           `<div class="dirs"><span>${d.a.toUpperCase()} gives ${signed(d.ab)}</span><span>${d.b.toUpperCase()} gives ${signed(d.ba)}</span></div>`
         : '<span class="empty">No pairs in these years</span><span></span>'))
@@ -148,12 +177,23 @@ startPage(async () => {
     groups.each(function (d) {
       const g = d3.select(this), pa = map.position[d.a], pb = map.position[d.b];
       for (const [from, to, fav] of [[pa, pb, d.ab], [pb, pa, d.ba]]) {
-        const width = wedgeWidth(fav), shape = wedgePath(from, to, width);
-        g.append('path').attr('class', 'wedge').attr('d', shape.outline);
+        const width = scales.width(fav), shape = wedgePath(from, to, width);
+        g.append('path').attr('class', 'wedge').attr('d', shape.outline).attr('fill', scales.shade(fav));
         g.append('path').attr('class', 'hit').attr('d', shape.centre).attr('stroke-width', Math.max(12, width + 6));
       }
       for (const p of [pa, pb]) g.append('circle').attr('class', 'end').attr('cx', p[0]).attr('cy', p[1]).attr('r', 3);
     });
+
+    // rank numbers go in their own layer above all wedges, at the middle of each pair
+    map.overlay.selectAll('g.bond-rank').data(bonds, d => `${d.a}-${d.b}`).join(enter => {
+      const g = enter.append('g').attr('class', 'bond-rank');
+      g.append('circle').attr('r', 8.5);
+      g.append('text').attr('text-anchor', 'middle').attr('dy', 3.6);
+      return g;
+    })
+      .attr('transform', d => `translate(${(map.position[d.a][0] + map.position[d.b][0]) / 2},${(map.position[d.a][1] + map.position[d.b][1]) / 2})`)
+      .raise()
+      .select('text').text(d => rank.get(d));
   }
 
   // ---------- everything that follows the state

@@ -32,5 +32,8 @@
 .blocs .members a { color: inherit; text-decoration: none; }
 .blocs .members a:hover { color: var(--fg); text-decoration: underline; }
 
-/* the map is small here, so the country codes are left off; hover for names */
-.side .map-labels, .side .map-note { display: none; }
+/* the map is small here: labels show the bloc letter instead of the country code; hover for names */
+.side .map-note { display: none; }
+.side .map-labels { font-family: var(--display); font-weight: 700; }
+/* this map is drawn at less than half size, so the hover outline is made heavier to match */
+.side .country-outline { stroke-width: 6; }

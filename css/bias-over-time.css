@@ -23,12 +23,8 @@ svg.mid { min-width: 560px; }
 .system:focus-visible .block { stroke: var(--fg); }
 .system-band { fill: var(--accent); fill-opacity: .09; pointer-events: none; }
 
-.period { border-top: 1px solid var(--line); padding-top: 12px; min-height: 148px; display: grid; gap: 8px 28px; grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
-.period-hint { margin: 0; color: var(--muted); font-size: 14px; grid-column: 1 / -1; }
-.period h3 { font: 700 17px/1.25 var(--display); margin: 0 0 6px; }
-.period h3 span { font: 500 13px/1 var(--mono); color: var(--muted); margin-right: 8px; }
-.period p { margin: 0 0 6px; font-size: 14px; color: var(--fg-2); max-width: 78ch; }
-.period p b { color: var(--fg); font-weight: 600; }
-.period dl { margin: 0; display: grid; grid-template-columns: auto auto; gap: 2px 14px; font-size: 13px; color: var(--fg-2); }
-.period dd { margin: 0; font: 500 13px var(--mono); color: var(--fg); text-align: right; }
-@media (max-width: 700px) { .period { grid-template-columns: minmax(0, 1fr); } }
+/* small note that appears over a hovered voting system and goes away again */
+.system-pop { position: fixed; z-index: 40; pointer-events: none; width: 250px; background: var(--surface); color: var(--fg-2); border: 1px solid var(--line-strong); border-radius: 6px; padding: 8px 10px; font-size: 11.5px; line-height: 1.4; box-shadow: 0 4px 14px rgb(0 0 0 / .14); }
+.system-pop b { display: block; color: var(--fg); font-weight: 600; font-size: 12px; }
+.system-pop p { margin: 3px 0 0; }
+.system-pop .m { display: block; margin-top: 5px; font: 10.5px var(--mono); color: var(--muted); }

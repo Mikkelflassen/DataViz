@@ -38,9 +38,6 @@
       <span class="key"><i class="swatch c-strip"></i>Points each country hands out: hover a period</span>
     </div>
     <div class="scroll"><svg id="raw-chart" class="wide" role="img" aria-label="Average absolute favoritism per year, with the points each country hands out below"></svg></div>
-    <div class="period" id="period" aria-live="polite">
-      <p class="period-hint">Hover or tap a period in the strip under the chart to see which voting rules applied and what they did to the curve.</p>
-    </div>
   </section>
 
   <section class="stage" aria-labelledby="persist-title">
@@ -71,6 +68,7 @@
     <div class="scroll"><svg id="split-chart" class="mid" role="img" aria-label="Correlation with 2004–2015 favoritism for jury and televote points, per year"></svg></div>
   </section>
 </main>
+<div class="system-pop" id="system-pop" role="status" hidden></div>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
   <p>The first chart makes it look as if favoritism grew a lot. Most of that comes from changes to the points system.</p>
@@ -79,7 +77,7 @@
 </div>
 <div class="help-pop" id="h-raw" role="tooltip" hidden>
   <p><b>Absolute favoritism</b> is how far each vote is from what the receiving country got on average that year, whether above or below. The line is the average over all votes in a year. This is the measure from our Tableau work.</p>
-  <p>The strip underneath shows how many points each country handed out. Twice the points gives twice the deviation, even when nobody votes more for their friends. <b>Hover a period</b> in the strip to read its rules.</p>
+  <p>The strip underneath shows how many points each country handed out. Twice the points gives twice the deviation, even when nobody votes more for their friends. <b>Hover a period</b> in the strip for a short note on its rules.</p>
   <p><b>Same scale every year</b> divides each year by the standard deviation of that year's points. After that the periods are almost level.</p>
 </div>
 <div class="help-pop" id="h-persist" role="tooltip" hidden>

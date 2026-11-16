@@ -2,55 +2,55 @@
   {
     "from": 1957, "to": 1961,
     "title": "Ten jurors, one vote each",
-    "rules": "Every country had a jury of ten. Each juror gave a single point to one song, so a country handed out 10 points in all.",
-    "effect": "With so few points to give, a vote can never sit far from the song's average. Raw favoritism stays below 1 point."
+    "rules": "Ten jurors per country each gave one point to one song.",
+    "effect": "With so few points, no vote can be far from the average."
   },
   {
     "from": 1962, "to": 1962,
-    "title": "Top three: 3, 2 and 1",
-    "rules": "Each jury now ranked its three favourite songs and gave them 3, 2 and 1 points. That is only 6 points per country.",
-    "effect": "Fewer points than any other year, and the lowest raw favoritism on the chart."
+    "title": "Top three: 3, 2, 1",
+    "rules": "Each jury gave 3, 2 and 1 points to its three favourites.",
+    "effect": "The fewest points of any year, and the lowest curve."
   },
   {
     "from": 1963, "to": 1963,
-    "title": "Top five: 5 down to 1",
-    "rules": "Juries grew to twenty members and ranked five songs, worth 5, 4, 3, 2 and 1 points: 15 points per country.",
-    "effect": "More than twice as many points as the year before, and raw favoritism nearly doubles with them."
+    "title": "Top five: 5 to 1",
+    "rules": "Twenty jurors ranked five songs: 5, 4, 3, 2, 1.",
+    "effect": "More than twice the points of 1962, so the curve nearly doubles."
   },
   {
     "from": 1964, "to": 1966,
-    "title": "Top three: 5, 3 and 1",
-    "rules": "Back to ten jurors and three ranked songs, now worth 5, 3 and 1. A jury that agreed on fewer songs could split the 9 points as 6 and 3, or give all 9 to one song.",
-    "effect": "9 points per country, so the curve drops back to where it was before 1962."
+    "title": "Top three: 5, 3, 1",
+    "rules": "Ten jurors again, three songs worth 5, 3 and 1.",
+    "effect": "Fewer points, and the curve drops back."
   },
   {
     "from": 1967, "to": 1970,
     "title": "One vote per juror again",
-    "rules": "The 1957 rules returned: ten jurors, one point each, 10 points per country.",
-    "effect": "Same rules as 1957–1961 and the same level of raw favoritism."
+    "rules": "The 1957 rules returned: ten jurors, one point each.",
+    "effect": "Same rules as 1957–61, same level."
   },
   {
     "from": 1971, "to": 1973,
-    "title": "Every song scored by every country",
-    "rules": "Each country sent two jurors, one under 25 and one over. Both gave every song between 1 and 5 points, so every song got 2 to 10 points from every country. A country handed out about 86 points.",
-    "effect": "Eight times as many points as before, yet raw favoritism only rises to about 1.4. All songs got something, so the scores were close together. How spread out the points are matters as much as how many there are."
+    "title": "Every song scored",
+    "rules": "Two jurors per country gave every song 1 to 5 points.",
+    "effect": "Many more points, but every song got some, so scores stayed close and the curve rose only a little."
   },
   {
     "from": 1974, "to": 1974,
-    "title": "One last year with ten points",
-    "rules": "For a single contest the ten-jurors-one-vote system came back.",
-    "effect": "Raw favoritism falls to its 1960s level straight away. Nothing about the countries changed between 1973 and 1974, only the rules."
+    "title": "Ten points, one last time",
+    "rules": "One year back on ten jurors with one vote each.",
+    "effect": "The curve falls at once. Only the rules changed."
   },
   {
     "from": 1975, "to": 2015,
-    "title": "Douze points: 12, 10, 8 to 1",
-    "rules": "Each country gives 12, 10 and 8 down to 1 point to its ten favourite songs and nothing to the rest: 58 points. Who decides changed several times (televoting spread from 1998, juries came back for half the vote in 2009), but the result was always merged into one set of 58 points.",
-    "effect": "Raw favoritism jumps from 0.7 to 2.3 in one year and then stays near that level for four decades. Ten songs get points and the others get zero, so scores are far apart and every vote lands further from the average. Semi-finals arrived in 2004 without moving the curve."
+    "title": "Douze points",
+    "rules": "12, 10, 8–1 to ten songs, nothing to the rest. Televoting (1998), semi-finals (2004) and juries returning (2009) all kept this one set of points.",
+    "effect": "Ten songs score and the others get zero, so every vote lands far from the average. The curve jumps and then stays flat for 40 years."
   },
   {
     "from": 2016, "to": 2023,
-    "title": "Jury and televote counted separately",
-    "rules": "The jury and the viewers in each country now give their own 12, 10, 8 to 1. A country hands out 116 points, and one song can get up to 24 from it.",
-    "effect": "Twice the points, and raw favoritism rises from about 2.2 to 3.2. On the same scale the period is the lowest of all, so the jump comes from the scoring and not from countries voting more for their friends."
+    "title": "Jury and televote apart",
+    "rules": "Jury and viewers each give their own 12, 10, 8–1.",
+    "effect": "Twice the points lifts the curve. On the same scale this is the lowest period of all."
   }
 ]

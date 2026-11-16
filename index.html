@@ -76,7 +76,7 @@
         <span class="key"><i class="swatch hatch"></i><span id="hatch-text">Fewer than 5 shared finals</span></span>
         <span class="key"><i class="swatch c-land"></i>Not in Eurovision</span>
         <span class="key" id="bond-key">
-          <svg class="bond-key" viewBox="0 0 64 16" aria-hidden="true"><path d="M3,2.5 L61,8 L3,13.5 Z"/><circle cx="4" cy="8" r="3"/></svg>
+          <svg id="bond-key-svg" class="bond-key" viewBox="0 0 190 18" role="img" aria-label="Bond wedges: the weakest and the strongest one on the map"></svg>
           wide end gives, point receives
         </span>
         <button type="button" class="help" aria-label="About the map" aria-controls="h-keys" aria-expanded="false">?</button>
@@ -119,8 +119,9 @@
   <p>Australia, Yugoslavia and Serbia &amp; Montenegro sit in the boxes on the left. Grey countries never took part. Hover a country for its exact value.</p>
 </div>
 <div class="help-pop" id="h-bonds" role="tooltip" hidden>
-  <p>The teal shapes join the pairs of countries that favour <b>each other</b> most, ranked by the average of the two directions.</p>
-  <p>Each pair has <b>two wedges, one per direction</b>. A wedge is wide at the country that gives the points and narrows to a point at the country that receives them. The <b>wider the base</b>, the more extra points go that way. When a friendship is one-sided, one wedge is clearly thinner than the other.</p>
+  <p>The teal shapes join the pairs of countries that favour <b>each other</b> most, ranked by the average of the two directions. The <b>number</b> on a pair is its rank and matches the list on the right.</p>
+  <p>Each pair has <b>two wedges, one per direction</b>. A wedge is wide at the country that gives the points and narrows to a point at the country that receives them.</p>
+  <p>A <b>wider and darker</b> wedge means more extra points. The strongest bonds are close to each other in size, so the width and shade are stretched over the bonds on the map: the thinnest, palest wedge is the weakest one shown, not a weak bond. The key under the map gives the two end values.</p>
   <p>We used arrows here first. With several lines meeting in the Balkans the arrowheads piled up, and readers find direction faster on tapered lines than on arrows (Holten &amp; van Wijk 2009).</p>
   <p>Hover a wedge or a name in the list to pick out one pair. <b>With …</b> shows only the selected country's bonds. Slide to 0 to hide them.</p>
 </div>
