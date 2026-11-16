@@ -1,366 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Jury vs Televote</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="css/site.css">
-<style>
-[hidden]{display:none!important}
-header.intro{display:grid;gap:10px}
-h1{font:700 clamp(28px,4.4vw,44px)/1.05 var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
-.lede{margin:0;max-width:72ch;color:var(--fg-2)}
-.controls{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:end}
-.ctl{display:grid;gap:5px}
-select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:6px 10px;min-width:180px}
-select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.yrs-v{color:var(--fg);text-transform:none;letter-spacing:0;font-size:13px}
-.range{position:relative;width:min(300px,82vw);height:26px}
-.range .track,.range .fill{position:absolute;top:11px;height:4px;border-radius:2px}
-.range .track{left:9px;right:9px;background:var(--line)}
-.range .fill{background:var(--fg)}
-.range input[type=range]{position:absolute;inset:0;width:100%;height:26px;margin:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
-.range input[type=range]::-webkit-slider-runnable-track{background:none;height:26px}
-.range input[type=range]::-moz-range-track{background:none}
-.range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:18px;height:18px;margin-top:4px;border-radius:50%;background:var(--fg);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line-strong);cursor:grab}
-.range input[type=range]::-moz-range-thumb{pointer-events:auto;width:14px;height:14px;border-radius:50%;background:var(--fg);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line-strong);cursor:grab}
-.range input[type=range]:focus-visible{outline:none}
-.range input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--accent)}
-.range input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 3px var(--accent)}
-.ticks{display:flex;justify-content:space-between;width:min(300px,82vw);padding:0 4px;font:11px/1 var(--mono);color:var(--muted)}
-
-.panel{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
-@media (max-width:920px){.panel{grid-template-columns:minmax(0,1fr)}}
-.stage{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;display:grid;gap:12px}
-.stage-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:10px 20px}
-h2{font:700 22px/1.2 var(--display);margin:0;text-wrap:balance}
-h2 .yr{font:500 15px/1 var(--mono);color:var(--muted)}
-.sub{margin:0;color:var(--fg-2);font-size:14px;max-width:70ch}
-svg{display:block;width:100%;height:auto}
-svg text{font-family:var(--body)}
-.keys{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--fg-2)}
-.key{display:inline-flex;align-items:center;gap:6px}
-.key i{width:10px;height:10px;border-radius:50%;display:inline-block}
-.key i.ring{background:transparent!important;border:2px solid var(--fg-2)}
-.key i.line{width:18px;height:0;border-radius:0;border-top:2.5px solid}
-.scatter-box{max-width:680px;width:100%;margin:0 auto}
-aside{display:grid;gap:18px;font-size:14px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:10px}
-.rank{margin:0;padding:0;list-style:none;display:grid;gap:2px;font-variant-numeric:tabular-nums}
-.rank li{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:4px 0;border-bottom:1px dashed var(--line)}
-.rank li button{all:unset;cursor:pointer;color:var(--fg)}
-.rank li button:hover{text-decoration:underline}
-.rank li button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.rank li.sel button{font-weight:600}
-.pill{font:500 12px/1 var(--mono);padding:4px 6px;border-radius:4px;min-width:52px;text-align:right;color:#fff}
-.pill.j{background:var(--jury)} .pill.t{background:var(--tele)}
-.lbl-j{display:flex;align-items:center;gap:6px} .lbl-j i{width:8px;height:8px;border-radius:50%;display:inline-block}
-.stats{display:flex;flex-wrap:wrap;gap:10px 28px}
-.stat{display:grid;gap:2px}
-.stat b{font:700 24px/1.1 var(--display);font-variant-numeric:tabular-nums}
-.stat span{font-size:12px;color:var(--muted)}
-.dot{cursor:pointer}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Jury vs televote</title>
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <link rel="stylesheet" href="css/jury-televote.css">
+  <script src="js/vendor/d3.min.js" defer></script>
+  <script type="module" src="js/pages/jury-televote.js"></script>
 </head>
 <body>
 <header class="topbar" id="topbar"></header>
-<script src="js/nav.js"></script>
 
 <main class="wrap">
-  <header class="intro">
-    <div class="ttl"><h1>Juries and viewers don't like the same songs</h1><button type="button" class="help" aria-label="How to read this page" aria-controls="h-page" aria-expanded="false">?</button></div>
+  <header class="ttl">
+    <h1>Juries and viewers don't like the same songs</h1>
+    <button type="button" class="help" aria-label="How to read this page" aria-controls="h-page" aria-expanded="false">?</button>
   </header>
 
   <div class="controls">
-    <div class="ctl"><label for="country" class="lbl">Country</label><select id="country"></select></div>
     <div class="ctl">
-      <span class="ttl"><span class="lbl" id="yrs-lbl">Years: <span class="mono yrs-v" id="yrs-v">2016–2023</span></span><button type="button" class="help" aria-label="About the years" aria-controls="h-years" aria-expanded="false">?</button></span>
-      <div class="range" role="group" aria-labelledby="yrs-lbl">
-        <div class="track"></div><div class="fill" id="yrs-fill"></div>
-        <input type="range" id="y0" min="0" max="6" step="1" value="0" aria-label="From year">
-        <input type="range" id="y1" min="0" max="6" step="1" value="6" aria-label="To year">
-      </div>
-      <div class="ticks" aria-hidden="true"><span>16</span><span>17</span><span>18</span><span>19</span><span>21</span><span>22</span><span>23</span></div>
+      <label for="country">Country</label>
+      <select id="country"></select>
+    </div>
+    <div class="ctl">
+      <span class="ttl">
+        <span class="lbl" id="years-label">Years: <span class="mono val" id="years-value">2016–2023</span></span>
+        <button type="button" class="help" aria-label="About the years" aria-controls="h-years" aria-expanded="false">?</button>
+      </span>
+      <div class="range" id="years" role="group" aria-labelledby="years-label"></div>
+      <div class="range-ticks" aria-hidden="true"><span>16</span><span>17</span><span>18</span><span>19</span><span>21</span><span>22</span><span>23</span></div>
     </div>
   </div>
 
-  <section class="panel">
+  <section class="panel" aria-label="Jury and televote points per country">
     <div class="stage">
       <div class="stage-head">
-        <div class="ttl"><h2>Jury points vs televote points <span class="yr" id="sc-yrs">2016–2023</span></h2><button type="button" class="help" aria-label="How to read the scatterplot" aria-controls="h-scatter" aria-expanded="false">?</button></div>
+        <div class="ttl">
+          <h2>Jury points vs televote points <span class="yr" id="scatter-years">2016–2023</span></h2>
+          <button type="button" class="help" aria-label="How to read the scatterplot" aria-controls="h-scatter" aria-expanded="false">?</button>
+        </div>
       </div>
       <div class="keys">
-        <span class="key"><i style="background:var(--tele)"></i>Viewers give more</span>
-        <span class="key"><i style="background:var(--jury)"></i>Juries give more</span>
-        <span class="key"><i class="ring"></i>1 final only</span>
-        <span class="key">Named = outlier <button type="button" class="help" aria-label="Which countries are named" aria-controls="h-named" aria-expanded="false">?</button></span>
+        <span class="key"><i class="swatch dot c-tele"></i>Viewers give more</span>
+        <span class="key"><i class="swatch dot c-jury"></i>Juries give more</span>
+        <span class="key"><i class="swatch ring"></i>1 final only</span>
+        <span class="key"><b class="key-strong">Bold name</b> = outlier, <span class="key-soft">grey name</span> = has room <button type="button" class="help" aria-label="Which countries are named" aria-controls="h-named" aria-expanded="false">?</button></span>
       </div>
       <div class="scatter-box"><svg id="scatter" role="img" aria-label="Scatterplot of average jury points against average televote points per country"></svg></div>
     </div>
-    <aside>
+
+    <aside class="side">
       <div class="card">
-        <div class="ttl" style="justify-content:space-between"><div class="lbl lbl-j"><i style="background:var(--jury)"></i>Juries give more</div><button type="button" class="help" aria-label="About the gap" aria-controls="h-gap" aria-expanded="false">?</button></div>
-        <ol class="rank" id="jlist"></ol>
-        <div class="lbl lbl-j" style="margin-top:6px"><i style="background:var(--tele)"></i>Viewers give more</div>
-        <ol class="rank" id="tlist"></ol>
+        <div class="ttl spread">
+          <div class="lbl key"><i class="swatch dot c-jury"></i>Juries give more</div>
+          <button type="button" class="help" aria-label="About the gap" aria-controls="h-gap" aria-expanded="false">?</button>
+        </div>
+        <ol class="rank" id="jury-list"></ol>
+        <div class="lbl key"><i class="swatch dot c-tele"></i>Viewers give more</div>
+        <ol class="rank" id="tele-list"></ol>
       </div>
     </aside>
   </section>
 
-  <section class="stage">
+  <section class="stage" aria-label="Year by year">
     <div class="stage-head">
-      <div class="ttl"><h2 id="yr-title">Sweden, year by year</h2><button type="button" class="help" aria-label="About the year chart" aria-controls="h-years2" aria-expanded="false">?</button></div>
+      <div class="ttl">
+        <h2 id="years-title">Sweden, year by year</h2>
+        <button type="button" class="help" aria-label="About the year chart" aria-controls="h-yearly" aria-expanded="false">?</button>
+      </div>
       <div class="keys">
-        <span class="key"><i class="line" style="border-color:var(--jury)"></i>Jury</span>
-        <span class="key"><i class="line" style="border-color:var(--tele)"></i>Televote</span>
+        <span class="key"><i class="swatch line c-jury"></i>Jury</span>
+        <span class="key"><i class="swatch line c-tele"></i>Televote</span>
       </div>
     </div>
-    <svg id="years" role="img" aria-label="Line chart of jury and televote points per year for the selected country"></svg>
+    <svg id="yearly" role="img" aria-label="Line chart of jury and televote points per year for the selected country"></svg>
   </section>
 </main>
-<div class="tip" id="tip" hidden></div>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p>Since 2016 every country gives <b>two separate sets of points</b>: one from a professional jury and one from the viewers' televote. That lets us compare who juries and viewers like.</p>
-  <p>Pick a country to follow it in the year-by-year chart, or click any dot or name.</p>
+  <p>Since 2016 every country hands out <b>two sets of points</b>, one from a professional jury and one from the viewers' televote. So for each song we can see how much each of them liked it.</p>
+  <p>Pick a country to follow it in the year-by-year chart, or click a dot or a name.</p>
 </div>
 <div class="help-pop" id="h-years" role="tooltip" hidden>
-  <p>Finals 2016–2023. There was no contest in 2020, so it isn't on the slider. The range always covers at least two contests, so one year's result can't dominate.</p>
-  <p>The televote includes the "rest of world" online vote (2023). A country's own row, where it can't vote for itself, is left out.</p>
+  <p>Finals 2016–2023. There was no contest in 2020, so it is not on the slider. The range always covers at least two contests, because a single year says more about one song than about the country.</p>
+  <p>The televote includes the "rest of world" online vote from 2023. A country cannot vote for itself, so its own row is left out.</p>
 </div>
 <div class="help-pop" id="h-scatter" role="tooltip" hidden>
-  <p>Each dot is a country that reached the final. <b>Across</b>: average points it got from juries per voting country. <b>Up</b>: average points from viewers.</p>
-  <p>On the <b>diagonal</b> juries and viewers agree. The further a dot is from it, the more they disagree. Orange dots (top-left) get more from viewers, blue dots (bottom-right) more from juries. The background tint shows the same split.</p>
+  <p>Each dot is a country that reached the final. <b>Across</b>: the average points it got from each country's jury. <b>Up</b>: the average from each country's viewers.</p>
+  <p>On the <b>diagonal</b> juries and viewers agree. The further a dot sits from it, the more they disagree. Orange dots (upper left) get more from viewers and blue dots (lower right) more from juries. The background tint shows the same split.</p>
+  <p>Both axes have the same scale and the plot is square, so the diagonal is exactly 45° and distance from it means the same everywhere.</p>
   <p>A <b>hollow dot</b> reached only one final in the selected years, so its position rests on a single contest.</p>
 </div>
 <div class="help-pop" id="h-named" role="tooltip" hidden>
-  <p>A country is named when its gap (jury − televote) is more than <b>1.25 standard deviations</b> from the average gap for the selected years. The selected country is always named.</p>
-  <p>The rule is recalculated for every year range, so the names always mark the outliers of what you see.</p>
+  <p><b>Bold names</b> are the outliers: the gap (jury − televote) is more than <b>1.25 standard deviations</b> from the average gap for the selected years. The selected country is always named.</p>
+  <p><b>Grey names</b> are not outliers. They are added where it costs nothing: the dot is clear of the diagonal, has no close neighbour, and the name fits next to it without touching another dot or name.</p>
+  <p>Both rules are worked out again for every year range. Dots in the crowded middle stay unnamed; hover them instead.</p>
 </div>
 <div class="help-pop" id="h-gap" role="tooltip" hidden>
-  <p><b>Gap</b> = average jury points − average televote points, per voting country. The five biggest gaps in each direction are listed.</p>
+  <p><b>Gap</b> = average jury points − average televote points, per voting country. The lists show the five biggest gaps in each direction.</p>
 </div>
-<div class="help-pop" id="h-years2" role="tooltip" hidden>
-  <p>Average points per voting country in each final, from juries and from viewers. A missing point means the country wasn't in that final. 2020 had no contest, so the lines run straight from 2019 to 2021.</p>
+<div class="help-pop" id="h-yearly" role="tooltip" hidden>
+  <p>Average points per voting country in each final, from juries and from viewers. A missing point means the country was not in that final. 2020 had no contest, so the lines run straight from 2019 to 2021.</p>
   <p>The shaded band marks the years picked with the slider.</p>
 </div>
-
-<script src="js/d3.min.js"></script>
-<script>
-const COUNTRIES = [{"id":"ad","name":"Andorra","region":"Western","x":2,"y":6},{"id":"al","name":"Albania","region":"Balkan","x":5,"y":8},{"id":"am","name":"Armenia","region":"Ex-Soviet","x":9,"y":5},{"id":"at","name":"Austria","region":"Western","x":5,"y":4},{"id":"au","name":"Australia","region":"Western","x":11,"y":8},{"id":"az","name":"Azerbaijan","region":"Ex-Soviet","x":10,"y":4},{"id":"ba","name":"Bosnia & Herz.","region":"Balkan","x":5,"y":6},{"id":"be","name":"Belgium","region":"Western","x":3,"y":3},{"id":"bg","name":"Bulgaria","region":"Central","x":7,"y":6},{"id":"by","name":"Belarus","region":"Ex-Soviet","x":8,"y":2},{"id":"ch","name":"Switzerland","region":"Western","x":4,"y":4},{"id":"cs","name":"Serbia & Mont.","region":"Balkan","x":1,"y":7},{"id":"cy","name":"Cyprus","region":"Southern","x":8,"y":8},{"id":"cz","name":"Czechia","region":"Central","x":5,"y":3},{"id":"de","name":"Germany","region":"Western","x":5,"y":2},{"id":"dk","name":"Denmark","region":"Nordic","x":5,"y":1},{"id":"ee","name":"Estonia","region":"Ex-Soviet","x":7,"y":1},{"id":"es","name":"Spain","region":"Southern","x":2,"y":5},{"id":"fi","name":"Finland","region":"Nordic","x":7,"y":0},{"id":"fr","name":"France","region":"Western","x":3,"y":4},{"id":"gb","name":"United Kingdom","region":"Western","x":2,"y":1},{"id":"ge","name":"Georgia","region":"Ex-Soviet","x":9,"y":4},{"id":"gr","name":"Greece","region":"Southern","x":6,"y":8},{"id":"hr","name":"Croatia","region":"Balkan","x":6,"y":5},{"id":"hu","name":"Hungary","region":"Central","x":6,"y":4},{"id":"ie","name":"Ireland","region":"Western","x":1,"y":1},{"id":"il","name":"Israel","region":"Southern","x":9,"y":7},{"id":"is","name":"Iceland","region":"Nordic","x":0,"y":0},{"id":"it","name":"Italy","region":"Southern","x":4,"y":5},{"id":"lt","name":"Lithuania","region":"Ex-Soviet","x":7,"y":3},{"id":"lu","name":"Luxembourg","region":"Western","x":4,"y":3},{"id":"lv","name":"Latvia","region":"Ex-Soviet","x":7,"y":2},{"id":"ma","name":"Morocco","region":"Southern","x":1,"y":8},{"id":"mc","name":"Monaco","region":"Western","x":3,"y":5},{"id":"md","name":"Moldova","region":"Ex-Soviet","x":7,"y":4},{"id":"me","name":"Montenegro","region":"Balkan","x":5,"y":7},{"id":"mk","name":"North Macedonia","region":"Balkan","x":6,"y":7},{"id":"mt","name":"Malta","region":"Southern","x":4,"y":8},{"id":"nl","name":"Netherlands","region":"Western","x":4,"y":2},{"id":"no","name":"Norway","region":"Nordic","x":5,"y":0},{"id":"pl","name":"Poland","region":"Central","x":6,"y":2},{"id":"pt","name":"Portugal","region":"Southern","x":1,"y":5},{"id":"ro","name":"Romania","region":"Central","x":7,"y":5},{"id":"rs","name":"Serbia","region":"Balkan","x":6,"y":6},{"id":"ru","name":"Russia","region":"Ex-Soviet","x":8,"y":1},{"id":"se","name":"Sweden","region":"Nordic","x":6,"y":0},{"id":"si","name":"Slovenia","region":"Balkan","x":5,"y":5},{"id":"sk","name":"Slovakia","region":"Central","x":6,"y":3},{"id":"sm","name":"San Marino","region":"Southern","x":4,"y":6},{"id":"tr","name":"T\u00fcrkiye","region":"Southern","x":8,"y":6},{"id":"ua","name":"Ukraine","region":"Ex-Soviet","x":8,"y":3},{"id":"yu","name":"Yugoslavia","region":"Balkan","x":0,"y":7}];
-const JT = "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";   // one row per vote in a 2016–2023 final: giver, receiver, year-2016, jury pts, televote pts
-const NAME = new Map(COUNTRIES.map(c=>[c.id,c.name]));
-const IDS = COUNTRIES.map(c=>c.id);
-const RAW = Uint8Array.from(atob(JT), ch=>ch.charCodeAt(0));
-const st = {focus:'se', y0:2016, y1:2023};
-const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const f1 = d3.format('+.1f'), f2 = d3.format('.2f');
-const name = id => NAME.get(id);
-
-// ---------- aggregation
-function byCountry(){
-  const acc = new Map();
-  for(let o=0;o<RAW.length;o+=5){
-    const y = RAW[o+2]+2016; if(y<st.y0||y>st.y1) continue;
-    const id = IDS[RAW[o+1]];
-    let e = acc.get(id); if(!e){ e={id,j:0,nj:0,t:0,nt:0,years:new Set()}; acc.set(id,e); }
-    if(RAW[o+3]!==255){ e.j += RAW[o+3]; e.nj++; }
-    e.t += RAW[o+4]; e.nt++; e.years.add(y);
-  }
-  return [...acc.values()].map(e=>{ const j=e.j/e.nj, t=e.t/e.nt; return {id:e.id, j, t, gap:j-t, finals:e.years.size}; });
-}
-function byYear(id){
-  const out = [];
-  for(let y=2016;y<=2023;y++){
-    if(y===2020) continue;   // no contest in 2020
-    let j=0,nj=0,t=0,n=0;
-    for(let o=0;o<RAW.length;o+=5){ if(RAW[o+2]+2016!==y || IDS[RAW[o+1]]!==id) continue; if(RAW[o+3]!==255){ j+=RAW[o+3]; nj++; } t+=RAW[o+4]; n++; }
-    out.push({y, j:nj?j/nj:null, t:n?t/n:null, n});
-  }
-  return out;
-}
-const sideColor = g => g>=0 ? css('--jury') : css('--tele');   // below the diagonal = juries give more
-
-// ---------- tooltip
-const tip = document.getElementById('tip');
-function showTip(ev, html){
-  tip.innerHTML = html; tip.hidden = false;
-  const r = tip.getBoundingClientRect();
-  let x = ev.clientX+14, y = ev.clientY+14;
-  if(x+r.width > innerWidth-8) x = ev.clientX-r.width-14;
-  if(y+r.height > innerHeight-8) y = ev.clientY-r.height-14;
-  tip.style.left = Math.max(8,x)+'px'; tip.style.top = Math.max(8,y)+'px';
-}
-const hideTip = () => tip.hidden = true;
-const countryTip = d => `<b>${name(d.id)}</b><br><span class="m">jury ${f2(d.j)} · televote ${f2(d.t)}</span><br><span class="m">gap ${f1(d.gap)} (${d.gap>=0?'juries':'viewers'} like more)</span><br><span class="m">${d.finals} final${d.finals>1?'s':''}</span>`;
-
-// ---------- scatter
-// Design: position on two aligned, equal scales (square plot, same range on both axes) so distance from
-// the identity line reads directly as the jury/televote gap. Hue only encodes the side of the line.
-function renderScatter(rows){
-  const S=620, M={l:58,r:22,t:22,b:52}, F=st.focus;
-  const svg = d3.select('#scatter').attr('viewBox',`0 0 ${S} ${S}`); svg.selectAll('*').remove();
-  const max = Math.max(6, Math.ceil(d3.max(rows, d=>Math.max(d.j,d.t))||6));
-  const x = d3.scaleLinear([0,max],[M.l,S-M.r]), y = d3.scaleLinear([0,max],[S-M.b,M.t]);
-  const ink = css('--fg'), muted = css('--muted'), surf = css('--surface');
-  // background: a faint diagonal gradient, orange towards the top-left (viewers give more), clear on the
-  // identity line, blue towards the bottom-right (juries give more). The plot is square, so 50% = the line.
-  const grad = svg.append('defs').append('linearGradient').attr('id','sides').attr('x1',0).attr('y1',0).attr('x2',1).attr('y2',1);
-  [[0,'--tele',.16],[.5,'--tele',0],[.5,'--jury',0],[1,'--jury',.16]].forEach(([o,c,a])=>grad.append('stop').attr('offset',o).attr('stop-color',css(c)).attr('stop-opacity',a));
-  svg.append('rect').attr('x',x(0)).attr('y',y(max)).attr('width',x(max)-x(0)).attr('height',y(0)-y(max)).attr('fill','url(#sides)');
-  // grid + axes
-  const ticks = d3.range(0, max+1, max>8?2:1);
-  const g = svg.append('g');
-  ticks.forEach(v=>{
-    g.append('line').attr('x1',x(v)).attr('x2',x(v)).attr('y1',y(0)).attr('y2',y(max)).attr('stroke',css('--line')).attr('stroke-width',v?0.8:1.2);
-    g.append('line').attr('y1',y(v)).attr('y2',y(v)).attr('x1',x(0)).attr('x2',x(max)).attr('stroke',css('--line')).attr('stroke-width',v?0.8:1.2);
-    g.append('text').attr('x',x(v)).attr('y',y(0)+18).attr('text-anchor','middle').attr('font-size',12).style('font-family','var(--mono)').attr('fill',muted).text(v);
-    g.append('text').attr('x',x(0)-10).attr('y',y(v)+4).attr('text-anchor','end').attr('font-size',12).style('font-family','var(--mono)').attr('fill',muted).text(v);
-  });
-  g.append('text').attr('x',(x(0)+x(max))/2).attr('y',S-10).attr('text-anchor','middle').attr('font-size',13).attr('font-weight',600).attr('fill',css('--fg-2')).text('Average jury points');
-  g.append('text').attr('transform',`translate(16,${(y(0)+y(max))/2}) rotate(-90)`).attr('text-anchor','middle').attr('font-size',13).attr('font-weight',600).attr('fill',css('--fg-2')).text('Average televote points');
-  // identity line across the whole plot
-  svg.append('line').attr('x1',x(0)).attr('y1',y(0)).attr('x2',x(max)).attr('y2',y(max)).attr('stroke',css('--line-strong')).attr('stroke-width',2.5).attr('stroke-linecap','round');
-  const along = (k, off, txt, col, bold) => {
-    const n=off/Math.SQRT2;
-    svg.append('text').attr('transform',`translate(${x(max*k)-n},${y(max*k)-n}) rotate(-45)`).attr('text-anchor','middle').attr('font-size',bold?12:11).attr('font-weight',bold?600:400)
-      .attr('fill',col).attr('paint-order','stroke').attr('stroke',surf).attr('stroke-width',3.5).text(txt);
-  };
-  along(.92, 8, 'jury = televote', muted);
-
-  // dots (focus drawn last so it sits on top)
-  const R = 8;
-  const order = [...rows].sort((a,b)=>(a.id===F)-(b.id===F));
-  svg.append('g').selectAll('circle').data(order).join('circle').attr('class','dot')
-    .attr('cx',d=>x(d.j)).attr('cy',d=>y(d.t)).attr('r',d=>d.id===F?R+2:R)
-    .attr('fill',d=>d.finals===1?surf:sideColor(d.gap))
-    .attr('stroke',d=>d.id===F?ink:(d.finals===1?sideColor(d.gap):surf))
-    .attr('stroke-width',d=>d.id===F?3:2)
-    .on('mousemove',(e,d)=>showTip(e,countryTip(d))).on('mouseleave',hideTip).on('click',(e,d)=>setFocus(d.id));
-
-  // Labels follow one rule: name a country when its gap (jury − televote) is more than 1.25 standard
-  // deviations from the average gap for the selected years, plus the selected country. The rule is
-  // recomputed for every year range, so the named countries are always the outliers of what is shown.
-  const gm = d3.mean(rows,d=>d.gap), gsd = d3.deviation(rows,d=>d.gap) || 1;
-  const want = rows.filter(d=>d.id===F || Math.abs(d.gap-gm)/gsd > 1.25).sort((a,b)=>(b.id===F)-(a.id===F) || Math.abs(b.gap-gm)-Math.abs(a.gap-gm));
-  const boxes = rows.map(d=>({x0:x(d.j)-R, x1:x(d.j)+R, y0:y(d.t)-R, y1:y(d.t)+R}));
-  const out = b => b.x0<M.l+2 || b.x1>S-M.r-2 || b.y0<M.t-4 || b.y1>y(0)-2;
-  const hit = b => out(b) || boxes.some(o=>b.x0<o.x1 && b.x1>o.x0 && b.y0<o.y1 && b.y1>o.y0);
-  const lab = svg.append('g').attr('pointer-events','none');
-  // 8 directions, tried close to the dot first, then further out with a leader line
-  const DIRS = [[1,0],[-1,0],[0,-1],[0,1],[1,-1],[-1,-1],[1,1],[-1,1]];
-  want.forEach(d=>{
-    const id=d.id, txt=name(id), fs=id===F?13:12.5, w=txt.length*fs*0.56, h=fs+2, cx=x(d.j), cy=y(d.t);
-    const place = (dx,dy,r) => {
-      const ax = cx+dx*r, ay = cy+dy*r;
-      const a = dx>0?'start':dx<0?'end':'middle';
-      const x0 = a==='start'?ax : a==='end'?ax-w : ax-w/2;
-      const ty = dy<0 ? ay-2 : dy>0 ? ay+fs-1 : ay+fs*0.35;
-      return {x:ax, y:ty, a, r, b:{x0, x1:x0+w, y0:ty-fs+1, y1:ty+3}};
-    };
-    // a leader line may not pass another dot, or the label could be read as belonging to it
-    const crosses = k => { if(k.r<=R+6) return false;
-      const ex = k.a==='start'?k.b.x0 : k.a==='end'?k.b.x1 : k.x, ey=(k.b.y0+k.b.y1)/2;
-      return rows.some(o=>{ if(o===d) return false; const px=x(o.j), py=y(o.t), vx=ex-cx, vy=ey-cy, L=vx*vx+vy*vy||1;
-        const u=Math.max(0,Math.min(1,((px-cx)*vx+(py-cy)*vy)/L)); return Math.hypot(cx+u*vx-px, cy+u*vy-py) < R+2; }); };
-    let c=null;
-    for(const r of [R+5, R+18, R+34, R+52]){ for(const [dx,dy] of DIRS){ const k=place(dx,dy,r); if(!hit(k.b) && !crosses(k)){ c=k; break; } } if(c) break; }
-    if(!c){ for(const [dx,dy] of DIRS){ const k=place(dx,dy,R+20); if(!out(k.b)){ c=k; break; } } }
-    if(!c) c = place(-1,0,R+5);
-    boxes.push(c.b);
-    if(c.r>R+6) lab.append('line').attr('x1',cx).attr('y1',cy).attr('x2',c.a==='start'?c.b.x0-2:c.a==='end'?c.b.x1+2:c.x).attr('y2',(c.b.y0+c.b.y1)/2)
-      .attr('stroke',css('--fg-2')).attr('stroke-width',.8);
-    lab.append('text').attr('x',c.x).attr('y',c.y).attr('text-anchor',c.a).attr('font-size',fs).attr('font-weight',id===F?700:500)
-      .attr('fill',ink).attr('paint-order','stroke').attr('stroke',surf).attr('stroke-width',3).text(txt);
-  });
-  // dots go on top of leader lines
-  svg.selectAll('circle.dot').raise();
-}
-
-// ---------- ranked lists
-function renderLists(rows){
-  const s = [...rows].sort((a,b)=>b.gap-a.gap);
-  const li = (d,cls) => `<li class="${d.id===st.focus?'sel':''}"><button type="button" data-id="${d.id}">${name(d.id)}${d.finals===1?' <span style="color:var(--muted);font-size:12px">(1 final)</span>':''}</button><span class="pill ${cls}">${f1(Math.abs(d.gap))}</span></li>`;
-  document.getElementById('jlist').innerHTML = s.filter(d=>d.gap>0).slice(0,5).map(d=>li(d,'j')).join('') || '<li><span style="color:var(--muted)">None</span><span></span></li>';
-  document.getElementById('tlist').innerHTML = s.filter(d=>d.gap<0).slice(-5).reverse().map(d=>li(d,'t')).join('') || '<li><span style="color:var(--muted)">None</span><span></span></li>';
-}
-
-// ---------- year by year
-function renderYears(){
-  const F=st.focus, data=byYear(F);
-  const W=960, H=300, M={l:44,r:96,t:18,b:34};
-  const svg = d3.select('#years').attr('viewBox',`0 0 ${W} ${H}`); svg.selectAll('*').remove();
-  const YEARS = data.map(d=>d.y);
-  const x = d3.scalePoint(YEARS,[M.l+20,W-M.r]);
-  const max = Math.max(6, Math.ceil(d3.max(data,d=>Math.max(d.j??0,d.t??0))));
-  const y = d3.scaleLinear([0,max],[H-M.b,M.t]).nice();
-  // selected range band
-  const step = x.step();
-  const inSel = YEARS.filter(v=>v>=st.y0 && v<=st.y1);
-  if((st.y0>2016 || st.y1<2023) && inSel.length) svg.append('rect').attr('x',x(inSel[0])-step/2).attr('width',x(inSel[inSel.length-1])-x(inSel[0])+step).attr('y',M.t-6).attr('height',H-M.b-M.t+6).attr('fill',css('--surface-2')).attr('rx',6);
-  // grid
-  y.ticks(5).forEach(t=>{
-    svg.append('line').attr('x1',M.l).attr('x2',W-M.r+10).attr('y1',y(t)).attr('y2',y(t)).attr('stroke',css('--line')).attr('stroke-width',.8);
-    svg.append('text').attr('x',M.l-8).attr('y',y(t)+4).attr('text-anchor','end').attr('font-size',11).style('font-family','var(--mono)').attr('fill',css('--muted')).text(t);
-  });
-  YEARS.forEach(yr=>svg.append('text').attr('x',x(yr)).attr('y',H-10).attr('text-anchor','middle').attr('font-size',11.5).style('font-family','var(--mono)').attr('fill',css('--fg-2')).text(yr));
-  // not in final markers
-  data.filter(d=>!d.n).forEach(d=>svg.append('text').attr('x',x(d.y)).attr('y',y(0)-8).attr('text-anchor','middle').attr('font-size',10.5).attr('fill',css('--muted')).text('not in final'));
-  // lines
-  [['j','--jury','Jury'],['t','--tele','Televote']].forEach(([k,col,lbl])=>{
-    const ln = d3.line().defined(d=>d[k]!=null).x(d=>x(d.y)).y(d=>y(d[k]));
-    svg.append('path').datum(data).attr('d',ln).attr('fill','none').attr('stroke',css(col)).attr('stroke-width',2.2).attr('stroke-linejoin','round');
-    svg.append('g').selectAll('circle').data(data.filter(d=>d[k]!=null)).join('circle')
-      .attr('cx',d=>x(d.y)).attr('cy',d=>y(d[k])).attr('r',4.5).attr('fill',css(col)).attr('stroke',css('--surface')).attr('stroke-width',2)
-      .on('mousemove',(e,d)=>showTip(e,`<b>${name(F)} ${d.y}</b><br><span class="m">jury ${f2(d.j)} · televote ${f2(d.t)}</span><br><span class="m">gap ${f1(d.j-d.t)}</span>`)).on('mouseleave',hideTip);
-  });
-  // end labels
-  const last = [...data].reverse().find(d=>d.j!=null);
-  if(last){
-    let yj=y(last.j), yt=y(last.t); if(Math.abs(yj-yt)<14){ const m=(yj+yt)/2; if(yj<yt){yj=m-7;yt=m+7;}else{yj=m+7;yt=m-7;} }
-    svg.append('text').attr('x',x(last.y)+10).attr('y',yj+4).attr('font-size',12).attr('font-weight',600).attr('fill',css('--fg')).text('Jury '+last.j.toFixed(1));
-    svg.append('text').attr('x',x(last.y)+10).attr('y',yt+4).attr('font-size',12).attr('font-weight',600).attr('fill',css('--fg')).text('Televote '+last.t.toFixed(1));
-  }
-  document.getElementById('yr-title').textContent = `${name(F)}, year by year`;
-}
-
-// ---------- wiring
-function render(){
-  hideTip();
-  const rows = byCountry();
-  document.getElementById('sc-yrs').textContent = `${st.y0}–${st.y1}`;
-  renderScatter(rows); renderLists(rows); renderYears();
-}
-function setFocus(id){ st.focus=id; document.getElementById('country').value=id; render(); }
-const sel = document.getElementById('country');
-const inFinals = new Set(); for(let o=0;o<RAW.length;o+=5) inFinals.add(IDS[RAW[o+1]]);
-COUNTRIES.filter(c=>inFinals.has(c.id)).sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>sel.add(new Option(c.name,c.id)));
-sel.value = st.focus; sel.onchange = ()=>setFocus(sel.value);
-document.querySelector('aside').addEventListener('click',e=>{ const b=e.target.closest('button[data-id]'); if(b) setFocus(b.dataset.id); });
-
-const y0 = document.getElementById('y0'), y1 = document.getElementById('y1');
-const CONTESTS = [2016,2017,2018,2019,2021,2022,2023];   // no contest in 2020; the range always spans at least 2 contests
-function syncYears(){
-  const a=CONTESTS.indexOf(st.y0), b=CONTESTS.indexOf(st.y1);
-  y0.value=a; y1.value=b;
-  const pct = i => i/(CONTESTS.length-1);
-  const fill = document.getElementById('yrs-fill');
-  fill.style.left = `calc(9px + ${pct(a)} * (100% - 18px))`;
-  fill.style.width = `calc(${pct(b)-pct(a)} * (100% - 18px))`;
-  y0.style.zIndex = a >= CONTESTS.length-2 ? 3 : 1;
-  document.getElementById('yrs-v').textContent = `${st.y0}–${st.y1}`;
-}
-let raf=0;
-function onYears(which){
-  let a=+y0.value, b=+y1.value;
-  if(b-a<1){ if(which==='y0'){ a=Math.min(a,CONTESTS.length-2); b=a+1; } else { b=Math.max(b,1); a=b-1; } }
-  st.y0=CONTESTS[a]; st.y1=CONTESTS[b]; syncYears(); cancelAnimationFrame(raf); raf=requestAnimationFrame(render);
-}
-y0.oninput=()=>onYears('y0'); y1.oninput=()=>onYears('y1');
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
-syncYears(); render();
-</script>
 </body>
 </html>

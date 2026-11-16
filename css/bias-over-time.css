@@ -1,0 +1,34 @@
+/* Bias over time page */
+svg.wide { min-width: 640px; }
+svg.mid { min-width: 560px; }
+.swatch.thick { border-top-width: 4px; opacity: .6; }
+.swatch.c-strip { background: color-mix(in srgb, var(--accent) 22%, transparent); border-color: var(--accent); }
+
+.reform line { stroke: var(--line-strong); stroke-dasharray: 3 3; }
+.reform text { font-size: 10.5px; fill: var(--muted); }
+.era-mean line { stroke: var(--accent); stroke-width: 3; stroke-opacity: .45; stroke-linecap: round; }
+.era-mean text { font: 700 12px var(--mono); fill: var(--accent); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
+.series { fill: none; stroke: var(--fg); stroke-width: 2; stroke-linejoin: round; }
+.series.dashed { stroke: var(--fg-2); stroke-width: 1.6; stroke-dasharray: 5 4; }
+.note { font-size: 11px; fill: var(--muted); }
+.value-label { font-size: 12px; font-weight: 600; fill: var(--fg); }
+.guide { stroke: var(--fg-2); stroke-width: 1; }
+
+/* the strip of voting systems under the first chart */
+.system { cursor: pointer; outline: none; }
+.system .block { fill: var(--accent); fill-opacity: .18; stroke: var(--surface); stroke-width: 1.5; transition: fill-opacity .15s; }
+.system .top { stroke: var(--accent); stroke-width: 1.5; }
+.system text { font: 500 11px var(--mono); fill: var(--fg); pointer-events: none; }
+.system:hover .block, .system:focus-visible .block, .system.is-on .block { fill-opacity: .5; }
+.system:focus-visible .block { stroke: var(--fg); }
+.system-band { fill: var(--accent); fill-opacity: .09; pointer-events: none; }
+
+.period { border-top: 1px solid var(--line); padding-top: 12px; min-height: 148px; display: grid; gap: 8px 28px; grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+.period-hint { margin: 0; color: var(--muted); font-size: 14px; grid-column: 1 / -1; }
+.period h3 { font: 700 17px/1.25 var(--display); margin: 0 0 6px; }
+.period h3 span { font: 500 13px/1 var(--mono); color: var(--muted); margin-right: 8px; }
+.period p { margin: 0 0 6px; font-size: 14px; color: var(--fg-2); max-width: 78ch; }
+.period p b { color: var(--fg); font-weight: 600; }
+.period dl { margin: 0; display: grid; grid-template-columns: auto auto; gap: 2px 14px; font-size: 13px; color: var(--fg-2); }
+.period dd { margin: 0; font: 500 13px var(--mono); color: var(--fg); text-align: right; }
+@media (max-width: 700px) { .period { grid-template-columns: minmax(0, 1fr); } }

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Voting blocs</title>
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/site.css">
+  <link rel="stylesheet" href="css/europe-map.css">
+  <link rel="stylesheet" href="css/voting-blocs.css">
+  <script src="js/vendor/d3.min.js" defer></script>
+  <script src="js/vendor/topojson-client.min.js" defer></script>
+  <script type="module" src="js/pages/voting-blocs.js"></script>
+</head>
+<body>
+<header class="topbar" id="topbar"></header>
+
+<main class="wrap">
+  <header class="ttl">
+    <h1>Who votes together?</h1>
+    <button type="button" class="help" aria-label="How to read this page" aria-controls="h-page" aria-expanded="false">?</button>
+  </header>
+
+  <div class="controls">
+    <div class="ctl">
+      <span class="ttl">
+        <span class="lbl" id="years-label">Years: <span class="mono val" id="years-value">1957–2023</span></span>
+        <button type="button" class="help" aria-label="About the years" aria-controls="h-years" aria-expanded="false">?</button>
+      </span>
+      <div class="range" id="years" role="group" aria-labelledby="years-label"></div>
+      <div class="presets" id="presets">
+        <button type="button" data-range="1957-2023">All</button>
+        <button type="button" data-range="1975-2003">1975–2003</button>
+        <button type="button" data-range="2004-2015">2004–2015</button>
+        <button type="button" data-range="2016-2023">2016–2023</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="ttl">
+        <label for="groups">Number of groups: <span id="groups-value" class="mono val">6</span></label>
+        <button type="button" class="help" aria-label="How the groups are found" aria-controls="h-groups" aria-expanded="false">?</button>
+      </span>
+      <input type="range" id="groups" min="2" max="8" step="1" value="6">
+    </div>
+    <p class="verdict" id="verdict"></p>
+  </div>
+
+  <section class="panel" aria-label="Voting blocs">
+    <div class="stage">
+      <div class="stage-head">
+        <div class="ttl">
+          <h2>Every country's votes for every other <span class="yr" id="matrix-years"></span></h2>
+          <button type="button" class="help" aria-label="How to read the matrix" aria-controls="h-matrix" aria-expanded="false">?</button>
+        </div>
+        <svg id="legend" class="legend" role="img" aria-label="Colour scale: points above or below expected, on a symmetric log scale"></svg>
+      </div>
+      <div class="scroll"><svg id="matrix" role="img" aria-label="Matrix of favoritism between countries, sorted so that countries voting alike sit next to each other"></svg></div>
+      <div class="keys">
+        <span class="key"><i class="swatch box"></i>A voting group</span>
+        <span class="key"><i class="swatch hatch"></i>Too few shared finals</span>
+        <span class="key">Rows give, columns receive</span>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="card">
+        <div class="ttl spread">
+          <div class="lbl">Where the groups are</div>
+          <button type="button" class="help" aria-label="About the map" aria-controls="h-map" aria-expanded="false">?</button>
+        </div>
+        <div class="mapbox"><svg id="map" role="img" aria-label="Map of Europe coloured by voting group"></svg></div>
+      </div>
+      <div class="card">
+        <div class="lbl">The groups</div>
+        <ol class="blocs" id="blocs"></ol>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<div class="help-pop" id="h-page" role="tooltip" hidden>
+  <p>The country map shows one country at a time. This page shows all of them at once and asks which countries keep giving each other more points than expected.</p>
+  <p>Nobody typed the groups in. The page works them out from the votes: it sorts the countries so that those who favour each other end up side by side, then cuts that order into groups.</p>
+  <p>Hover a group, a country or a cell to see the same thing in the matrix and on the map. Click a country to open it on the country map.</p>
+</div>
+<div class="help-pop" id="h-years" role="tooltip" hidden>
+  <p>Finals only. A pair needs at least <b>5</b> shared finals for ranges of 20 years or more, <b>3</b> for 8–19 years and <b>1</b> for shorter ranges.</p>
+  <p>A country is left out of a period when it met fewer than half of the others often enough in both directions. That is why Australia only shows up in recent years and Yugoslavia only in early ones.</p>
+  <p>Try the presets: the ex-Soviet group does not exist before those countries joined in the 1990s.</p>
+</div>
+<div class="help-pop" id="h-groups" role="tooltip" hidden>
+  <p>The method is <b>hierarchical clustering with average linkage</b>. Every country starts alone. The two groups whose members favour each other most (average of both directions) are merged, and that repeats until one group is left.</p>
+  <p>The slider decides where to stop. With few groups you get the big regions. With more, pairs such as Greece and Cyprus split off on their own.</p>
+  <p>No number is the right one, so try a few. A group that stays together while you move the slider is one the data really supports.</p>
+</div>
+<div class="help-pop" id="h-matrix" role="tooltip" hidden>
+  <p>Each <b>row</b> is a country giving points and each <b>column</b> a country receiving them. A red cell means the row country gives the column country more than expected, a blue one less. The colours are the same as on the country map.</p>
+  <p>The countries are sorted by the clustering, so friends are neighbours. A <b>red square on the diagonal</b> is a group whose members all favour each other. The outlines mark the groups for the number you picked.</p>
+  <p>A matrix was chosen over a network drawing because nearly every country has a value for nearly every other. Drawn as lines, about 1,700 connections would cover each other. In the matrix each one has its own cell.</p>
+  <p>Look outside the squares too: a red cell far from the diagonal is a friendship across groups, and a blue cell inside a square is a member the others do not vote for.</p>
+</div>
+<div class="help-pop" id="h-map" role="tooltip" hidden>
+  <p>The same groups, coloured on the map. The clustering only saw the votes and knows nothing about geography, so every group that forms one connected patch on the map is a sign that neighbours vote for neighbours.</p>
+  <p>Hatched countries had too few shared finals in the selected years. The colour of a group only tells the groups apart; it does not measure anything.</p>
+</div>
+</body>
+</html>
