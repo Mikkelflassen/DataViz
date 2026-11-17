@@ -68,7 +68,7 @@ startPage(async () => {
 
     grid(svg, y, M.left, WIDTH - M.right);
     reformLines(svg, x, [1975, 2004, 2016], M.top - 24, plotBottom);
-    svg.append('text').attr('class', 'note').attr('x', 4).attr('y', M.top - 14).text(key === 'raw' ? 'points' : 'std. units');
+    svg.append('text').attr('class', 'note').attr('x', 4).attr('y', M.top - 14).text(key === 'raw' ? 'points' : 'SD units');
 
     // the average of each voting system, as a faint step with its value
     const means = svg.append('g').selectAll('g').data(systems.filter(s => s.to - s.from >= 2)).join('g').attr('class', 'era-mean');
@@ -82,14 +82,14 @@ startPage(async () => {
 
     hoverByYear(svg, {
       x, rows: data.years, left: M.left, right: WIDTH - M.right, top: M.top - 24, bottom: plotBottom,
-      html: d => `<b>${d.y}</b><br><span class="m">raw ${d.raw.toFixed(2)} pts</span><br><span class="m">same scale ${d.z.toFixed(2)}</span><br><span class="m">${d.ppv} pts handed out per country</span>`,
+      html: d => `<b>${d.y}</b><br><span class="m">raw ${d.raw.toFixed(2)}</span><br><span class="m">standardised ${d.z.toFixed(2)}</span><br><span class="m">${d.ppv} pts per country</span>`,
     });
 
     // The strip: one block per voting system, as tall as the points a country handed out.
     // Hovering a block (or focusing it with the keyboard) pops up a short note on its rules.
     const height = d3.scaleLinear([0, 120], [0, stripHeight]).clamp(true);
     const points = s => Math.round(d3.mean(yearsIn(s), d => d.ppv));
-    svg.append('text').attr('class', 'note').attr('x', M.left).attr('y', stripTop - 8).text('points each country hands out, by voting system');
+    svg.append('text').attr('class', 'note').attr('x', M.left).attr('y', stripTop - 8).text('points awarded per country');
     const blocks = svg.append('g').selectAll('g').data(systems).join('g')
       .attr('class', 'system').attr('tabindex', 0)
       .attr('aria-label', s => `${systemLabel(s)}: ${s.title}, ${points(s)} points per country`);
@@ -114,16 +114,14 @@ startPage(async () => {
       .on('mouseleave blur touchend', () => show(null));
 
     yearLabels(svg, x, H - 4, DECADES);
-    $('raw-title').textContent = key === 'raw' ? 'Raw favoritism jumps when the points change' : 'On the same scale, favoritism is flat';
+    $('raw-title').textContent = key === 'raw' ? 'Mean favoritism per year' : 'Mean favoritism per year, standardised';
   }
 
-  // The small note for one voting system. It sits just above the block it belongs to.
+  // Short note for one voting system, placed just above its block.
   function describe(system, block) {
     const pop = $('system-pop');
     if (!system) { pop.hidden = true; return; }
-    const rows = yearsIn(system);
-    pop.innerHTML = `<b>${systemLabel(system)} · ${system.title}</b><p>${system.rules}</p><p>${system.effect}</p>` +
-      `<span class="m">${Math.round(d3.mean(rows, d => d.ppv))} pts per country · raw ${d3.mean(rows, d => d.raw).toFixed(2)} · same scale ${d3.mean(rows, d => d.z).toFixed(2)}</span>`;
+    pop.innerHTML = `<b>${systemLabel(system)} · ${system.title}</b><p>${system.text}</p>`;
     pop.hidden = false;
     const at = block.getBoundingClientRect(), size = pop.getBoundingClientRect();
     const left = Math.max(8, Math.min(at.left + at.width / 2 - size.width / 2, innerWidth - size.width - 8));
@@ -146,20 +144,20 @@ startPage(async () => {
     grid(svg, y, M.left, WIDTH - M.right);
     reformLines(svg, x, [1975, 1998, 2004, 2009, 2016], M.top - 30, H - M.bottom, 3);
     svg.append('text').attr('class', 'note').attr('x', WIDTH - M.right + 6).attr('y', y(0) + 4).text('random');
-    svg.append('text').attr('class', 'note').attr('x', 4).attr('y', M.top - 34).text('↑ votes match the last 5 contests (correlation)');
+    svg.append('text').attr('class', 'note').attr('x', 4).attr('y', M.top - 34).text('correlation with previous five contests');
 
     svg.append('path').datum(rows).attr('class', 'series dashed').attr('d', line('stable'));
     svg.append('path').datum(rows).attr('class', 'series').attr('stroke-width', 2.4).attr('d', line('all'));
 
     const peak = d3.greatest(rows, d => d.all), last = rows.at(-1);
     svg.append('circle').attr('cx', x(peak.y)).attr('cy', y(peak.all)).attr('r', 5).attr('fill', 'var(--fg)').attr('stroke', 'var(--surface)').attr('stroke-width', 2);
-    svg.append('text').attr('class', 'value-label').attr('x', x(peak.y) - 8).attr('y', y(peak.all) - 10).attr('text-anchor', 'end').text(`Peak ${peak.y}: ${peak.all.toFixed(2)}`);
+    svg.append('text').attr('class', 'value-label').attr('x', x(peak.y) - 8).attr('y', y(peak.all) - 10).attr('text-anchor', 'end').text(`${peak.y}: ${peak.all.toFixed(2)}`);
     svg.append('text').attr('class', 'value-label').attr('x', x(last.y) + 8).attr('y', y(last.all) + 4).text(last.all.toFixed(2));
 
     yearLabels(svg, x, H - 6, DECADES);
     hoverByYear(svg, {
       x, rows, left: M.left, right: WIDTH - M.right, top: M.top - 30, bottom: H - M.bottom,
-      html: d => `<b>${d.y}</b><br><span class="m">all countries ${d.all.toFixed(2)}</span><br><span class="m">countries in every era ${d.stable.toFixed(2)}</span>`,
+      html: d => `<b>${d.y}</b><br><span class="m">all countries ${d.all.toFixed(2)}</span><br><span class="m">all eras ${d.stable.toFixed(2)}</span>`,
     });
   }
 
@@ -174,7 +172,7 @@ startPage(async () => {
     const y = d3.scaleLinear([0, 0.8], [H - M.bottom, M.top]);
 
     grid(svg, y, M.left, WIDTH - M.right + 20);
-    svg.append('text').attr('class', 'note').attr('x', 4).attr('y', 12).text('↑ votes match the 2004–2015 pattern (correlation)');
+    svg.append('text').attr('class', 'note').attr('x', 4).attr('y', 12).text('correlation with 2004–2015');
     for (const [key, label] of [['jury', 'Jury'], ['tele', 'Televote']]) {
       svg.append('path').datum(rows).attr('fill', 'none').attr('stroke', `var(--${key})`).attr('stroke-width', 2.4)
         .attr('d', d3.line().x(d => x(d.y)).y(d => y(d[key])));
@@ -194,7 +192,6 @@ startPage(async () => {
   $('shuffled').textContent = data.shuffled.toFixed(2);
   $('tele-mean').textContent = data.jtMean.tele.toFixed(2);
   $('jury-mean').textContent = data.jtMean.jury.toFixed(2);
-  $('tele-ratio').textContent = (data.jtMean.tele / data.jtMean.jury).toFixed(1);
 
   segmented($('scale'), value => { state.scale = value; renderRaw(); });
   renderRaw();

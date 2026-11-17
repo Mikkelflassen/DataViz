@@ -48,7 +48,7 @@ startPage(async () => {
   const side = d => (d.gap >= 0 ? 'jury' : 'tele');   // below the diagonal, juries give more
   const sideColour = d => `var(--${side(d)})`;
   const countryTip = d => `<b>${nameOf(d.id)}</b><br><span class="m">jury ${two(d.jury)} · televote ${two(d.tele)}</span><br>` +
-    `<span class="m">gap ${signed(d.gap)} (${d.gap >= 0 ? 'juries' : 'viewers'} like more)</span><br>` +
+    `<span class="m">gap ${signed(d.gap)}</span><br>` +
     `<span class="m">${d.finals} final${d.finals > 1 ? 's' : ''}</span>`;
 
   // ---------- scatterplot
@@ -65,9 +65,9 @@ startPage(async () => {
   layer.labels.attr('pointer-events', 'none');
   layer.leaders.attr('pointer-events', 'none');
   scatter.append('text').attr('class', 'axis-title').attr('x', (MARGIN.left + SIZE - MARGIN.right) / 2).attr('y', SIZE - 10)
-    .attr('text-anchor', 'middle').text('Average jury points');
+    .attr('text-anchor', 'middle').text('Mean jury points');
   scatter.append('text').attr('class', 'axis-title').attr('transform', `translate(16,${(MARGIN.top + SIZE - MARGIN.bottom) / 2}) rotate(-90)`)
-    .attr('text-anchor', 'middle').text('Average televote points');
+    .attr('text-anchor', 'middle').text('Mean televote points');
 
   function renderScatter(data) {
     const max = Math.max(6, Math.ceil(d3.max(data, d => Math.max(d.jury, d.tele)) || 6));
@@ -237,7 +237,7 @@ startPage(async () => {
       svg.append('text').attr('class', 'end-label').attr('x', x(last.year) + 10).attr('y', yJury + 4).text(`Jury ${last.jury.toFixed(1)}`);
       svg.append('text').attr('class', 'end-label').attr('x', x(last.year) + 10).attr('y', yTele + 4).text(`Televote ${last.tele.toFixed(1)}`);
     }
-    $('years-title').textContent = `${nameOf(state.focus)}, year by year`;
+    $('years-title').textContent = `${nameOf(state.focus)} by year`;
   }
 
   // ---------- wiring

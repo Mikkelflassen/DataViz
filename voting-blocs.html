@@ -19,7 +19,7 @@
 
 <main class="wrap">
   <header class="ttl">
-    <h1>Who votes together?</h1>
+    <h1>Voting blocs</h1>
     <button type="button" class="help" aria-label="How to read this page" aria-controls="h-page" aria-expanded="false">?</button>
   </header>
 
@@ -39,7 +39,7 @@
     </div>
     <div class="ctl">
       <span class="ttl">
-        <label for="strength">A bloc needs at least: <span id="strength-value" class="mono val">+2.5</span></label>
+        <label for="strength">Minimum strength: <span id="strength-value" class="mono val">+2.5</span></label>
         <button type="button" class="help" aria-label="How the blocs are found" aria-controls="h-groups" aria-expanded="false">?</button>
       </span>
       <input type="range" id="strength" min="1.5" max="6" step="0.5" value="2.5">
@@ -51,33 +51,33 @@
     <div class="stage">
       <div class="stage-head">
         <div class="ttl">
-          <h2>Every country's votes for every other <span class="yr" id="matrix-years"></span></h2>
+          <h2>Favoritism matrix <span class="yr" id="matrix-years"></span></h2>
           <button type="button" class="help" aria-label="How to read the matrix" aria-controls="h-matrix" aria-expanded="false">?</button>
         </div>
         <svg id="legend" class="legend" role="img" aria-label="Colour scale: points above or below expected, on a symmetric log scale"></svg>
       </div>
       <div class="scroll"><svg id="matrix" role="img" aria-label="Matrix of favoritism between countries, sorted so that countries voting alike sit next to each other"></svg></div>
       <div class="keys">
-        <span class="key"><i class="swatch box"></i>A bloc</span>
-        <span class="key"><i class="swatch hatch"></i>Too few shared finals</span>
-        <span class="key">Rows give, columns receive</span>
+        <span class="key"><i class="swatch box"></i>Bloc</span>
+        <span class="key"><i class="swatch hatch"></i>Insufficient data</span>
+        <span class="key">Rows give · columns receive</span>
       </div>
     </div>
 
     <aside class="side">
       <div class="card">
         <div class="ttl spread">
-          <div class="lbl">Where the blocs are</div>
+          <div class="lbl">Map</div>
           <button type="button" class="help" aria-label="About the map" aria-controls="h-map" aria-expanded="false">?</button>
         </div>
         <div class="mapbox"><svg id="map" role="img" aria-label="Map of Europe coloured by voting bloc"></svg></div>
         <div class="keys">
-          <span class="key"><i class="swatch c-nobloc"></i>In no bloc</span>
-          <span class="key"><i class="swatch hatch"></i>Too few shared finals</span>
+          <span class="key"><i class="swatch c-nobloc"></i>No bloc</span>
+          <span class="key"><i class="swatch hatch"></i>Insufficient data</span>
         </div>
       </div>
       <div class="card">
-        <div class="lbl">The blocs</div>
+        <div class="lbl">Blocs</div>
         <ol class="blocs" id="blocs"></ol>
       </div>
     </aside>
@@ -85,30 +85,21 @@
 </main>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p>The country map shows one country at a time. This page shows all of them at once and asks which countries keep giving each other more points than expected.</p>
-  <p>Nobody typed the blocs in. The page works them out from the votes: it sorts the countries so that those who favour each other end up side by side, then marks the groups that are strong enough.</p>
-  <p><b>Most countries are in no bloc</b>, and that is a finding too. They vote for different countries from year to year.</p>
-  <p>Hover a bloc, a country or a cell to see the same thing in the matrix and on the map. Click a country to open it on the country map.</p>
+  <p>Blocs are derived from the votes by hierarchical clustering. Countries below the threshold remain unassigned.</p>
+  <p>Hover a bloc, country or cell to highlight it in all views.</p>
 </div>
 <div class="help-pop" id="h-years" role="tooltip" hidden>
-  <p>Finals only. A pair needs at least <b>5</b> shared finals for ranges of 20 years or more, <b>3</b> for 8–19 years and <b>1</b> for shorter ranges.</p>
-  <p>A country is left out of a period when it met fewer than half of the others often enough in both directions. That is why Australia only shows up in recent years and Yugoslavia only in early ones.</p>
-  <p>Try the presets: the ex-Soviet bloc does not exist before those countries joined in the 1990s.</p>
+  <p>Finals only. Minimum shared finals per pair: 5 for ranges of 20+ years, 3 for 8–19 years, 1 otherwise. Countries with too little data in the range are excluded.</p>
 </div>
 <div class="help-pop" id="h-groups" role="tooltip" hidden>
-  <p>The method is <b>hierarchical clustering with average linkage</b>. Every country starts alone. The two groups whose members favour each other most (average of both directions) are merged, and that repeats until one group is left.</p>
-  <p>A group counts as a <b>bloc</b> when its members give each other at least the number of points on the slider, on average. Then each member is checked on its own: a country whose tie to the rest of the bloc is below the bar is taken out, weakest first. What is left is the core.</p>
-  <p>Raise the bar and only the tightest blocs remain, such as Greece and Cyprus. Lower it and the wider regions appear. At most eight blocs are shown. If more clear the bar, the eight with the strongest pull are kept, where pull is what a member gets from the rest of its bloc in one final.</p>
+  <p>Average-linkage clustering on mutual favoritism. A cluster is a bloc when the mean favoritism between its members meets the threshold; members below it are removed. Up to eight blocs are shown.</p>
 </div>
 <div class="help-pop" id="h-matrix" role="tooltip" hidden>
-  <p>Each <b>row</b> is a country giving points and each <b>column</b> a country receiving them. A red cell means the row country gives the column country more than expected, a blue one less. The colours are the same as on the country map.</p>
-  <p>The countries are sorted by the clustering, so friends are neighbours. A <b>red square on the diagonal</b> is a group whose members all favour each other. The outlines mark the blocs that clear the bar. Rows without a coloured strip are countries in no bloc.</p>
-  <p>A matrix was chosen over a network drawing because nearly every country has a value for nearly every other. Drawn as lines, about 1,700 connections would cover each other. In the matrix each one has its own cell.</p>
-  <p>Look outside the squares too: a red cell far from the diagonal is a friendship across blocs, and a blue cell inside a square is a member the others do not vote for.</p>
+  <p>Rows give, columns receive; colours as on the map page. Countries are ordered by the clustering, so blocs appear as squares on the diagonal.</p>
+  <p>A matrix is used because almost every pair has a value; as a network the connections would overlap.</p>
 </div>
 <div class="help-pop" id="h-map" role="tooltip" hidden>
-  <p>The same blocs on the map, each with its letter. The clustering only saw the votes and knows nothing about geography, so every bloc that forms one connected patch is a sign that neighbours vote for neighbours.</p>
-  <p>Grey countries took part but are in no bloc. Hatched countries had too few shared finals in the selected years. The colour of a bloc only tells the blocs apart; it does not measure anything.</p>
+  <p>Bloc colours are categorical only. Grey: no bloc. Hatched: insufficient data.</p>
 </div>
 </body>
 </html>

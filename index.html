@@ -19,7 +19,7 @@
 
 <main class="wrap">
   <header class="ttl">
-    <h1>Who gives points to whom?</h1>
+    <h1>Favoritism by country</h1>
     <button type="button" class="help" aria-label="How to read this page" aria-controls="h-page" aria-expanded="false">?</button>
   </header>
 
@@ -31,8 +31,8 @@
     <div class="ctl">
       <span class="lbl">Direction</span>
       <div class="seg" id="direction" role="group" aria-label="Direction">
-        <button type="button" data-value="in" aria-pressed="true">Who favours it</button>
-        <button type="button" data-value="out" aria-pressed="false">Who it favours</button>
+        <button type="button" data-value="in" aria-pressed="true">Received</button>
+        <button type="button" data-value="out" aria-pressed="false">Given</button>
       </div>
     </div>
     <div class="ctl">
@@ -53,7 +53,7 @@
   <section class="panel" aria-label="Favoritism map">
     <div class="stage">
       <div class="stage-head">
-        <h2><span id="map-title">Who favours Cyprus?</span> <span class="yr" id="map-years"></span></h2>
+        <h2><span id="map-title">Favoritism toward Cyprus</span> <span class="yr" id="map-years"></span></h2>
         <div class="ttl">
           <svg id="legend" class="legend" role="img" aria-label="Colour scale: points above or below expected, on a symmetric log scale"></svg>
           <button type="button" class="help" aria-label="About the colour scale" aria-controls="h-scale" aria-expanded="false">?</button>
@@ -62,7 +62,7 @@
       <div class="mapbox"><svg id="map" role="img" aria-label="Map of Europe coloured by favoritism toward the selected country"></svg></div>
       <div class="keys">
         <span class="key"><i class="swatch c-fg"></i>Selected country</span>
-        <span class="key"><i class="swatch hatch"></i><span id="hatch-text">Fewer than 5 shared finals</span></span>
+        <span class="key"><i class="swatch hatch"></i><span id="hatch-text">Insufficient data</span></span>
         <span class="key"><i class="swatch c-land"></i>Not in Eurovision</span>
         <button type="button" class="help" aria-label="About the map" aria-controls="h-keys" aria-expanded="false">?</button>
       </div>
@@ -70,9 +70,9 @@
 
     <aside class="side">
       <div class="card">
-        <div class="lbl" id="top-heading">Biggest fans</div>
+        <div class="lbl" id="top-heading">Highest</div>
         <ol class="rank" id="top"></ol>
-        <div class="lbl" id="low-heading">Least keen</div>
+        <div class="lbl" id="low-heading">Lowest</div>
         <ol class="rank" id="low"></ol>
       </div>
       <div class="card" id="bond-card">
@@ -96,30 +96,21 @@
 </main>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p>Pick a country in the list or click it on the map. Every other country is coloured by its <b>favoritism</b>: how many more or fewer points it gives than expected.</p>
-  <p><b>Expected</b> is the average the receiving country got from all voters that year. +10 means about ten extra points in every final the two met in. A song that everyone liked raises the average too, so it does not show up as favoritism.</p>
-  <p><b>Who favours it</b> colours the countries that give points to the selected country. <b>Who it favours</b> colours the countries it gives points to.</p>
-  <p>The page opens on the country you are visiting from (we guess from the browser's time zone and language). Add <b>#dk</b>, <b>#se</b> and so on to the address to open on another one.</p>
+  <p><b>Favoritism</b> is the points one country gives another, minus the average the recipient received from all voters that year, averaged over their shared finals.</p>
+  <p>Select a country in the list or on the map.</p>
 </div>
 <div class="help-pop" id="h-years" role="tooltip" hidden>
-  <p>Only finals count, 1957–2023. There was no contest in 2020, and the 2023 "rest of world" televote is left out.</p>
-  <p>A pair has to have met often enough for its average to mean something: at least <b>5</b> shared finals for ranges of 20 years or more, <b>3</b> for 8–19 years and <b>1</b> for shorter ranges. Pairs below that are hatched.</p>
-  <p>The presets follow the voting rules: the 12-point system up to 2003, semi-finals from 2004, separate jury and televote points from 2016.</p>
+  <p>Finals only, 1957–2023; no contest in 2020. Minimum shared finals per pair: 5 for ranges of 20+ years, 3 for 8–19 years, 1 otherwise.</p>
 </div>
 <div class="help-pop" id="h-scale" role="tooltip" hidden>
-  <p>The colours use a <b>symmetric log scale</b> (symlog). Half of all country pairs are within ±1 point and a few reach +13. On a straight scale the small ones all turn grey.</p>
-  <p>Symlog is linear close to 0 and logarithmic further out, so you can tell 0.5 from 2 and also 5 from 13. A plain log scale would not work, because the values can be 0 or negative.</p>
-  <p>Both sides use the same steps: equally strong red and blue mean the same number of points.</p>
+  <p>Symmetric log scale: linear near zero and logarithmic beyond ±1, so both small and large values remain distinguishable. Red and blue are symmetric.</p>
 </div>
 <div class="help-pop" id="h-keys" role="tooltip" hidden>
-  <p>Andorra, Monaco, San Marino, Malta and Luxembourg are too small to click, so they are drawn as dots.</p>
-  <p>Australia, Yugoslavia and Serbia &amp; Montenegro sit in the boxes on the left. Grey countries never took part. Hover a country for its exact value.</p>
+  <p>Micro-states are shown as dots; Australia and former states in the inset boxes.</p>
 </div>
 <div class="help-pop" id="h-bonds" role="tooltip" hidden>
-  <p>The pairs of countries that favour <b>each other</b> most, ranked by the average of the two directions.</p>
-  <p>Each row is one pair. A country's bar grows toward its own name and shows what it <b>gives</b> the other. All bars start at 0 and share one scale, so you can compare any two directly. A long and a short bar in one row is a one-sided friendship.</p>
-  <p>Hover a row to find the two countries on the map. Hover a country on the map to find its pairs here. Click a row to open the map on that pair.</p>
-  <p>We first drew these as arrows and then as wedges on the map. They crossed each other in the Balkans, fought with the map colours, and their thickness was hard to compare. Bar length from a shared zero is one of the most accurate ways to compare amounts (Mackinlay 1986).</p>
+  <p>Pairs ranked by mutual favoritism (mean of both directions). Each bar shows the points given by the country on that side, on a shared scale from zero.</p>
+  <p>Hover a row to locate the pair on the map.</p>
 </div>
 </body>
 </html>

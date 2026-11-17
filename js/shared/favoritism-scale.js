@@ -19,7 +19,7 @@ export function createFavoritismScale() {
 }
 
 // Legend: the gradient is sampled through the same scale, and ticks sit where the scale puts them.
-export function drawFavoritismLegend(svg, colour, caption = 'points vs expected (symlog)') {
+export function drawFavoritismLegend(svg, colour, caption = 'points vs expected') {
   const width = 280, x0 = 10, x1 = width - 10;
   const symlog = v => Math.sign(v) * Math.log1p(Math.abs(v));
   const x = v => x0 + (symlog(v) + symlog(LIMIT)) / (2 * symlog(LIMIT)) * (x1 - x0);

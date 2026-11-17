@@ -49,9 +49,9 @@ startPage(async () => {
     const [giver, receiver] = pairFor(id);
     const head = `<b>${nameOf(giver)} → ${nameOf(receiver)}</b><br>`;
     const value = valueFor(id);
-    if (!value) return `${head}<span class="m">too few shared finals</span>`;
+    if (!value) return `${head}<span class="m">insufficient data</span>`;
     return `${head}<span class="m">${signed(value.fav)} pts vs expected</span><br>` +
-      `<span class="m">avg ${value.points.toFixed(1)} pts over ${value.finals} finals</span>`;
+      `<span class="m">${value.points.toFixed(1)} pts on average, ${value.finals} finals</span>`;
   }
 
   const map = createEuropeMap(d3.select('#map'), topology, {
@@ -125,7 +125,7 @@ startPage(async () => {
     svg.selectAll('*').remove();
     if (!bonds.length) {
       svg.attr('viewBox', `0 0 ${CHART_WIDTH} 30`);
-      svg.append('text').attr('class', 'empty-note').attr('y', 18).text('No pairs in these years');
+      svg.append('text').attr('class', 'empty-note').attr('y', 18).text('No data');
       return;
     }
 
@@ -146,11 +146,10 @@ startPage(async () => {
     }
     svg.append('text').attr('class', 'tick-label').attr('x', 0).attr('y', 10).text('← gives');
     svg.append('text').attr('class', 'tick-label').attr('x', CHART_WIDTH).attr('y', 10).attr('text-anchor', 'end').text('gives →');
-    svg.append('text').attr('class', 'tick-label').attr('x', mid).attr('y', 10).attr('text-anchor', 'middle').text('points vs expected');
 
     const rowTip = (d, i) => `<b>${i + 1}. ${nameOf(d.a)} ⇄ ${nameOf(d.b)}</b><br>` +
       `<span class="m">${nameOf(d.a)} gives ${signed(d.ab)}</span><br><span class="m">${nameOf(d.b)} gives ${signed(d.ba)}</span><br>` +
-      `<span class="m">average ${signed(d.mutual)}</span>`;
+      `<span class="m">mean ${signed(d.mutual)}</span>`;
 
     const rows = svg.append('g').selectAll('g').data(bonds).join('g')
       .attr('class', 'pair').attr('transform', (d, i) => `translate(0,${TOP + i * ROW})`)
@@ -203,11 +202,11 @@ startPage(async () => {
     map.markSelected(focus);
 
     const needed = minSharedFinals(state.from, state.to);
-    $('hatch-text').textContent = needed > 1 ? `Fewer than ${needed} shared finals` : 'No shared final in these years';
-    $('map-title').textContent = incoming ? `Who favours ${name}?` : `Who does ${name} favour?`;
+    $('hatch-text').textContent = needed > 1 ? `Fewer than ${needed} shared finals` : 'No shared finals';
+    $('map-title').textContent = incoming ? `Favoritism toward ${name}` : `Favoritism from ${name}`;
     $('map-years').textContent = yearsLabel(state.from, state.to);
-    $('top-heading').textContent = incoming ? `Biggest fans of ${name}` : `${name}'s favourites`;
-    $('low-heading').textContent = incoming ? `Least keen on ${name}` : `${name} gives least to`;
+    $('top-heading').textContent = incoming ? 'Highest support' : 'Most favoured';
+    $('low-heading').textContent = incoming ? 'Lowest support' : 'Least favoured';
 
     const ranked = countries.map(c => ({ id: c.id, value: valueFor(c.id) })).filter(d => d.value)
       .sort((a, b) => d3.descending(a.value.fav, b.value.fav));
@@ -215,7 +214,7 @@ startPage(async () => {
       .html(d => (d
         ? `<button type="button" data-id="${d.id}">${nameOf(d.id)}</button>` +
           `<span class="pill" style="background:${colour(d.value.fav)};color:${colour.ink(d.value.fav)}">${signed(d.value.fav)}</span>`
-        : '<span class="empty">No pairs in this period</span><span></span>'));
+        : '<span class="empty">No data</span><span></span>'));
     fillList('#top', ranked.slice(0, 5));
     fillList('#low', ranked.slice(-3).reverse());
 

@@ -87,12 +87,10 @@ startPage(async () => {
     return blocs;
   }
 
+  // Named after its regions: one region, or the two largest joined with a slash.
   function blocName({ members, regions }) {
-    if (members.length <= 2) return members.map(nameOf).join(' and ');
-    const [[first, count], second] = regions;
-    if (count === members.length) return first;
-    if (count / members.length > 0.5) return `Mostly ${first}`;
-    return `${first} and ${second[0]}`;
+    if (members.length <= 2) return members.map(nameOf).join(' – ');
+    return regions.slice(0, 2).map(([region]) => region).join(' / ');
   }
 
   // ---------- the map (drawn once, repainted on every change)
@@ -109,7 +107,7 @@ startPage(async () => {
   const blocOf = id => blocs.find(b => b.set.has(id));
   const countryTip = id => {
     const bloc = blocOf(id);
-    return `<b>${nameOf(id)}</b><br><span class="m">${bloc ? `bloc ${bloc.letter}: ${bloc.name}` : model.included.has(id) ? 'in no bloc' : 'too few shared finals in these years'}</span>`;
+    return `<b>${nameOf(id)}</b><br><span class="m">${bloc ? `Bloc ${bloc.letter}: ${bloc.name}` : model.included.has(id) ? 'No bloc' : 'Insufficient data'}</span>`;
   };
 
   // ---------- the matrix
@@ -205,8 +203,8 @@ startPage(async () => {
 
   const cellTip = d => {
     const head = `<b>${nameOf(d.giver)} → ${nameOf(d.receiver)}</b><br>`;
-    if (d.giver === d.receiver) return `<b>${nameOf(d.giver)}</b><br><span class="m">a country can't vote for itself</span>`;
-    if (!d.value) return `${head}<span class="m">too few shared finals</span>`;
+    if (d.giver === d.receiver) return `<b>${nameOf(d.giver)}</b><br><span class="m">no self-votes</span>`;
+    if (!d.value) return `${head}<span class="m">insufficient data</span>`;
     return `${head}<span class="m">${signed(d.value.fav)} pts vs expected</span><br><span class="m">over ${d.value.finals} finals</span>`;
   };
 
@@ -225,7 +223,7 @@ startPage(async () => {
 
   function renderList() {
     d3.select('#blocs').selectAll('li').data(blocs.length ? blocs : [null]).join('li')
-      .html(b => (!b ? '<span></span><span class="members">No blocs at this strength.</span>' : `
+      .html(b => (!b ? '<span></span><span class="members">No blocs at this threshold.</span>' : `
         <span class="badge" style="background:${b.colour};color:${b.ink}">${b.letter}</span>
         <span class="name">${b.name}</span>
         ${b.inside == null ? '<span></span>' : `<span class="inside" style="background:${colour(b.inside)};color:${colour.ink(b.inside)}" title="Average favoritism between members">${signed(b.inside)}</span>`}
@@ -242,9 +240,9 @@ startPage(async () => {
     const others = d3.mean(pairs.filter(p => !sameBloc(p)), ([a, b]) => fav(a, b).fav);
     const members = d3.sum(blocs, b => b.members.length);
     $('verdict').innerHTML = !blocs.length
-      ? 'No group of countries favours each other this strongly in these years. Lower the bar to see the weaker blocs.'
-      : `<b>${members} of ${ids.length}</b> countries are in a bloc. Inside a bloc a country gets <b>${signed(within)} points</b> more than expected; all other pairs average ${signed(others)}.` +
-        (hiddenBlocs ? ` ${hiddenBlocs} weaker bloc${hiddenBlocs > 1 ? 's are' : ' is'} not shown.` : '');
+      ? 'No bloc meets this threshold.'
+      : `<b>${members} of ${ids.length}</b> countries belong to a bloc. Mean favoritism within blocs <b>${signed(within)}</b>, between all other pairs ${signed(others)}.` +
+        (hiddenBlocs ? ` ${hiddenBlocs} weaker bloc${hiddenBlocs > 1 ? 's' : ''} not shown.` : '');
   }
 
   // ---------- wiring

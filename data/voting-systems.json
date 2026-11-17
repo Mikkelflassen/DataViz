@@ -1,56 +1,56 @@
 [
   {
-    "from": 1957, "to": 1961,
-    "title": "Ten jurors, one vote each",
-    "rules": "Ten jurors per country each gave one point to one song.",
-    "effect": "With so few points, no vote can be far from the average."
+    "from": 1957,
+    "to": 1961,
+    "title": "One vote per juror",
+    "text": "Ten jurors per country each award one point."
   },
   {
-    "from": 1962, "to": 1962,
-    "title": "Top three: 3, 2, 1",
-    "rules": "Each jury gave 3, 2 and 1 points to its three favourites.",
-    "effect": "The fewest points of any year, and the lowest curve."
+    "from": 1962,
+    "to": 1962,
+    "title": "3-2-1",
+    "text": "Juries award 3, 2 and 1 points to their top three."
   },
   {
-    "from": 1963, "to": 1963,
-    "title": "Top five: 5 to 1",
-    "rules": "Twenty jurors ranked five songs: 5, 4, 3, 2, 1.",
-    "effect": "More than twice the points of 1962, so the curve nearly doubles."
+    "from": 1963,
+    "to": 1963,
+    "title": "5 to 1",
+    "text": "Juries of twenty award 5 to 1 points to their top five."
   },
   {
-    "from": 1964, "to": 1966,
-    "title": "Top three: 5, 3, 1",
-    "rules": "Ten jurors again, three songs worth 5, 3 and 1.",
-    "effect": "Fewer points, and the curve drops back."
+    "from": 1964,
+    "to": 1966,
+    "title": "5-3-1",
+    "text": "Juries award 5, 3 and 1 points to their top three."
   },
   {
-    "from": 1967, "to": 1970,
-    "title": "One vote per juror again",
-    "rules": "The 1957 rules returned: ten jurors, one point each.",
-    "effect": "Same rules as 1957–61, same level."
+    "from": 1967,
+    "to": 1970,
+    "title": "One vote per juror",
+    "text": "Return to ten jurors, one point each."
   },
   {
-    "from": 1971, "to": 1973,
+    "from": 1971,
+    "to": 1973,
     "title": "Every song scored",
-    "rules": "Two jurors per country gave every song 1 to 5 points.",
-    "effect": "Many more points, but every song got some, so scores stayed close and the curve rose only a little."
+    "text": "Two jurors per country score every song from 1 to 5."
   },
   {
-    "from": 1974, "to": 1974,
-    "title": "Ten points, one last time",
-    "rules": "One year back on ten jurors with one vote each.",
-    "effect": "The curve falls at once. Only the rules changed."
+    "from": 1974,
+    "to": 1974,
+    "title": "One vote per juror",
+    "text": "One-year return to ten jurors, one point each."
   },
   {
-    "from": 1975, "to": 2015,
-    "title": "Douze points",
-    "rules": "12, 10, 8–1 to ten songs, nothing to the rest. Televoting (1998), semi-finals (2004) and juries returning (2009) all kept this one set of points.",
-    "effect": "Ten songs score and the others get zero, so every vote lands far from the average. The curve jumps and then stays flat for 40 years."
+    "from": 1975,
+    "to": 2015,
+    "title": "12-point system",
+    "text": "12, 10 and 8–1 points to ten songs. Televoting from 1998, semi-finals from 2004."
   },
   {
-    "from": 2016, "to": 2023,
-    "title": "Jury and televote apart",
-    "rules": "Jury and viewers each give their own 12, 10, 8–1.",
-    "effect": "Twice the points lifts the curve. On the same scale this is the lowest period of all."
+    "from": 2016,
+    "to": 2023,
+    "title": "Split vote",
+    "text": "Jury and televote each award a separate set of 12-point scores."
   }
 ]
