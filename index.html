@@ -48,17 +48,6 @@
         <button type="button" data-range="2016-2023">2016–2023</button>
       </div>
     </div>
-    <div class="ctl">
-      <span class="ttl">
-        <label for="bonds">Strongest bonds: <span id="bonds-value" class="mono val">6</span></label>
-        <button type="button" class="help" aria-label="How to read the bond lines" aria-controls="h-bonds" aria-expanded="false">?</button>
-      </span>
-      <input type="range" id="bonds" min="0" max="15" step="1" value="6">
-      <div class="seg tight" id="bond-scope" role="group" aria-label="Which bonds">
-        <button type="button" data-value="all" aria-pressed="true">All of Europe</button>
-        <button type="button" data-value="focus" id="bond-scope-focus" aria-pressed="false">With Cyprus</button>
-      </div>
-    </div>
   </div>
 
   <section class="panel" aria-label="Favoritism map">
@@ -75,10 +64,6 @@
         <span class="key"><i class="swatch c-fg"></i>Selected country</span>
         <span class="key"><i class="swatch hatch"></i><span id="hatch-text">Fewer than 5 shared finals</span></span>
         <span class="key"><i class="swatch c-land"></i>Not in Eurovision</span>
-        <span class="key" id="bond-key">
-          <svg id="bond-key-svg" class="bond-key" viewBox="0 0 190 18" role="img" aria-label="Bond wedges: the weakest and the strongest one on the map"></svg>
-          wide end gives, point receives
-        </span>
         <button type="button" class="help" aria-label="About the map" aria-controls="h-keys" aria-expanded="false">?</button>
       </div>
     </div>
@@ -91,8 +76,20 @@
         <ol class="rank" id="low"></ol>
       </div>
       <div class="card" id="bond-card">
-        <div class="lbl">Strongest bonds <span class="val" id="bond-years"></span></div>
-        <ol class="rank bond-list" id="bond-list"></ol>
+        <div class="ttl spread">
+          <div class="lbl">Strongest pairs <span class="val mono" id="bond-years"></span></div>
+          <button type="button" class="help" aria-label="How to read the strongest pairs" aria-controls="h-bonds" aria-expanded="false">?</button>
+        </div>
+        <div class="bond-controls">
+          <div class="seg" id="bond-scope" role="group" aria-label="Which pairs">
+            <button type="button" data-value="all" aria-pressed="true">All of Europe</button>
+            <button type="button" data-value="focus" id="bond-scope-focus" aria-pressed="false">With Cyprus</button>
+          </div>
+          <label class="bond-count">Show <select id="bonds">
+            <option>5</option><option selected>8</option><option>10</option><option>15</option>
+          </select></label>
+        </div>
+        <svg id="bond-chart" role="group" aria-label="The strongest mutual pairs: what each country gives the other"></svg>
       </div>
     </aside>
   </section>
@@ -119,11 +116,10 @@
   <p>Australia, Yugoslavia and Serbia &amp; Montenegro sit in the boxes on the left. Grey countries never took part. Hover a country for its exact value.</p>
 </div>
 <div class="help-pop" id="h-bonds" role="tooltip" hidden>
-  <p>The teal shapes join the pairs of countries that favour <b>each other</b> most, ranked by the average of the two directions. The <b>number</b> on a pair is its rank and matches the list on the right.</p>
-  <p>Each pair has <b>two wedges, one per direction</b>. A wedge is wide at the country that gives the points and narrows to a point at the country that receives them.</p>
-  <p>A <b>wider and darker</b> wedge means more extra points. The strongest bonds are close to each other in size, so the width and shade are stretched over the bonds on the map: the thinnest, palest wedge is the weakest one shown, not a weak bond. The key under the map gives the two end values.</p>
-  <p>We used arrows here first. With several lines meeting in the Balkans the arrowheads piled up, and readers find direction faster on tapered lines than on arrows (Holten &amp; van Wijk 2009).</p>
-  <p>Hover a wedge or a name in the list to pick out one pair. <b>With …</b> shows only the selected country's bonds. Slide to 0 to hide them.</p>
+  <p>The pairs of countries that favour <b>each other</b> most, ranked by the average of the two directions.</p>
+  <p>Each row is one pair. A country's bar grows toward its own name and shows what it <b>gives</b> the other. All bars start at 0 and share one scale, so you can compare any two directly. A long and a short bar in one row is a one-sided friendship.</p>
+  <p>Hover a row to find the two countries on the map. Hover a country on the map to find its pairs here. Click a row to open the map on that pair.</p>
+  <p>We first drew these as arrows and then as wedges on the map. They crossed each other in the Balkans, fought with the map colours, and their thickness was hard to compare. Bar length from a shared zero is one of the most accurate ways to compare amounts (Mackinlay 1986).</p>
 </div>
 </body>
 </html>

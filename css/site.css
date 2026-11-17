@@ -6,7 +6,6 @@
   --fg: #15151b; --fg-2: #4a4a56; --muted: #767682;
   --line: #dcdce4; --line-strong: #a9a9b6;
   --sea: #eef1f5; --land: #e1e2e8; --accent: #0f6b77;
-  --bond-weak: #9fd3d6; --bond-strong: #064e57;   /* bond wedges: pale = weakest shown, dark = strongest */
 
   /* favoritism scale: blue = fewer points than expected, red = more */
   --neg2: #184f95; --neg1: #7fb0ec; --mid: #ebebef; --pos1: #ee9488; --pos2: #b3261e;
@@ -32,8 +31,6 @@
     --fg: #efeff3; --fg-2: #c2c2cc; --muted: #8e8e9a;
     --line: #33333d; --line-strong: #5a5a66;
     --sea: #16171c; --land: #24252c; --accent: #55b8c4;
-  --bond-weak: #2f6f78; --bond-strong: #a5ecf3;
-    --bond-weak: #2f6f78; --bond-strong: #a5ecf3;
     --neg2: #6aa6f0; --neg1: #2b5591; --mid: #3a3a43; --pos1: #8e3a33; --pos2: #ef6b62;
     --jury: #3987e5; --tele: #d95926;
     --bloc-1: #2bb8af; --bloc-2: #e0a02a; --bloc-3: #a288e3; --bloc-4: #6cc45c; --bloc-5: #e57fb6; --bloc-6: #c07a45; --bloc-7: #8fa0b8; --bloc-8: #c2c15a; --no-bloc: #3b3c47;
@@ -46,7 +43,6 @@
   --fg: #efeff3; --fg-2: #c2c2cc; --muted: #8e8e9a;
   --line: #33333d; --line-strong: #5a5a66;
   --sea: #16171c; --land: #24252c; --accent: #55b8c4;
-  --bond-weak: #2f6f78; --bond-strong: #a5ecf3;
   --neg2: #6aa6f0; --neg1: #2b5591; --mid: #3a3a43; --pos1: #8e3a33; --pos2: #ef6b62;
   --jury: #3987e5; --tele: #d95926;
   --bloc-1: #2bb8af; --bloc-2: #e0a02a; --bloc-3: #a288e3; --bloc-4: #6cc45c; --bloc-5: #e57fb6; --bloc-6: #c07a45; --bloc-7: #8fa0b8; --bloc-8: #c2c15a; --no-bloc: #3b3c47;

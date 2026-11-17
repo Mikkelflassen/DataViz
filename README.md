@@ -8,7 +8,7 @@ The question behind every page is the same: which countries give each other more
 
 | Page | File | What it shows |
 | --- | --- | --- |
-| Country map | `index.html` | Pick a country and see who gives it more or fewer points than expected, or who it favours. The teal wedges mark the strongest mutual bonds. |
+| Country map | `index.html` | Pick a country and see who gives it more or fewer points than expected, or who it favours. Beside the map, the strongest mutual pairs as paired bars. |
 | Voting blocs | `voting-blocs.html` | All countries at once, in a matrix sorted by clustering, next to a map of the groups that come out. |
 | Jury vs televote | `jury-televote.html` | Finding 3.3. Average jury points against average televote points per country for 2016–2023, and one country year by year. |
 | Bias over time | `bias-over-time.html` | Finding 3.4. Why the raw favoritism curve jumps, a measure the points system cannot affect, and jury against televote since 2016. |
@@ -77,7 +77,7 @@ A pair needs enough shared finals before its average is shown: at least 5 for ra
 
 The map's colour scale is a symmetric log scale from −14 to +14 with constant 1. It is linear near 0 and logarithmic further out, because half of all pairs are within ±1 point while a few reach +13. Red and blue of the same strength mean the same number of points.
 
-The strongest bonds are the pairs with the highest average of the two directions. Each direction is drawn as a wedge that is wide at the giver and pointed at the receiver. Its base width and shade show the favoritism in that direction. Both are stretched from the weakest to the strongest wedge on screen, because the top bonds are too close in size to tell apart on a scale from zero; the key under the map prints the two end values. The number on a pair is its rank in the list.
+The strongest pairs are the pairs with the highest average of the two directions. They are shown beside the map as a paired bar chart: one row per pair, each country's bar growing from the middle toward its own name, all on one scale from zero. Hovering a row outlines the two countries on the map and dims the rest; hovering a country on the map picks out its rows.
 
 On the blocs page, the similarity between two countries is the mean of their favoritism in both directions. Countries are clustered bottom-up with average linkage, and the leaf order of that tree sorts the matrix. A branch of the tree is a bloc when its members favour each other by at least the slider value on average (default +2.5 points). Members whose own tie to the rest of the bloc is below that value are then removed, weakest first. Everyone else is in no bloc. At most eight blocs are shown, ranked by what a member gets from the rest of its bloc in one final. A country is left out of a period altogether if it lacks a two-way value with at least half of the others. Bloc names come from the `region` field in `countries.json`.
 
@@ -97,7 +97,7 @@ The same red/blue scale is used on the map, in the side lists and in the blocs m
 
 The blocs page uses a matrix because the graph is dense: almost every country has a value for almost every other. Lecture 11 gives that as the first reason to prefer a matrix over a node-link diagram. The rows and columns are ordered by the clustering so that groups form blocks on the diagonal, which is the idea behind ordering a matrix towards Robinson form (Wu et al. 2008, lecture 11). How strong a bloc has to be is a slider because clustering has no single right answer; letting the reader steer the algorithm is the visual analytics idea from lecture 13. Countries that fit no bloc are left grey instead of being forced into the nearest one, so the picture does not claim more structure than the data has (lecture 5: the visualization should show the data and only the data).
 
-Direction on the map is shown with tapered wedges. Our first version had arrowheads, which piled up where several lines met in the Balkans. Holten and van Wijk (2009, "A user study on visualizing directed edges in graphs") found tapered edges faster and more accurate to read than arrows. That paper is not on the course list. The two wedges of a pair bend only slightly, since lecture 11 lists few edge bends among the criteria for a readable node-link drawing.
+The strongest pairs are not drawn on the map. We tried arrows and then tapered wedges: they crossed each other in the Balkans, competed with the map colours, and their width was hard to compare. Mackinlay's ranking of visual channels (1986, lecture 9) puts position and length well above width or area for quantities, so each pair is now a row of two bars on a shared zero baseline. The map and the chart are linked by hover in both directions (brushing and linking, lecture 4), so the geography is still one move away.
 
 The scatterplot answers lecture 3's checklist like this. Both axes share one scale and the plot is square, so the diagonal is at 45° and distance from it is the gap. Grid lines are faint. The reference line is jury = televote; we left out a trend line because the diagonal is the comparison that matters here. Dots are large enough to click, and only dots that can carry a name without clutter get one.
 

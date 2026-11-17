@@ -1,7 +1,7 @@
 // Country map: pick a country and see who gives it more or fewer points than expected.
 /* global d3 */
 
-import { startPage, onThemeChange, segmented, cssVar } from '../shared/page.js';
+import { startPage, onThemeChange, segmented } from '../shared/page.js';
 import { loadCountries, loadVotes, pairAverages, pairKey, minSharedFinals, signed, yearsLabel, FIRST_YEAR, LAST_YEAR } from '../shared/data.js';
 import { createEuropeMap } from '../shared/europe-map.js';
 import { createFavoritismScale, drawFavoritismLegend } from '../shared/favoritism-scale.js';
@@ -22,7 +22,7 @@ startPage(async () => {
     direction: 'in',        // 'in' = who favours the focus country, 'out' = who it favours
     from: FIRST_YEAR,
     to: LAST_YEAR,
-    bonds: 6,               // how many of the strongest mutual pairs to draw
+    bonds: 8,               // how many of the strongest mutual pairs to list
     bondScope: 'all',       // 'all' of Europe, or only pairs with the 'focus' country
   };
 
@@ -55,8 +55,9 @@ startPage(async () => {
   }
 
   const map = createEuropeMap(d3.select('#map'), topology, {
+    enter: (e, id) => highlightCountry(id),
     move: (e, id) => tooltip.show(e, countryTip(id)),
-    leave: () => tooltip.hide(),
+    leave: () => { highlightCountry(null); tooltip.hide(); },
     click: (e, id) => setFocus(id),
   });
 
@@ -81,119 +82,111 @@ startPage(async () => {
     return pairs.sort((x, y) => d3.descending(x.mutual, y.mutual)).slice(0, state.bonds);
   }
 
-  const samePair = (x, y) => x && y && x.a === y.a && x.b === y.b;
-
-  // Pick out one pair: fade the other wedges and outline the two countries.
-  function highlight(pair) {
-    d3.select('#map').classed('bonds-dim', !!pair);
-    map.overlay.selectAll('.bond, .bond-rank').classed('is-on', d => samePair(d, pair));
-    d3.selectAll('#bond-list li').classed('is-on', d => samePair(d, pair));
-    map.outline(pair ? new Set([pair.a, pair.b]) : null);
-  }
-
-  // One direction of a bond as a tapered shape along a slightly bent line.
-  // Tapered edges read faster than arrowheads for direction (Holten & van Wijk 2009),
-  // and they don't pile up where several lines end in the same small country.
-  // The two directions of a pair bend to opposite sides so both stay visible.
-  function wedgePath(from, to, baseWidth) {
-    const dx = to[0] - from[0], dy = to[1] - from[1];
-    const length = Math.hypot(dx, dy) || 1;
-    const bend = Math.max(13, Math.min(36, length * 0.17));
-    const control = [(from[0] + to[0]) / 2 - dy / length * bend, (from[1] + to[1]) / 2 + dx / length * bend];
-    const at = t => [
-      (1 - t) ** 2 * from[0] + 2 * (1 - t) * t * control[0] + t * t * to[0],
-      (1 - t) ** 2 * from[1] + 2 * (1 - t) * t * control[1] + t * t * to[1],
-    ];
-    const start = Math.min(0.3, 6 / length), end = 1 - Math.min(0.3, 7 / length);   // stay clear of the end dots
-    const steps = 18, left = [], right = [];
-    for (let i = 0; i <= steps; i++) {
-      const s = i / steps, t = start + (end - start) * s;
-      const [x, y] = at(t), [x2, y2] = at(t + 0.001);
-      const l = Math.hypot(x2 - x, y2 - y) || 1, nx = -(y2 - y) / l, ny = (x2 - x) / l;
-      const half = (baseWidth * (1 - s) + 0.6 * s) / 2;
-      left.push([x + nx * half, y + ny * half]);
-      right.push([x - nx * half, y - ny * half]);
-    }
-    return { outline: `M${[...left, ...right.reverse()].join('L')}Z`, centre: d3.line()(d3.range(0, 1.01, 0.1).map(s => at(start + (end - start) * s))) };
-  }
-
-  // Width and colour of a wedge.
+  // The pairs are drawn as a paired bar chart next to the map, not as lines on it.
   //
-  // The strongest bonds are all strong: with six shown they run from about +8 to +10, and on a
-  // scale that starts at zero they look the same. So both scales stretch over the bonds that
-  // are on screen right now, weakest to strongest, and the key under the map prints the two
-  // end values so nobody reads the thinnest wedge as "nearly zero".
-  function bondScales(bonds) {
-    const values = bonds.flatMap(d => [d.ab, d.ba]);
-    const domain = values.length > 1 && d3.min(values) < d3.max(values) ? d3.extent(values) : [0, d3.max(values) || 1];
-    const width = d3.scaleLinear(domain, [2.5, 15]).clamp(true);
-    const shade = d3.scaleLinear(domain, [cssVar('--bond-weak'), cssVar('--bond-strong')]).interpolate(d3.interpolateLab).clamp(true);
-    return { domain, width, shade };
+  // Each row is one pair. The first country's name is on the left and the second's on the
+  // right, and each country's bar grows from the middle toward its own name: the bar under
+  // a name is what that country gives the other. All bars share one scale that starts at
+  // zero, so the strongest and the weakest pair on the list can be compared by length, and
+  // a one-sided friendship shows up as one long and one short bar.
+  //
+  // Lines on the map had three problems: they crossed each other where many pairs meet (the
+  // Balkans), they competed with the map colours, and line width or arrow size is a weak way
+  // to compare amounts. Length from a shared baseline is about the most accurate one there is
+  // (Mackinlay 1986, lecture 9). The map still shows where a pair is: hover a row and the two
+  // countries are picked out, hover a country and its pairs are picked out in the chart.
+
+  const CHART_WIDTH = 320, ROW = 44, TOP = 44;
+  const samePair = (x, y) => x && y && x.a === y.a && x.b === y.b;
+  let shownBonds = [];
+
+  // one pair in focus: outlined on the map with everything else dimmed, and its row picked out
+  function highlightPair(pair) {
+    map.outline(pair ? new Set([pair.a, pair.b]) : null);
+    map.spotlight(pair ? new Set([pair.a, pair.b]) : null);
+    d3.select('#bond-chart').classed('has-focus', !!pair);
+    d3.selectAll('#bond-chart .pair').classed('is-on', d => samePair(d, pair));
   }
 
-  function renderBondKey({ domain, width, shade }) {
-    const svg = d3.select('#bond-key-svg');
-    svg.selectAll('*').remove();
-    const wedge = (x, value) => {
-      const half = width(value) / 2;
-      svg.append('path').attr('d', `M${x},${9 - half}L${x + 44},9L${x},${9 + half}Z`).attr('fill', shade(value));
-    };
-    wedge(2, domain[0]);
-    wedge(104, domain[1]);
-    svg.append('text').attr('class', 'tick-label').attr('x', 50).attr('y', 13).text(signed(domain[0]));
-    svg.append('text').attr('class', 'tick-label').attr('x', 152).attr('y', 13).text(signed(domain[1]));
+  // hovering a country on the map picks out the pairs it is part of
+  function highlightCountry(id) {
+    const involved = d => !!id && (d.a === id || d.b === id);
+    d3.select('#bond-chart').classed('has-focus', !!id && shownBonds.some(involved));
+    d3.selectAll('#bond-chart .pair').classed('is-on', involved);
   }
 
   function renderBonds(bonds) {
+    shownBonds = bonds;
     $('bond-scope-focus').textContent = `With ${nameOf(state.focus)}`;
-    $('bond-years').textContent = `· ${yearsLabel(state.from, state.to)}`;
+    $('bond-years').textContent = yearsLabel(state.from, state.to);
     $('bond-card').hidden = !state.bonds;
-    $('bond-key').hidden = !bonds.length;
 
-    const scales = bondScales(bonds);
-    if (bonds.length) renderBondKey(scales);
-    const rank = new Map(bonds.map((d, i) => [d, i + 1]));   // 1 = strongest, same number in the list and on the map
+    const svg = d3.select('#bond-chart');
+    svg.selectAll('*').remove();
+    if (!bonds.length) {
+      svg.attr('viewBox', `0 0 ${CHART_WIDTH} 30`);
+      svg.append('text').attr('class', 'empty-note').attr('y', 18).text('No pairs in these years');
+      return;
+    }
 
-    const bondTip = d => `<b>${rank.get(d)}. ${nameOf(d.a)} ⇄ ${nameOf(d.b)}</b><br>` +
-      `<span class="m">${nameOf(d.a)} gives ${signed(d.ab)}</span><br><span class="m">${nameOf(d.b)} gives ${signed(d.ba)}</span>`;
+    const mid = CHART_WIDTH / 2, half = mid - 34;   // room for the value at the end of the longest bar
+    const max = Math.max(5, d3.max(bonds, d => Math.max(d.ab, d.ba)));
+    const length = d3.scaleLinear([0, max], [0, half]).nice();
+    const height = TOP + bonds.length * ROW + 4;
+    svg.attr('viewBox', `0 0 ${CHART_WIDTH} ${height}`);
 
-    d3.select('#bond-list').selectAll('li').data(bonds.length ? bonds : [null]).join('li')
-      .html(d => (d
-        ? `<button type="button" data-id="${d.a}"><span class="rank-no">${rank.get(d)}</span>${nameOf(d.a)} ⇄ ${nameOf(d.b)}</button>` +
-          `<span class="pill" style="background:${colour(d.mutual)};color:${colour.ink(d.mutual)}">${signed(d.mutual)}</span>` +
-          `<div class="dirs"><span>${d.a.toUpperCase()} gives ${signed(d.ab)}</span><span>${d.b.toUpperCase()} gives ${signed(d.ba)}</span></div>`
-        : '<span class="empty">No pairs in these years</span><span></span>'))
-      .on('mouseenter', (e, d) => highlight(d))
-      .on('mouseleave', () => highlight(null));
-
-    // weakest first, so the strongest pair is drawn on top
-    const groups = map.overlay.selectAll('g.bond').data([...bonds].reverse(), d => `${d.a}-${d.b}`).join('g')
-      .attr('class', 'bond')
-      .on('mouseenter', (e, d) => highlight(d))
-      .on('mousemove', (e, d) => tooltip.show(e, bondTip(d)))
-      .on('mouseleave', () => { highlight(null); tooltip.hide(); })
-      .on('click', (e, d) => setFocus(d.a === state.focus ? d.b : d.a));
-    groups.selectAll('*').remove();
-    groups.each(function (d) {
-      const g = d3.select(this), pa = map.position[d.a], pb = map.position[d.b];
-      for (const [from, to, fav] of [[pa, pb, d.ab], [pb, pa, d.ba]]) {
-        const width = scales.width(fav), shape = wedgePath(from, to, width);
-        g.append('path').attr('class', 'wedge').attr('d', shape.outline).attr('fill', scales.shade(fav));
-        g.append('path').attr('class', 'hit').attr('d', shape.centre).attr('stroke-width', Math.max(12, width + 6));
+    // scale: faint lines every few points on both sides, numbers along the top
+    const ticks = length.ticks(3).filter(t => t > 0);
+    const grid = svg.append('g').attr('class', 'grid');
+    for (const t of ticks) {
+      for (const x of [mid - length(t), mid + length(t)]) {
+        grid.append('line').attr('x1', x).attr('x2', x).attr('y1', TOP - 5).attr('y2', height - 2);
+        grid.append('text').attr('class', 'tick-label').attr('x', x).attr('y', TOP - 9).attr('text-anchor', 'middle').text(`+${t}`);
       }
-      for (const p of [pa, pb]) g.append('circle').attr('class', 'end').attr('cx', p[0]).attr('cy', p[1]).attr('r', 3);
-    });
+    }
+    svg.append('text').attr('class', 'tick-label').attr('x', 0).attr('y', 10).text('← gives');
+    svg.append('text').attr('class', 'tick-label').attr('x', CHART_WIDTH).attr('y', 10).attr('text-anchor', 'end').text('gives →');
+    svg.append('text').attr('class', 'tick-label').attr('x', mid).attr('y', 10).attr('text-anchor', 'middle').text('points vs expected');
 
-    // rank numbers go in their own layer above all wedges, at the middle of each pair
-    map.overlay.selectAll('g.bond-rank').data(bonds, d => `${d.a}-${d.b}`).join(enter => {
-      const g = enter.append('g').attr('class', 'bond-rank');
-      g.append('circle').attr('r', 8.5);
-      g.append('text').attr('text-anchor', 'middle').attr('dy', 3.6);
-      return g;
-    })
-      .attr('transform', d => `translate(${(map.position[d.a][0] + map.position[d.b][0]) / 2},${(map.position[d.a][1] + map.position[d.b][1]) / 2})`)
-      .raise()
-      .select('text').text(d => rank.get(d));
+    const rowTip = (d, i) => `<b>${i + 1}. ${nameOf(d.a)} ⇄ ${nameOf(d.b)}</b><br>` +
+      `<span class="m">${nameOf(d.a)} gives ${signed(d.ab)}</span><br><span class="m">${nameOf(d.b)} gives ${signed(d.ba)}</span><br>` +
+      `<span class="m">average ${signed(d.mutual)}</span>`;
+
+    const rows = svg.append('g').selectAll('g').data(bonds).join('g')
+      .attr('class', 'pair').attr('transform', (d, i) => `translate(0,${TOP + i * ROW})`)
+      .attr('tabindex', 0).attr('role', 'button')
+      .attr('aria-label', (d, i) => `${i + 1}. ${nameOf(d.a)} gives ${signed(d.ab)}, ${nameOf(d.b)} gives ${signed(d.ba)}`)
+      .on('mouseenter focus', (e, d) => highlightPair(d))
+      .on('mousemove', (e, d) => tooltip.show(e, rowTip(d, bonds.indexOf(d))))
+      .on('mouseleave blur', () => { highlightPair(null); tooltip.hide(); })
+      .on('click keydown', (e, d) => {
+        if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        setFocus(d.a === state.focus ? d.b : d.a);
+      });
+
+    rows.append('rect').attr('class', 'row-bg').attr('x', -4).attr('y', 0).attr('width', CHART_WIDTH + 8).attr('height', ROW - 4).attr('rx', 6);
+    // line 1: rank and the two names, each on the side its bar grows toward
+    rows.append('text').attr('class', 'rank-no').attr('x', mid).attr('y', 14).attr('text-anchor', 'middle').text((d, i) => i + 1);
+    rows.append('text').attr('class', 'pair-name').attr('x', 2).attr('y', 14).text(d => nameOf(d.a));
+    rows.append('text').attr('class', 'pair-name').attr('x', CHART_WIDTH - 2).attr('y', 14).attr('text-anchor', 'end').text(d => nameOf(d.b));
+
+    // line 2: the two bars from the middle, coloured like the map
+    const barY = 21, barH = 13;
+    const bar = (d, value, side) => {
+      const w = length(Math.max(0, value));
+      return { x: side < 0 ? mid - w : mid, w, value, side };
+    };
+    for (const [key, side] of [['ab', -1], ['ba', 1]]) {
+      const parts = rows.append('g').datum(d => bar(d, d[key], side));
+      parts.append('rect').attr('class', 'bar').attr('x', b => b.x).attr('y', barY).attr('width', b => Math.max(b.w, 1.5)).attr('height', barH).attr('rx', 2)
+        .attr('fill', b => colour(b.value));
+      parts.append('text').attr('class', 'bar-value')
+        .attr('x', b => mid + side * (b.w + 4)).attr('y', barY + 10.5).attr('text-anchor', side < 0 ? 'end' : 'start')
+        .attr('fill', b => (b.value < 0 ? 'var(--neg2)' : 'var(--fg)'))
+        .text(b => signed(b.value));
+    }
+    rows.append('line').attr('class', 'mid-line').attr('x1', mid).attr('x2', mid).attr('y1', barY - 2).attr('y2', barY + barH + 2);
   }
 
   // ---------- everything that follows the state
@@ -208,7 +201,6 @@ startPage(async () => {
       ink: id => (id === focus ? 'var(--bg)' : valueFor(id) ? colour.ink(valueFor(id).fav) : 'var(--muted)'),
     });
     map.markSelected(focus);
-    map.lowerLabels(new Set(bonds.flatMap(d => [d.a, d.b])));
 
     const needed = minSharedFinals(state.from, state.to);
     $('hatch-text').textContent = needed > 1 ? `Fewer than ${needed} shared finals` : 'No shared final in these years';
@@ -246,11 +238,7 @@ startPage(async () => {
   segmented($('direction'), value => { state.direction = value; render(); });
   segmented($('bond-scope'), value => { state.bondScope = value; render(); });
 
-  $('bonds').addEventListener('input', e => {
-    state.bonds = +e.target.value;
-    $('bonds-value').textContent = state.bonds;
-    render();
-  });
+  $('bonds').addEventListener('change', e => { state.bonds = +e.target.value; render(); });
 
   const markPreset = wirePresets($('presets'), (from, to) => { slider.set(from, to); setYears(from, to); });
   let frame = 0;
