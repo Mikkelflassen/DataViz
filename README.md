@@ -4,6 +4,8 @@ Website for our Data Visualization project (Aarhus University, fall 2026) on vot
 
 The question behind every page is the same: which countries give each other more points than the songs alone would explain?
 
+**Live site:** https://mikkelflassen.github.io/DataViz/ (GitHub Pages, built from `main`). Add a country code to open the map on it, e.g. `#se` for Sweden.
+
 ## Pages
 
 | Page | File | What it shows |
@@ -28,6 +30,53 @@ python3 -m http.server 8000
 and open http://localhost:8000. Everything works offline except the web fonts, which fall back to system fonts.
 
 There is no build step and nothing to install. D3 and topojson-client are checked in under `js/vendor/`.
+
+## Working together
+
+`main` is what the live site shows. Every push to `main` updates https://mikkelflassen.github.io/DataViz/ within a minute or two, so nobody pushes to `main` directly. Changes go in through a branch and a pull request.
+
+### One-time setup
+
+1. Accept the collaborator invite for this repo (it arrives by email from GitHub).
+2. In VS Code, install the **Codex** extension (by OpenAI) and sign in with your ChatGPT account. Install **Live Server** as well.
+3. Clone the repo: **Source Control → Clone Repository** and paste `https://github.com/Mikkelflassen/DataViz.git`, or in a terminal:
+
+   ```
+   git clone https://github.com/Mikkelflassen/DataViz.git
+   ```
+
+4. The first time you push, VS Code asks you to sign in to GitHub. Use the account that was invited.
+
+### Making a change
+
+1. **Get the latest version.** Switch to `main` and pull:
+
+   ```
+   git checkout main
+   git pull
+   ```
+
+2. **Make a branch** named after you and the change:
+
+   ```
+   git checkout -b anna/legend-size
+   ```
+
+3. **Ask Codex** for the change in its side panel, e.g. "On the voting blocs page, make the legend text larger." Read what it proposes before accepting.
+4. **Check it** with Live Server. Click through the page you changed and at least one other page.
+5. **Commit and push** from Source Control (or `git add -A`, `git commit -m "Larger legend on voting blocs page"`, `git push -u origin anna/legend-size`).
+
+### Merging a change into main
+
+1. On GitHub, open the repo. A yellow bar offers **Compare & pull request** for the branch you just pushed. Click it, or go to **Pull requests → New pull request** and pick `main` ← your branch.
+2. Write one or two lines on what changed and which page to look at, then **Create pull request**.
+3. Someone else in the group opens the branch locally (`git fetch`, `git checkout anna/legend-size`) and checks it in Live Server, or at least reads the diff under **Files changed**.
+4. When it looks right, click **Merge pull request → Confirm merge**, then **Delete branch**.
+5. Everyone runs `git checkout main` and `git pull` before starting the next change.
+
+If GitHub says the branch **has conflicts**, two people changed the same lines. Pull `main` into your branch (`git checkout anna/legend-size`, `git pull origin main`), let Codex or VS Code help resolve the marked lines, check the page again, commit and push. The pull request updates by itself.
+
+To keep conflicts rare, agree who works on which page. Each page has its own `js/pages/<page>.js` and `css/<page>.css`, so two people on two different pages never collide. Shared files (`css/site.css`, `js/shared/`) are worth a heads-up in the group chat before changing them.
 
 ## How the code is organised
 
