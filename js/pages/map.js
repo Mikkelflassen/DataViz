@@ -292,7 +292,8 @@ startPage(async () => {
     // "Given" and "With <country>" need a country
     $('dir-out').disabled = !focus;
     $('bond-scope-focus').disabled = !focus;
-    $('focus-hint').hidden = !!focus;
+    $('dir-out').title = focus ? '' : 'Select a country to see what it gives';
+    $('bond-scope-focus').title = focus ? '' : 'Select a country to see its pairs';
     drawLegend();
 
     renderBonds(bonds);
