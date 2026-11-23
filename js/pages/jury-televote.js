@@ -56,18 +56,26 @@ startPage(async () => {
   // Both axes share one scale and the plot is square, so the jury = televote line runs at
   // exactly 45 degrees and the distance from it is the gap. Colour only says which side a dot is on.
 
-  const SIZE = 620, MARGIN = { left: 58, right: 22, top: 22, bottom: 52 }, RADIUS = 8;
-  const scatter = d3.select('#scatter').attr('viewBox', `0 0 ${SIZE} ${SIZE}`);
+  // Drawn at its real pixel size (the CSS decides how big the square is, see .jt-panel), so dots,
+  // names and axis numbers keep the same size whether the plot is 400 or 700 px wide.
+  const MARGIN = { left: 58, right: 22, top: 22, bottom: 52 }, RADIUS = 8;
+  let SIZE = 620;
+  const scatter = d3.select('#scatter');
   const tint = scatter.append('defs').append('linearGradient').attr('id', 'sides').attr('x1', 0).attr('y1', 0).attr('x2', 1).attr('y2', 1);
   tint.selectAll('stop').data([[0, 'tele', 0.16], [0.5, 'tele', 0], [0.5, 'jury', 0], [1, 'jury', 0.16]]).join('stop')
     .attr('offset', d => d[0]).attr('stop-color', d => `var(--${d[1]})`).attr('stop-opacity', d => d[2]);
   const layer = Object.fromEntries(['back', 'grid', 'diagonal', 'leaders', 'dots', 'labels'].map(name => [name, scatter.append('g').attr('class', name)]));
   layer.labels.attr('pointer-events', 'none');
   layer.leaders.attr('pointer-events', 'none');
-  scatter.append('text').attr('class', 'axis-title').attr('x', (MARGIN.left + SIZE - MARGIN.right) / 2).attr('y', SIZE - 10)
-    .attr('text-anchor', 'middle').text('Mean jury points');
-  scatter.append('text').attr('class', 'axis-title').attr('transform', `translate(16,${(MARGIN.top + SIZE - MARGIN.bottom) / 2}) rotate(-90)`)
-    .attr('text-anchor', 'middle').text('Mean televote points');
+  const xTitle = scatter.append('text').attr('class', 'axis-title').attr('text-anchor', 'middle').text('Mean jury points');
+  const yTitle = scatter.append('text').attr('class', 'axis-title').attr('text-anchor', 'middle').text('Mean televote points');
+
+  function sizeScatter() {
+    SIZE = Math.round(document.querySelector('.scatter-box').getBoundingClientRect().width) || 620;
+    scatter.attr('viewBox', `0 0 ${SIZE} ${SIZE}`).attr('height', SIZE);
+    xTitle.attr('x', (MARGIN.left + SIZE - MARGIN.right) / 2).attr('y', SIZE - 10);
+    yTitle.attr('transform', `translate(16,${(MARGIN.top + SIZE - MARGIN.bottom) / 2}) rotate(-90)`);
+  }
 
   function renderScatter(data) {
     const max = Math.max(6, Math.ceil(d3.max(data, d => Math.max(d.jury, d.tele)) || 6));
@@ -182,7 +190,7 @@ startPage(async () => {
     const fill = (id, list, cls) => d3.select(id).selectAll('li').data(list.length ? list : [null]).join('li')
       .classed('is-selected', d => d && d.id === state.focus)
       .html(d => (d
-        ? `<button type="button" data-id="${d.id}">${nameOf(d.id)}${d.finals === 1 ? ' <small>(1 final)</small>' : ''}</button>` +
+        ? `<button type="button" data-id="${d.id}">${nameOf(d.id)}${d.finals === 1 ? ' <i class="swatch ring single" title="Single final" aria-label="single final"></i>' : ''}</button>` +
           `<span class="pill ${cls}">${signed(Math.abs(d.gap))}</span>`
         : '<span class="empty">None</span><span></span>'));
     fill('#jury-list', sorted.filter(d => d.gap > 0).slice(0, 5), 'jury');
@@ -193,8 +201,16 @@ startPage(async () => {
 
   function renderYearly() {
     const data = perYear(state.focus);
-    const W = 560, H = 300, M = { left: 34, right: 92, top: 14, bottom: 30 };
-    const svg = d3.select('#yearly').attr('viewBox', `0 0 ${W} ${H}`);
+    // Drawn at its real pixel size, so the text stays the same size as elsewhere. When the chart sits
+    // beside the scatterplot it grows to end level with it; on narrow screens it keeps a fixed shape.
+    const svg = d3.select('#yearly');
+    const W = Math.round(svg.node().getBoundingClientRect().width) || 560;
+    const stage = document.querySelector('.panel > .stage').getBoundingClientRect();
+    const top = svg.node().getBoundingClientRect().top;
+    const besideScatter = top < stage.bottom - 200;
+    const H = besideScatter ? Math.max(200, Math.round(stage.bottom - top - 17)) : Math.round(Math.min(320, W * 0.55));
+    const M = { left: 34, right: 92, top: 14, bottom: 30 };
+    svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
     svg.selectAll('*').remove();
 
     const x = d3.scalePoint(CONTESTS, [M.left + 20, W - M.right]);
@@ -296,6 +312,7 @@ startPage(async () => {
 
   function render() {
     tooltip.hide();
+    sizeScatter();
     const data = perCountry();
     $('scatter-years').textContent = yearsLabel(state.from, state.to);
     $('years-value').textContent = yearsLabel(state.from, state.to);
@@ -334,5 +351,9 @@ startPage(async () => {
   });
 
   onThemeChange(render);
+  // both charts beside each other are sized from the layout, so redraw when the layout changes
+  let resizeFrame = 0;
+  addEventListener('resize', () => { cancelAnimationFrame(resizeFrame); resizeFrame = requestAnimationFrame(render); });
+  document.fonts?.ready.then(render);
   render();
 });

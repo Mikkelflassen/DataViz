@@ -1,15 +1,23 @@
 /* Jury vs televote page: scatterplot left, lists and year chart right, pattern chart below */
-:root { --aside: minmax(0, 1fr); --range-w: 300px; }
-.scatter-box { max-width: 560px; width: 100%; margin: 0 auto; }
+:root { --range-w: 300px; }
+
+/* The scatterplot is square and sized to fit the window: never taller than the screen below the
+   top bar and its own heading, never wider than 700 px or 62% of the page. Its column is exactly
+   as wide as the plot, and the lists and the year chart take the rest. */
+.jt-panel { --plot: clamp(400px, min(calc(100vh - 260px), 62vw), 700px); grid-template-columns: calc(var(--plot) + 34px) minmax(0, 1fr); }
+@media (max-width: 920px) { .jt-panel { grid-template-columns: minmax(0, 1fr); --plot: min(100%, 640px); } }
+.scatter-box { width: var(--plot); max-width: 100%; margin: 0 auto; }
 .dot { cursor: pointer; }
 .key-strong { font-weight: 700; color: var(--fg); }
 .key-soft { color: var(--muted); }
 .gap-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
 .gap-lists .lbl { margin-bottom: 4px; }
-@media (max-width: 520px) { .gap-lists { grid-template-columns: 1fr; gap: 12px; } }
+.gaps-card { container-type: inline-size; }
+/* side by side only when both lists fit on one line each */
+@container (max-width: 430px) { .gap-lists { grid-template-columns: 1fr; gap: 12px; } }
 .card-title { font-size: 17px; }
 .rank li.is-selected button { font-weight: 600; }
-.rank small { color: var(--muted); font-size: 12px; }
+.rank .single { width: 9px; height: 9px; margin-left: 4px; vertical-align: 1px; }   /* hollow dot = single final, as in the legend */
 .pill.jury { background: var(--jury); color: #fff; }
 .pill.tele { background: var(--tele); color: #fff; }
 .pill { min-width: 52px; }
