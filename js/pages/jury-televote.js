@@ -6,9 +6,11 @@ import { loadCountries, loadJuryTelevote, signed, yearsLabel } from '../shared/d
 import { createYearRange } from '../shared/year-range.js';
 import { createTooltip } from '../shared/tooltip.js';
 import { createLabelPlacer } from '../shared/label-placement.js';
+import { NO_CONTEST, NO_CONTEST_TIP, axisYears, drawNoContestBridge } from '../shared/no-contest.js';
 
 const $ = id => document.getElementById(id);
 const CONTESTS = [2016, 2017, 2018, 2019, 2021, 2022, 2023];   // no contest in 2020
+const AXIS_YEARS = axisYears(2016, 2023);                      // the year chart keeps 2020 on its axis
 const OUTLIER_SD = 1.25;       // a gap this many standard deviations from the mean gets a bold name
 const two = d3.format('.2f');
 
@@ -36,10 +38,10 @@ startPage(async () => {
     });
   }
 
-  /** The selected country, contest by contest. Years it missed keep a row with nulls. */
+  /** The selected country, year by year. Years it missed (and 2020) keep a row with nulls. */
   function perYear(id) {
     const mine = d3.group(rows.filter(v => v.receiver === id), v => v.year);
-    return CONTESTS.map(year => {
+    return AXIS_YEARS.map(year => {
       const group = mine.get(year);
       return { year, jury: group ? meanJury(group) : null, tele: group ? meanTele(group) : null };
     });
@@ -218,7 +220,7 @@ startPage(async () => {
     svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
     svg.selectAll('*').remove();
 
-    const x = d3.scalePoint(CONTESTS, [M.left + 20, W - M.right]);
+    const x = d3.scalePoint(AXIS_YEARS, [M.left + 20, W - M.right]);
     const y = d3.scaleLinear([0, Math.max(6, Math.ceil(d3.max(data, d => Math.max(d.jury ?? 0, d.tele ?? 0))))], [H - M.bottom, M.top]).nice();
 
     // band behind the years picked with the slider
@@ -231,9 +233,10 @@ startPage(async () => {
     const grid = svg.append('g').attr('class', 'grid').selectAll('g').data(y.ticks(5)).join('g');
     grid.append('line').attr('x1', M.left).attr('x2', W - M.right + 10).attr('y1', y).attr('y2', y);
     grid.append('text').attr('class', 'tick-label').attr('x', M.left - 8).attr('y', t => y(t) + 4).attr('text-anchor', 'end').text(t => t);
-    svg.append('g').selectAll('text').data(CONTESTS).join('text').attr('class', 'tick-label')
+    svg.append('g').selectAll('text').data(AXIS_YEARS).join('text').attr('class', 'tick-label')
+      .classed('no-contest', d => d === NO_CONTEST)
       .attr('x', x).attr('y', H - 10).attr('text-anchor', 'middle').text(d => d);
-    svg.append('g').selectAll('text').data(data.filter(d => d.jury == null)).join('text')
+    svg.append('g').selectAll('text').data(data.filter(d => d.jury == null && d.year !== NO_CONTEST)).join('text')
       .attr('x', d => x(d.year)).attr('y', y(0) - 8).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--muted)').text('not in final');
 
     const yearTip = d => `<b>${nameOf(state.focus)} ${d.year}</b><br><span class="m">jury ${two(d.jury)} · televote ${two(d.tele)}</span><br><span class="m">gap ${signed(d.jury - d.tele)}</span>`;
@@ -244,6 +247,9 @@ startPage(async () => {
         .attr('cx', d => x(d.year)).attr('cy', d => y(d[key])).attr('r', 4.5)
         .attr('fill', `var(--${key})`).attr('stroke', 'var(--surface)').attr('stroke-width', 2)
         .on('mousemove', (e, d) => tooltip.show(e, yearTip(d))).on('mouseleave', () => tooltip.hide());
+      const at = year => data.find(d => d.year === year)?.[key];
+      drawNoContestBridge({ svg, parent: svg, x, y, before: at(NO_CONTEST - 1), after: at(NO_CONTEST + 1), colour: `var(--${key})`, width: 2.2 })
+        ?.on('mousemove', e => tooltip.show(e, NO_CONTEST_TIP)).on('mouseleave', () => tooltip.hide());
     }
 
     // name the lines at their last point; nudge the two apart if they would overlap
