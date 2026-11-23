@@ -1,136 +1,137 @@
 // Favoritism over time.
 //
-// Chart 1: two panels on one time axis. Above, the points each country gives in the final; below,
-// favoritism in points per year. Dotted lines through both panels mark the two lasting changes in
-// the points system, and one hover guide runs through both, so the reader can compare the two
-// shapes directly. Two panels rather than one chart with two y-axes, so neither scale can be read
-// against the other.
+// Chart 1: a heatmap, one row per voting country and one column per final. The colour of a cell is
+// that country's mean favoritism in that final (the average gap, in points, between its vote and
+// what the other countries gave the same song). A thin strip above the columns gives the points
+// each country gave under the voting system of that year. Rows are ordered by first final, so
+// countries joining show as the staircase on the left.
 //
-// Chart 2: the points the strongest 2004-2015 friendships got from jury and televote since 2016.
+// Chart 2: two maps side by side, jury and televote. A line joins each of the 15 pairs with the
+// highest favoritism in 2004-2015; its width is the average points the giver gave the receiver in
+// the 2016-2023 finals, from the jury (left) or the televote (right). Same width scale on both maps.
 /* global d3 */
 
-import { startPage } from '../shared/page.js';
+import { startPage, cssVar, onThemeChange } from '../shared/page.js';
 import { createTooltip } from '../shared/tooltip.js';
+import { createEuropeMap } from '../shared/europe-map.js';
 
-const CHANGES = [1975, 2016];   // the points per country go from 10 to 58, and from 58 to 116
+const FIRST = 1957, LAST = 2023;
 
 startPage(async () => {
-  const [data, systems, friends, countries] = await Promise.all([
-    d3.json('data/bias-over-time.json'), d3.json('data/voting-systems.json'), d3.json('data/old-friendships.json'), d3.json('data/countries.json'),
+  const [data, systems, friends, countries, topology] = await Promise.all([
+    d3.json('data/bias-over-time.json'), d3.json('data/voting-systems.json'), d3.json('data/old-friendships.json'),
+    d3.json('data/countries.json'), d3.json('data/europe.topo.json'),
   ]);
-  const countryName = new Map(countries.map(c => [c.id, c.name]));
+  const name = new Map(countries.map(c => [c.id, c.name]));
+  const nameOf = id => name.get(id) ?? id.toUpperCase();
   const tooltip = createTooltip();
   const systemOf = year => systems.find(s => year >= s.from && year <= s.to);
+  const yearInfo = new Map(data.years.map(d => [d.y, d]));
 
-  renderFavoritism();
-  renderFriends();
+  const paintHeatmap = renderHeatmap();
+  paintHeatmap();
+  onThemeChange(paintHeatmap);
+  renderMaps();
 
-  // ---------- chart 1: points per country above, favoritism below
+  // ---------- chart 1: favoritism per country and final
 
-  function renderFavoritism() {
-    const rows = data.years;
-    const W = 900, M = { left: 48, right: 40 };
-    const P = { top: 30, height: 90 };                 // points panel
-    const F = { top: P.top + P.height + 56, height: 200 }; // favoritism panel
-    const H = F.top + F.height + 28;
-    const svg = d3.select('#fav-chart').attr('viewBox', `0 0 ${W} ${H}`);
-    const x = d3.scaleLinear([1956.5, 2023.5], [M.left, W - M.right]);
-    const yP = d3.scaleLinear([0, 120], [P.top + P.height, P.top]);
-    const yF = d3.scaleLinear([0, d3.max(rows, d => d.raw)], [F.top + F.height, F.top]).nice();
+  function renderHeatmap() {
+    const rows = data.countries;
+    const years = d3.range(FIRST, LAST + 1).filter(y => yearInfo.has(y));
+    const CELL_H = 10, W = 900, M = { left: 132, right: 16, top: 30, bottom: 70 };
+    const H = M.top + rows.length * CELL_H + M.bottom;
+    const svg = d3.select('#heatmap').attr('viewBox', `0 0 ${W} ${H}`);
+    const x = d3.scaleBand(years, [M.left, W - M.right]).paddingInner(0.08);
+    const y = d3.scaleBand(rows.map(r => r.c), [M.top, M.top + rows.length * CELL_H]).paddingInner(0.12);
+    const MAX = 4.5;
 
-    // panel titles and grids
-    svg.append('text').attr('class', 'panel-title').attr('x', M.left).attr('y', P.top - 14).text('Points each country gives in the final');
-    svg.append('text').attr('class', 'panel-title').attr('x', M.left).attr('y', F.top - 14).text('Favoritism, points');
-    for (const [y, ticks, panel] of [[yP, [0, 50, 100], P], [yF, yF.ticks(4), F]]) {
-      const g = svg.append('g').attr('class', 'grid').selectAll('g').data(ticks).join('g');
-      g.append('line').attr('x1', M.left).attr('x2', W - M.right).attr('y1', y).attr('y2', y).classed('zero', t => !t);
-      g.append('text').attr('class', 'tick-label').attr('x', M.left - 8).attr('y', t => y(t) + 4).attr('text-anchor', 'end').text(d => d);
+    // strip above the columns: points each country gave, one block per voting system
+    const strip = svg.append('g').attr('class', 'pts-strip');
+    for (const s of systems) {
+      const ys = years.filter(v => v >= s.from && v <= s.to);
+      if (!ys.length) continue;
+      const x0 = x(ys[0]), x1 = x(ys.at(-1)) + x.bandwidth();
+      const pts = Math.round(d3.mean(ys, v => yearInfo.get(v).ppv));
+      strip.append('rect').attr('x', x0).attr('width', x1 - x0).attr('y', 4).attr('height', 16);
+      if (x1 - x0 > 26) strip.append('text').attr('x', (x0 + x1) / 2).attr('y', 16).attr('text-anchor', 'middle').text(s.from === 1971 ? `≈${pts}` : pts);
     }
-    svg.append('g').selectAll('text').data(d3.range(1960, 2030, 10)).join('text').attr('class', 'tick-label')
-      .attr('x', x).attr('y', H - 6).attr('text-anchor', 'middle').text(d => d);
+    svg.append('text').attr('class', 'strip-label').attr('x', M.left - 8).attr('y', 16).attr('text-anchor', 'end').text('points per country');
 
-    // the two lasting changes, through both panels
-    svg.append('g').selectAll('line').data(CHANGES).join('line').attr('class', 'change-line')
-      .attr('x1', d => x(d - 0.5)).attr('x2', d => x(d - 0.5)).attr('y1', P.top - 4).attr('y2', F.top + F.height);
+    // country names
+    svg.append('g').selectAll('text').data(rows).join('text').attr('class', 'row-label')
+      .attr('x', M.left - 8).attr('y', r => y(r.c) + y.bandwidth() / 2 + 3.5).attr('text-anchor', 'end').text(r => nameOf(r.c));
 
-    // points per country: a step area, one step per contest
-    const step = d3.area().x(d => x(d.y)).y0(yP(0)).y1(d => yP(d.ppv)).curve(d3.curveStep);
-    svg.append('path').datum(rows).attr('class', 'points-area').attr('d', step);
-    svg.append('path').datum(rows).attr('class', 'points-line').attr('d', step.lineY1());
-    const labels = [[1965, 10], [1972, 86, '≈86'], [1995, 58], [2019.5, 116]];
-    svg.append('g').selectAll('text').data(labels).join('text').attr('class', 'points-label').attr('text-anchor', 'middle')
-      .attr('x', d => x(d[0])).attr('y', d => yP(d[1]) - 6).text(d => d[2] ?? d[1]);
-
-    // favoritism per contest
-    svg.append('path').datum(rows).attr('class', 'line-real').attr('d', d3.line().x(d => x(d.y)).y(d => yF(d.raw)));
-
-    // hover: one guide through both panels, snapping to the nearest contest
-    const guide = svg.append('line').attr('class', 'guide').attr('y1', P.top).attr('y2', F.top + F.height).attr('visibility', 'hidden');
-    const dots = svg.append('g').attr('visibility', 'hidden');
-    const dotP = dots.append('circle').attr('class', 'dot-points').attr('r', 4);
-    const dotF = dots.append('circle').attr('class', 'dot-real').attr('r', 4);
-    svg.append('rect').attr('x', M.left).attr('y', P.top).attr('width', W - M.left - M.right).attr('height', F.top + F.height - P.top).attr('fill', 'transparent')
-      .on('mousemove', function (event) {
-        const [mx] = d3.pointer(event, this);
-        const d = d3.least(rows, r => Math.abs(x(r.y) - mx));
-        guide.attr('x1', x(d.y)).attr('x2', x(d.y)).attr('visibility', 'visible');
-        dots.attr('visibility', 'visible');
-        dotP.attr('cx', x(d.y)).attr('cy', yP(d.ppv));
-        dotF.attr('cx', x(d.y)).attr('cy', yF(d.raw));
-        tooltip.show(event, `<b>${d.y}</b> · ${systemOf(d.y)?.title ?? ''}<br>`
-          + `<span class="m">${Math.round(d.ppv)} points per country · favoritism ${d.raw.toFixed(2)}</span>`);
-      })
-      .on('mouseleave', () => { guide.attr('visibility', 'hidden'); dots.attr('visibility', 'hidden'); tooltip.hide(); });
-  }
-
-  // ---------- chart 2: points from jury and televote to the strongest old friendships
-  //
-  // One row per pair, strongest 2004-2015 friendship first: the average jury and televote points
-  // the giver gave the receiver in the 2016-2023 finals, as two dots on one 0-12 axis (a dumbbell).
-  // A dashed line marks what any pair gets on average. Calculated in scripts/build_data.py.
-
-  function renderFriends() {
-    const rows = friends.pairs;
-    const ROW = 24, W = 900, M = { left: 210, right: 70, top: 30, bottom: 30 };
-    const H = M.top + (rows.length + 2) * ROW + M.bottom;
-    const svg = d3.select('#friends').attr('viewBox', `0 0 ${W} ${H}`);
-    const x = d3.scaleLinear([0, 12], [M.left, W - M.right]);
-    const rowY = i => M.top + (i + 0.5) * ROW;
-    const avgY = M.top + (rows.length + 1.5) * ROW;
-    const name = id => countryName.get(id) ?? id.toUpperCase();
-
-    const grid = svg.append('g').attr('class', 'grid').selectAll('g').data(d3.range(0, 13, 2)).join('g');
-    grid.append('line').attr('x1', x).attr('x2', x).attr('y1', M.top - 6).attr('y2', H - M.bottom).classed('zero', t => !t);
-    grid.append('text').attr('class', 'tick-label').attr('x', x).attr('y', H - 10).attr('text-anchor', 'middle').text(d => d);
-    svg.append('text').attr('class', 'note').attr('x', W - M.right).attr('y', H - 10).attr('text-anchor', 'start').attr('dx', 10).text('points');
-
-    // what any pair gets on average
-    const any = (friends.anyPair.jury + friends.anyPair.tele) / 2;
-    svg.append('line').attr('class', 'any-pair').attr('x1', x(any)).attr('x2', x(any)).attr('y1', M.top - 6).attr('y2', H - M.bottom);
-    svg.append('text').attr('class', 'any-label').attr('x', x(any)).attr('y', M.top - 12).attr('text-anchor', 'middle').text(`any pair ${any.toFixed(1)}`);
-
-    function dumbbell(g, d, y, r) {
-      g.append('line').attr('class', 'bar').attr('x1', x(d.jury)).attr('x2', x(d.tele)).attr('y1', y).attr('y2', y);
-      g.append('circle').attr('class', 'dot jury').attr('cx', x(d.jury)).attr('cy', y).attr('r', r);
-      g.append('circle').attr('class', 'dot tele').attr('cx', x(d.tele)).attr('cy', y).attr('r', r);
-    }
-
-    const pair = svg.append('g').selectAll('g').data(rows).join('g').attr('class', 'pair');
-    pair.append('rect').attr('class', 'row-hit').attr('x', 0).attr('width', W).attr('y', (d, i) => rowY(i) - ROW / 2).attr('height', ROW);
-    pair.append('text').attr('class', 'pair-label').attr('x', M.left - 14).attr('y', (d, i) => rowY(i) + 4).attr('text-anchor', 'end')
-      .text(d => `${name(d.from)} → ${name(d.to)}`);
-    pair.each(function (d, i) { dumbbell(d3.select(this), d, rowY(i), 5.5); });
-    pair.on('mousemove', (event, d) => tooltip.show(event, `<b>${name(d.from)} → ${name(d.to)}</b><br>`
-        + `<span class="m">televote ${d.tele.toFixed(1)} · jury ${d.jury.toFixed(1)} points</span><br>`
-        + `<span class="m">${d.n} finals since 2016</span>`))
+    // cells
+    const cells = rows.flatMap(r => Object.entries(r.v).map(([yr, v]) => ({ c: r.c, y: +yr, v })));
+    const rects = svg.append('g').selectAll('rect').data(cells).join('rect').attr('class', 'cell')
+      .attr('x', d => x(d.y)).attr('width', x.bandwidth()).attr('y', d => y(d.c)).attr('height', y.bandwidth())
+      .on('mousemove', (event, d) => tooltip.show(event, `<b>${nameOf(d.c)} · ${d.y}</b><br>`
+        + `<span class="m">favoritism ${d.v.toFixed(2)} points</span><br>`
+        + `<span class="m">${Math.round(yearInfo.get(d.y).ppv)} points per country · ${systemOf(d.y)?.title ?? ''}</span>`))
       .on('mouseleave', () => tooltip.hide());
 
-    // the average of the rows, set apart below them
-    svg.append('line').attr('class', 'avg-rule').attr('x1', 20).attr('x2', W - M.right).attr('y1', avgY - ROW * 1.1).attr('y2', avgY - ROW * 1.1);
-    const avg = svg.append('g').attr('class', 'pair avg');
-    avg.append('text').attr('class', 'pair-label').attr('x', M.left - 14).attr('y', avgY + 4).attr('text-anchor', 'end').text('Average');
-    dumbbell(avg, friends.mean, avgY, 7);
-    avg.append('text').attr('class', 'avg-value jury').attr('x', x(friends.mean.jury)).attr('y', avgY - 12).attr('text-anchor', 'middle').text(friends.mean.jury.toFixed(1));
-    avg.append('text').attr('class', 'avg-value tele').attr('x', x(friends.mean.tele)).attr('y', avgY - 12).attr('text-anchor', 'middle').text(friends.mean.tele.toFixed(1));
+    // year axis
+    const bottom = M.top + rows.length * CELL_H;
+    svg.append('g').selectAll('text').data(years.filter(v => v % 10 === 0)).join('text').attr('class', 'tick-label')
+      .attr('x', v => x(v) + x.bandwidth() / 2).attr('y', bottom + 16).attr('text-anchor', 'middle').text(v => v);
+
+    // colour legend
+    const LW = 220, lx = W - M.right - LW, ly = bottom + 36;
+    const grad = svg.append('defs').append('linearGradient').attr('id', 'heat-grad');
+    const legend = svg.append('g').attr('class', 'heat-legend');
+    legend.append('rect').attr('x', lx).attr('y', ly).attr('width', LW).attr('height', 10).attr('fill', 'url(#heat-grad)');
+    legend.selectAll('text.tick-label').data([0, 1, 2, 3, 4]).join('text').attr('class', 'tick-label')
+      .attr('x', v => lx + (v / MAX) * LW).attr('y', ly + 24).attr('text-anchor', 'middle').text(v => (v === 4 ? '4+' : v));
+    legend.append('text').attr('class', 'strip-label').attr('x', lx - 10).attr('y', ly + 9).attr('text-anchor', 'end').text('favoritism, points');
+
+    // colours come from the theme, so they are set here and again when the theme changes
+    return function paint() {
+      const colour = d3.scaleSequential(d3.interpolateLab(cssVar('--heat-lo'), cssVar('--heat-hi'))).domain([0, MAX]).clamp(true);
+      rects.attr('fill', d => colour(d.v));
+      grad.selectAll('stop').data(d3.range(0, 1.01, 0.1)).join('stop')
+        .attr('offset', t => `${t * 100}%`).attr('stop-color', t => colour(t * MAX));
+    };
+  }
+
+  // ---------- chart 2: the strongest old friendships, jury map and televote map
+
+  function renderMaps() {
+    const pairs = friends.pairs;
+    const involved = new Set(pairs.flatMap(p => [p.from, p.to]));
+    const width = d3.scaleLinear([0, 12], [1, 12]);
+
+    for (const [key, label] of [['jury', 'Jury'], ['tele', 'Televote']]) {
+      d3.select(`#avg-${key}`).text(friends.mean[key].toFixed(1));
+      const svg = d3.select(`#map-${key}`);
+      const map = createEuropeMap(svg, topology, {
+        move: (e, id) => involved.has(id) && tooltip.show(e, `<b>${nameOf(id)}</b>`),
+        leave: () => tooltip.hide(),
+      });
+      map.paint({ fill: id => (involved.has(id) ? 'var(--land-strong)' : 'var(--land)'), ink: () => 'var(--fg-2)' });
+      map.relabel(id => (involved.has(id) ? id.toUpperCase() : ''), 20);
+      svg.select('.map-note').node()?.parentNode.remove();   // the Atlantic boxes: no pair uses them
+
+      // one curved line per pair, bending to the right of its direction, so A→B and B→A separate
+      const arc = p => {
+        const [x1, y1] = map.position[p.from], [x2, y2] = map.position[p.to];
+        const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1;
+        const bend = 0.18;
+        return `M${x1},${y1}Q${mx - dy * bend},${my + dx * bend} ${x2},${y2}`;
+      };
+      map.overlay.selectAll('path').data([...pairs].sort((a, b) => b[key] - a[key])).join('path')
+        .attr('class', p => `bond ${key}${p[key] === 0 ? ' none' : ''}`)
+        .attr('d', arc).attr('stroke-width', p => width(p[key]))
+        .on('mousemove', (event, p) => tooltip.show(event, `<b>${nameOf(p.from)} → ${nameOf(p.to)}</b><br>`
+          + `<span class="m">${label.toLowerCase()} ${p[key].toFixed(1)} points (${p.n} finals)</span>`))
+        .on('mouseleave', () => tooltip.hide());
+    }
+
+    // width legend, shared by both maps
+    const svg = d3.select('#width-legend').attr('viewBox', '0 0 420 34');
+    const g = svg.selectAll('g').data([0, 4, 8, 12]).join('g').attr('transform', (d, i) => `translate(${150 + i * 70},0)`);
+    g.append('line').attr('class', d => `bond legend${d === 0 ? ' none' : ''}`).attr('x1', 0).attr('x2', 40).attr('y1', 12).attr('y2', 12)
+      .attr('stroke-width', d => width(d));
+    g.append('text').attr('class', 'tick-label').attr('x', 20).attr('y', 32).attr('text-anchor', 'middle').text(d => d);
+    svg.append('text').attr('class', 'strip-label').attr('x', 136).attr('y', 16).attr('text-anchor', 'end').text('average points');
   }
 });

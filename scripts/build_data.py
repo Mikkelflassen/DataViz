@@ -95,7 +95,14 @@ def main():
         series.append({"y": y, "raw": round(raw, 3),
                        "ppv": round(mean(handed_out.values()), 1)})
 
-    bias = {"years": series, "eraRaw": era_mean(series, "raw")}
+    # each voting country's mean absolute favoritism per final, for the heatmap
+    by_giver = defaultdict(lambda: defaultdict(list))
+    for r in votes:
+        by_giver[r["giver"]][r["year"]].append(abs(r["fav"]))
+    first = {g: min(ys) for g, ys in by_giver.items()}
+    grid = [{"c": g, "v": {str(y): round(mean(v), 2) for y, v in sorted(ys.items())}}
+            for g, ys in sorted(by_giver.items(), key=lambda kv: (first[kv[0]], kv[0]))]
+    bias = {"years": series, "eraRaw": era_mean(series, "raw"), "countries": grid}
     (OUT / "bias-over-time.json").write_text(json.dumps(bias, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     print(f"data/bias-over-time.json: {len(series)} years")
 
