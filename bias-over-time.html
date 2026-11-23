@@ -21,38 +21,36 @@
     <button type="button" class="help" aria-label="Summary" aria-controls="h-page" aria-expanded="false">?</button>
   </header>
 
-  <section class="stage" aria-labelledby="arcs-title">
+  <section class="stage" aria-labelledby="bars-title">
     <div class="stage-head">
       <div class="ttl">
-        <h2 id="arcs-title">12-point scores between countries, 1975–2023</h2>
-        <button type="button" class="help" aria-label="About this chart" aria-controls="h-arcs" aria-expanded="false">?</button>
+        <h2 id="bars-title">Votes far above the other countries' average, 1975–2023</h2>
+        <button type="button" class="help" aria-label="About this chart" aria-controls="h-bars" aria-expanded="false">?</button>
       </div>
-      <div class="controls">
-        <div class="seg" id="periods" role="group" aria-label="Period"></div>
-        <button type="button" class="play" id="play">▶ Play</button>
+      <div class="keys">
+        <span class="key"><i class="swatch c-all"></i>All votes</span>
+        <span class="key"><i class="swatch c-jury"></i>Jury</span>
+        <span class="key"><i class="swatch c-tele"></i>Televote</span>
       </div>
     </div>
-    <div class="scroll"><svg id="arcs" class="wide" role="img" aria-label="Arc diagram: countries on a line by region, arcs between pairs that often gave each other 12 points in the selected period"></svg></div>
-  </section>
-
-  <section class="stage" aria-labelledby="split-title">
-    <div class="ttl">
-      <h2 id="split-title">12-point scores 2016–2023: jury and televote</h2>
-      <button type="button" class="help" aria-label="About this chart" aria-controls="h-split" aria-expanded="false">?</button>
+    <div class="controls">
+      <label class="threshold" for="threshold"><span>At least <b id="t-value">6</b> <span id="t-unit">points</span> above the average</span>
+        <input type="range" id="threshold" min="1" max="12" step="1" value="6">
+      </label>
+      <div class="seg" id="measure" role="group" aria-label="Show">
+        <button type="button" data-value="count" aria-pressed="true">Number of votes</button>
+        <button type="button" data-value="share" aria-pressed="false">Share of votes</button>
+      </div>
     </div>
-    <div class="scroll"><svg id="split" class="wide" role="img" aria-label="Arc diagram: jury 12-point scores above the line, televote below, 2016–2023"></svg></div>
-    <svg id="arc-legend" aria-hidden="true"></svg>
+    <div class="scroll"><svg id="bars" class="wide" role="img" aria-label="Bar chart: per year, the votes that were at least the chosen number of points above what the other countries gave the same song"></svg></div>
   </section>
 </main>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p>Since 1975 each country gives 12, 10 and 8 to 1 points. From 2016 the jury and the televote each give a set.</p>
+  <p><b>Favoritism</b>: the points a country gave a song minus the average the other countries gave it. Greece gives Cyprus 12, the others give Cyprus 3 on average: +9.</p>
 </div>
-<div class="help-pop" id="h-arcs" role="tooltip" hidden>
-  <p>An arc joins two countries that gave each other at least a quarter of the 12s they could. Hover a country to pick out its arcs.</p>
-</div>
-<div class="help-pop" id="h-split" role="tooltip" hidden>
-  <p>The same, for 2016–2023, with the jury's 12s above the line and the televote's below.</p>
+<div class="help-pop" id="h-bars" role="tooltip" hidden>
+  <p>From 1975, when the top score became 12. From 2016 the jury and the televote each give a set of points.</p>
 </div>
 </body>
 </html>

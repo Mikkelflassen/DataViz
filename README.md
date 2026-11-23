@@ -13,7 +13,7 @@ The question behind every page is the same: which countries give each other more
 | Country map | `index.html` | Pick a country and see who gives it more or fewer points than expected, or who it favours. Beside the map, the strongest mutual pairs as paired bars. |
 | Voting blocs | `voting-blocs.html` | All countries at once, in a matrix sorted by clustering, next to a map of the groups that come out. |
 | Jury vs televote | `jury-televote.html` | Finding 3.3. Average jury points against average televote points per country for 2016–2023, and one country year by year. |
-| Bias over time | `bias-over-time.html` | Finding 3.4. Arc diagrams of the 12-point scores between countries since 1975: one period at a time (buttons or play), and 2016–2023 with the jury above the line and the televote below. |
+| Bias over time | `bias-over-time.html` | Finding 3.4. Per year since 1975, how many votes were at least a chosen number of points above what the other countries gave the same song (slider), as a number or a share of all votes, with jury and televote apart from 2016. |
 
 The logo in the top bar leads back to the country map.
 
@@ -116,7 +116,7 @@ Colours live in CSS custom properties in `css/site.css`, with a second set for d
 python3 scripts/build_data.py
 ```
 
-reads `data/raw/votes.csv` and rewrites `votes-finals.csv`, `jury-televote.csv`, `twelve-arcs.json`. It only uses Python's standard library. `countries.json`, `europe.topo.json` and `voting-systems.json` are edited by hand.
+reads `data/raw/votes.csv` and rewrites `votes-finals.csv`, `jury-televote.csv`, `favoritism-years.json`. It only uses Python's standard library. `countries.json`, `europe.topo.json` and `voting-systems.json` are edited by hand.
 
 ## How the numbers work
 
@@ -132,7 +132,7 @@ On the blocs page, the similarity between two countries is the mean of their fav
 
 On the jury page, the values are the average jury and televote points a country received per voting country in 2016–2023 finals, rest-of-world televote included. The gap is jury minus televote. A country gets a bold name when its gap is more than 1.25 standard deviations from the mean gap of the selected years. Other dots get a grey name when they are at least 24 px from the diagonal, have no other dot within 30 px, and the name fits right beside the dot. Every name has to stay 7 to 10 px clear of all other dots, so it cannot be read as a neighbour's. A dot where that is impossible gets no name, outliers included.
 
-The bias page uses arc diagrams (Nagel + Duval 2013, lecture 9). Countries sit on one line, grouped by region and ordered roughly west to east so that neighbours are close. An arc joins two countries that often gave each other 12 points; its width is the share of possible 12s they gave each other (12s in both directions divided by 2 × the finals both took part in; from 2016 jury and televote each count). Pairs need at least 3 shared finals in a period and a share of at least 25% (`MIN_MEETINGS`, `MIN_WEIGHT` in `scripts/build_data.py`). Only 1975–2023 is shown, the years in which the top score is always 12, so the measure is the same in every period. The first chart shows one period at a time (1975–84, 1985–94, 1995–2004, 2005–15, 2016–23), chosen with buttons or played in sequence: time mapped to time, the animation approach in lecture 9. Arcs are keyed by pair, so an arc that stays from one period to the next changes width instead of being redrawn. The second chart mirrors 2016–2023: the jury's 12s above the line, the televote's below, in the jury and televote colours used on the jury page. Hovering a country fades every arc that does not touch it (brushing, lecture 4). Data: `data/twelve-arcs.json`.
+On the bias page, the favoritism of a vote is its points minus the average the other voting countries gave the same song that year (the giver itself left out). A slider sets a threshold from 1 to 12 points; the bar chart shows, per year, how many votes were at least that far above the average, or, with the switch, what share of all votes that year (the number of voting countries roughly doubled after 2004, so the share keeps years comparable). From 2016 the jury and the televote each give a set of points, so those years have two bars side by side, each counted against the other juries or the other televotes. Only 1975–2023 is shown: from 1975 the top score is always 12, so a threshold in points means the same in every year. The tooltip lists the largest votes of that year above the threshold. Letting the reader set the threshold, instead of fixing one, is the interaction idea from lecture 4: the chart answers "how often is a vote this different?" for whatever "different" the reader has in mind. Data: `data/favoritism-years.json` (counts for every whole-point threshold, so the page does no computation beyond picking a column).
 
 
 ## Design choices and where they come from
@@ -151,7 +151,7 @@ The scatterplot answers lecture 3's checklist like this. Both axes share one sca
 
 The line charts mark rule changes with vertical lines and keep the y-axis starting at 0. Chart 1 has the strip of voting systems directly under it, on the same time axis, so a jump in the line can be read against the rule change that caused it. Time is mapped to position on a linear axis throughout (lecture 9).
 
-The bias page counts 12-point scores rather than a derived favoritism measure, and its titles describe what is shown and leave the conclusion to the reader. Hatching for pairs with too few shared finals is explicit encoding of missing data (lecture 6) instead of silently colouring them as 0.
+The bias page title describes what is shown and leaves the conclusion to the reader. Hatching for pairs with too few shared finals is explicit encoding of missing data (lecture 6) instead of silently colouring them as 0.
 
 ## Limits
 
