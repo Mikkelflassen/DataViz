@@ -1,4 +1,4 @@
-/* Jury vs televote page: scatterplot left, lists and year chart right, pattern chart below */
+/* Jury vs televote page: scatterplot left, lists and year chart right */
 :root { --range-w: 300px; }
 
 /* The scatterplot takes about 60% of the width and fills its card; the gap lists and the
@@ -20,10 +20,8 @@
 .pill.jury { background: var(--jury); color: #fff; }
 .pill.tele { background: var(--tele); color: #fff; }
 .pill { min-width: 52px; }
-#patterns { min-width: 640px; }
 
 .plot-label { paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
 .axis-title { font-size: 13px; font-weight: 600; fill: var(--fg-2); }
 .end-label { font-size: 12px; font-weight: 600; fill: var(--fg); }
 .note { font-size: 11px; fill: var(--muted); }
-.guide { stroke: var(--fg-2); stroke-width: 1; }

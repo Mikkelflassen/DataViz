@@ -35,14 +35,33 @@
     </div>
     <div class="scroll"><svg id="raw-chart" class="wide" role="img" aria-label="Mean favoritism per voting system, raw and standardised, with the points awarded per country below"></svg></div>
   </section>
+
+  <section class="stage" aria-labelledby="patterns-title">
+    <div class="stage-head">
+      <div class="ttl">
+        <h2 id="patterns-title">Jury and televote agreement with 2004–2015 voting patterns</h2>
+        <button type="button" class="help" aria-label="About this chart" aria-controls="h-patterns" aria-expanded="false">?</button>
+      </div>
+      <div class="keys">
+        <span class="key"><i class="swatch line c-jury"></i>Jury</span>
+        <span class="key"><i class="swatch line c-tele"></i>Televote</span>
+      </div>
+    </div>
+    <div class="scroll"><svg id="patterns" class="wide" role="img" aria-label="Correlation of each year's jury and televote favoritism with the 2004–2015 pattern"></svg></div>
+  </section>
 </main>
 <div class="system-pop" id="system-pop" role="status" hidden></div>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
   <p>Raw favoritism rises each time the scoring system hands out more points. Standardised for the spread of points, it stays level across all periods.</p>
+  <p>What has changed is who repeats old preferences. Since 2016 the televote follows the established voting patterns about twice as closely as the jury.</p>
 </div>
 <div class="help-pop" id="h-raw" role="tooltip" hidden>
   <p>Each bar is the mean absolute favoritism for one voting system. <b>Raw</b> is in points. <b>Standardised</b> divides each year by the standard deviation of the points awarded, which removes the effect of the scoring system.</p>
+</div>
+<div class="help-pop" id="h-patterns" role="tooltip" hidden>
+  <p>How closely each year's jury and televote favoritism follows the country pairs' mean favoritism in 2004–2015, when the two were combined. 1 = same pattern, 0 = no relation.</p>
+  <p>Mean 2016–2023: televote <span id="tele-mean">0.54</span>, jury <span id="jury-mean">0.22</span>. Juries depart from the average as much as viewers do, but much less along established friendships.</p>
 </div>
 </body>
 </html>

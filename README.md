@@ -12,8 +12,8 @@ The question behind every page is the same: which countries give each other more
 | --- | --- | --- |
 | Country map | `index.html` | Pick a country and see who gives it more or fewer points than expected, or who it favours. Beside the map, the strongest mutual pairs as paired bars. |
 | Voting blocs | `voting-blocs.html` | All countries at once, in a matrix sorted by clustering, next to a map of the groups that come out. |
-| Jury vs televote | `jury-televote.html` | Finding 3.3. Average jury points against average televote points per country for 2016–2023, one country year by year, and how closely each vote follows the 2004–2015 pattern. |
-| Bias over time | `bias-over-time.html` | Finding 3.4. Raw and standardised favoritism per voting system: the raw value grows with the points system, the standardised one does not. |
+| Jury vs televote | `jury-televote.html` | Finding 3.3. Average jury points against average televote points per country for 2016–2023, and one country year by year. |
+| Bias over time | `bias-over-time.html` | Finding 3.4. Raw and standardised favoritism per voting system (the raw value grows with the points system, the standardised one does not), and how closely jury and televote follow the 2004–2015 voting patterns. |
 
 The logo in the top bar leads back to the country map.
 
@@ -134,7 +134,7 @@ On the jury page, the values are the average jury and televote points a country 
 
 On the bias page, the top panel is the mean absolute favoritism per voting system and the middle panel the same, standardised: each year is divided by the standard deviation of that year's points before averaging. The bottom row is the mean number of points a country awarded under each system. Hovering a column pops up a short note on that system; the notes are in `data/voting-systems.json`. The two measures are drawn as separate panels on one time axis instead of one chart with two y-axes.
 
-The last chart on the jury page is, per year since 2016, the correlation between every pair's jury (or televote) favoritism and the pair's mean favoritism in 2004–2015 (at least three meetings).
+The second chart on the bias page is, per year since 2016, the correlation between every pair's jury (or televote) favoritism and the pair's mean favoritism in 2004–2015 (at least three meetings).
 
 ## Design choices and where they come from
 
