@@ -1,5 +1,7 @@
 // Country map: pick a country and see who gives it more or fewer points than expected.
-// With no country picked (the default), the map shows the total points each country received.
+// With no country picked (the default), the map shows how each country does on average per final:
+// points per voting country, compared with the average entry in that final. Same unit and same
+// red/blue scale as favoritism, so the two views can be read against each other.
 /* global d3 */
 
 import { startPage, onThemeChange, segmented } from '../shared/page.js';
@@ -43,6 +45,11 @@ startPage(async () => {
 
   // Totals and who took part, per year range. A country that was in no final in the range
   // has no data at all and is greyed out like the countries outside Eurovision.
+  //
+  // score: for each final, the mean points the country got per voting country, minus the mean
+  // for every entry in that final; then averaged over the finals it was in. Taking the mean per
+  // final means a country is not rewarded for simply having been in more finals, and comparing
+  // with that final's average entry removes the changes in the points system over the years.
   const totalsCache = new Map();
   function totals() {
     const key = `${state.from}-${state.to}`;
@@ -51,27 +58,24 @@ startPage(async () => {
       const inRange = votes.filter(v => v.year >= state.from && v.year <= state.to);
       const present = new Set();
       inRange.forEach(v => { present.add(v.giver); present.add(v.receiver); });
-      const received = d3.rollup(inRange, rows => ({ points: d3.sum(rows, r => r.points), finals: new Set(rows.map(r => r.year)).size }), v => v.receiver);
+      const yearMean = d3.rollup(inRange, rows => d3.mean(rows, r => r.points), v => v.year);
+      const received = d3.rollup(inRange, rows => {
+        const perFinal = d3.rollups(rows, g => d3.mean(g, r => r.points) - yearMean.get(g[0].year), r => r.year);
+        return {
+          points: d3.sum(rows, r => r.points),
+          finals: perFinal.length,
+          score: d3.mean(perFinal, d => d[1]),
+        };
+      }, v => v.receiver);
       totalsCache.set(key, { present, received });
     }
     return totalsCache.get(key);
   }
   const isAbsent = id => !totals().present.has(id);
-  const totalFor = id => totals().received.get(id) ?? (isAbsent(id) ? null : { points: 0, finals: 0 });
-
-  // Total points use the red half of the same colours as favoritism, on a square-root scale:
-  // all totals are positive, and a few countries have many times more than most.
-  function createTotalsScale() {
-    const max = d3.max(totals().received.values(), d => d.points) || 1;
-    const t = d3.scaleSqrt([0, max], [0.56, 1]).nice().clamp(true);
-    const scale = v => colour.interpolate(t(v));
-    scale.ink = v => (d3.lab(scale(v)).l < 58 ? '#ffffff' : '#15151b');
-    scale.domain = () => t.domain();
-    scale.ticks = n => t.ticks(n);
-    scale.t = t;
-    return scale;
-  }
-  let totalsColour = null;
+  const totalFor = id => totals().received.get(id) ?? null;   // null: absent, or never received a vote
+  // Same minimum as for pairs, so one lucky final doesn't top the list.
+  const enoughFinals = t => t && t.finals >= minSharedFinals(state.from, state.to);
+  const scoreFor = id => (enoughFinals(totalFor(id)) ? totalFor(id) : null);
   const thousands = d3.format(',');
 
   /** The pair shown on country `id`, given the focus country and direction. */
@@ -82,8 +86,10 @@ startPage(async () => {
     if (isAbsent(id)) return `<b>${nameOf(id)}</b><br><span class="m">no final in ${yearsLabel(state.from, state.to)}</span>`;
     if (!state.focus) {
       const t = totalFor(id);
-      return `<b>${nameOf(id)}</b><br><span class="m">${thousands(t.points)} points received</span><br>` +
-        `<span class="m">${t.finals} final${t.finals === 1 ? '' : 's'}${t.finals ? `, ${(t.points / t.finals).toFixed(1)} per final` : ''}</span>`;
+      if (!t) return `<b>${nameOf(id)}</b><br><span class="m">insufficient data</span>`;
+      if (!enoughFinals(t)) return `<b>${nameOf(id)}</b><br><span class="m">only ${t.finals} final${t.finals === 1 ? '' : 's'}: too few for an average</span>`;
+      return `<b>${nameOf(id)}</b><br><span class="m">${signed(t.score)} pts per voter vs average entry</span><br>` +
+        `<span class="m">${thousands(t.points)} points in ${t.finals} final${t.finals === 1 ? '' : 's'}, ${(t.points / t.finals).toFixed(0)} per final</span>`;
     }
     if (id === state.focus) return `<b>${nameOf(id)}</b><br><span class="m">selected country</span>`;
     const [giver, receiver] = pairFor(id);
@@ -240,20 +246,20 @@ startPage(async () => {
     map.markAbsent(isAbsent);
 
     if (!focus) {
-      // ---------- overview: total points received
-      totalsColour = createTotalsScale();
+      // ---------- overview: how each country does per final, on the favoritism colours
       map.paint({
-        fill: id => (isAbsent(id) ? absentFill : totalsColour(totalFor(id).points)),
-        ink: id => (isAbsent(id) ? absentInk : totalsColour.ink(totalFor(id).points)),
+        fill: id => (isAbsent(id) ? absentFill : scoreFor(id) ? colour(scoreFor(id).score) : null),
+        ink: id => (isAbsent(id) ? absentInk : scoreFor(id) ? colour.ink(scoreFor(id).score) : 'var(--muted)'),
       });
       map.markSelected(null);
-      $('map-title').textContent = 'Total points received';
-      $('top-heading').textContent = 'Most points received';
-      $('low-heading').textContent = 'Fewest points received';
-      const ranked = countries.filter(c => !isAbsent(c.id) && totals().received.has(c.id))
-        .map(c => ({ id: c.id, points: totalFor(c.id).points })).sort((a, b) => d3.descending(a.points, b.points));
-      fillList('#top', ranked.slice(0, 5), d => totalsColour(d.points), d => totalsColour.ink(d.points), d => thousands(d.points));
-      fillList('#low', ranked.slice(-3).reverse(), d => totalsColour(d.points), d => totalsColour.ink(d.points), d => thousands(d.points));
+      $('map-title').textContent = 'Points received per final';
+      $('top-heading').textContent = 'Most points per final';
+      $('low-heading').textContent = 'Fewest points per final';
+      const ranked = countries.filter(c => scoreFor(c.id)).map(c => ({ id: c.id, t: scoreFor(c.id) }))
+        .sort((a, b) => d3.descending(a.t.score, b.t.score));
+      const fill = d => colour(d.t.score), ink = d => colour.ink(d.t.score), text = d => signed(d.t.score);
+      fillList('#top', ranked.slice(0, 5), fill, ink, text);
+      fillList('#low', ranked.slice(-3).reverse(), fill, ink, text);
     } else {
       // ---------- one country: favoritism toward it or from it
       const name = nameOf(focus);
@@ -273,13 +279,13 @@ startPage(async () => {
     }
 
     const needed = minSharedFinals(state.from, state.to);
-    $('hatch-text').textContent = needed > 1 ? `Fewer than ${needed} shared finals` : 'No shared finals';
+    $('hatch-text').textContent = !focus ? `Fewer than ${needed} finals` : needed > 1 ? `Fewer than ${needed} shared finals` : 'No shared finals';
     $('key-selected').hidden = !focus;
-    $('key-hatch').hidden = !focus;
+    $('key-hatch').hidden = !focus && needed === 1;
     $('map-years').textContent = years;
     $('map').setAttribute('aria-label', focus
       ? `Map of Europe coloured by favoritism ${incoming ? 'toward' : 'from'} ${nameOf(focus)}`
-      : 'Map of Europe coloured by total points received');
+      : 'Map of Europe coloured by points received per final, compared with the average entry');
 
     // "Given" and "With <country>" need a country
     $('dir-out').disabled = !focus;
@@ -314,7 +320,7 @@ startPage(async () => {
   // ---------- controls
 
   const select = $('focus');
-  select.add(new Option('All countries: total points', ''));
+  select.add(new Option('All countries', ''));
   [...countries].sort((a, b) => a.name.localeCompare(b.name)).forEach(c => select.add(new Option(c.name, c.id)));
   select.value = state.focus ?? '';
   select.addEventListener('change', () => setFocus(select.value || null));
@@ -347,27 +353,9 @@ startPage(async () => {
   addEventListener('hashchange', () => { const id = countryFromHash(known); if (id) setFocus(id); });
 
   function drawLegend() {
-    if (state.focus) drawFavoritismLegend(d3.select('#legend'), colour);
-    else drawTotalsLegend(d3.select('#legend'), totalsColour);
+    drawFavoritismLegend(d3.select('#legend'), colour, state.focus ? 'points vs expected' : 'points per voter vs average entry');
   }
   onThemeChange(() => { colour = createFavoritismScale(); render(); });
   render();
 });
 
-// Legend for the total points: the red half of the favoritism colours, ticks where the
-// square-root scale puts them.
-function drawTotalsLegend(svg, scale) {
-  const width = 280, x0 = 10, x1 = width - 10;
-  const [lo, hi] = scale.t.range();
-  const x = v => x0 + (scale.t(v) - lo) / (hi - lo) * (x1 - x0);
-  const id = `${svg.attr('id')}-totals-gradient`;
-  svg.attr('viewBox', `0 0 ${width} 44`).selectAll('*').remove();
-  svg.append('defs').append('linearGradient').attr('id', id)
-    .selectAll('stop').data(d3.range(0, 1.0001, 0.05)).join('stop')
-    .attr('offset', t => t).attr('stop-color', t => scale(scale.t.invert(lo + t * (hi - lo))));
-  svg.append('rect').attr('x', x0).attr('y', 2).attr('width', x1 - x0).attr('height', 10).attr('rx', 3).attr('fill', `url(#${id})`);
-  const ticks = svg.append('g').selectAll('g').data(scale.ticks(4)).join('g').attr('transform', v => `translate(${x(v)},0)`);
-  ticks.append('line').attr('y1', 12).attr('y2', 16).attr('stroke', 'var(--muted)');
-  ticks.append('text').attr('class', 'tick-label').attr('y', 27).attr('text-anchor', 'middle').text(d3.format('~s'));
-  svg.append('text').attr('class', 'tick-label').attr('x', width / 2).attr('y', 41).attr('text-anchor', 'middle').text('total points received');
-}

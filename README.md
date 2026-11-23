@@ -10,7 +10,7 @@ The question behind every page is the same: which countries give each other more
 
 | Page | File | What it shows |
 | --- | --- | --- |
-| Country map | `index.html` | Opens on the total points each country received. Pick a country (click it again to go back) and see who gives it more or fewer points than expected, or who it favours. Countries in no final in the chosen years are grey. Beside the map, the strongest mutual pairs as paired bars. |
+| Country map | `index.html` | Opens on the points each country received per final, compared with the average entry. Pick a country (click it again to go back) and see who gives it more or fewer points than expected, or who it favours. Countries in no final in the chosen years are grey. Beside the map, the strongest mutual pairs as paired bars. |
 | Voting blocs | `voting-blocs.html` | All countries at once, in a matrix sorted by clustering, next to a map of the groups that come out. |
 | Jury vs televote | `jury-televote.html` | Finding 3.3. Average jury points against average televote points per country for 2016–2023, and one country year by year. |
 | Bias over time | `bias-over-time.html` | Finding 3.4. Raw and standardised favoritism per voting system (the raw value grows with the points system, the standardised one does not), and how closely jury and televote follow the 2004–2015 voting patterns. |
@@ -124,7 +124,7 @@ Favoritism is the points a country gave minus the average the receiver got from 
 
 A pair needs enough shared finals before its average is shown: at least 5 for ranges of 20 years or more, 3 for 8 to 19 years and 1 for shorter ranges.
 
-With no country picked, the map shows each country's total points received in the chosen years, in the red half of the same colours on a square-root scale. A country that was in no final in those years is grey, like the countries outside Eurovision; a country that was there but shared too few finals with the selected one is hatched.
+With no country picked, the map shows how many points each country received per final: for each final, the mean points it got per voting country minus the mean for every entry in that final, averaged over the finals it was in, with the same minimum number of finals as for pairs. That is in points per voter like favoritism, so both views use the same red/blue scale; averaging per final keeps countries with many finals from looking stronger just for having been there more often. A country that was in no final in those years is grey, like the countries outside Eurovision; a country that was there but shared too few finals with the selected one is hatched.
 
 There was no contest in 2020. The line charts keep 2020 on the time axis as a hollow point on a straight 2019–2021 line that fades out toward 2020 and back in (`js/shared/no-contest.js`).
 

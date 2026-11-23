@@ -54,15 +54,15 @@
   <section class="panel" aria-label="Favoritism map">
     <div class="stage">
       <div class="stage-head">
-        <h2><span id="map-title">Total points received</span> <span class="yr" id="map-years"></span></h2>
+        <h2><span id="map-title">Points received per final</span> <span class="yr" id="map-years"></span></h2>
         <div class="ttl">
           <svg id="legend" class="legend" role="img" aria-label="Colour scale: points above or below expected, on a symmetric log scale"></svg>
           <button type="button" class="help" aria-label="About the colour scale" aria-controls="h-scale" aria-expanded="false">?</button>
         </div>
       </div>
-      <div class="mapbox"><svg id="map" role="img" aria-label="Map of Europe coloured by total points received"></svg></div>
+      <div class="mapbox"><svg id="map" role="img" aria-label="Map of Europe coloured by points received per final, compared with the average entry"></svg></div>
       <div class="keys">
-        <span class="key" id="key-selected" hidden><i class="swatch c-fg"></i>Selected country (click again for totals)</span>
+        <span class="key" id="key-selected" hidden><i class="swatch c-fg"></i>Selected country (click again to go back)</span>
         <span class="key" id="key-hatch" hidden><i class="swatch hatch"></i><span id="hatch-text">Insufficient data</span></span>
         <span class="key"><i class="swatch c-land"></i>Not in a final in these years</span>
         <button type="button" class="help" aria-label="About the map" aria-controls="h-keys" aria-expanded="false">?</button>
@@ -98,14 +98,14 @@
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
   <p><b>Favoritism</b> is the points one country gives another, minus the average the recipient received from all voters that year, averaged over their shared finals.</p>
-  <p>The map opens on the <b>total points</b> each country received in the selected years. Select a country in the list or on the map to see its favoritism; click it again to go back to the totals.</p>
+  <p>With no country selected, the map shows how many points each country received <b>per final</b>: per voting country, compared with the average entry in the same final, and averaged over the finals it was in (with the same minimum number of finals as for pairs). Select a country in the list or on the map to see its favoritism; click it again to go back.</p>
 </div>
 <div class="help-pop" id="h-years" role="tooltip" hidden>
   <p>Finals only, 1957–2023; no contest in 2020. Minimum shared finals per pair: 5 for ranges of 20+ years, 3 for 8–19 years, 1 otherwise.</p>
 </div>
 <div class="help-pop" id="h-scale" role="tooltip" hidden>
   <p>Symmetric log scale: linear near zero and logarithmic beyond ±1, so both small and large values remain distinguishable. Red and blue are symmetric.</p>
-  <p>Total points use the red half of the same colours on a square-root scale, from light (few points) to dark red (most).</p>
+  <p>The same scale is used with and without a selected country. Without one, red means more points per final than the average entry, blue fewer.</p>
 </div>
 <div class="help-pop" id="h-keys" role="tooltip" hidden>
   <p>Micro-states are shown as dots; Australia and former states in the inset boxes. Grey countries were in no final in the selected years.</p>
