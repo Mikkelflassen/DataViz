@@ -77,6 +77,10 @@ startPage(async () => {
     yTitle.attr('transform', `translate(16,${(MARGIN.top + SIZE - MARGIN.bottom) / 2}) rotate(-90)`);
   }
 
+  // Countries that got a name in the scatterplot. The gap lists show exactly these, so a name
+  // on the plot can always be found in the list and the other way round.
+  let labelled = [];
+
   function renderScatter(data) {
     const max = Math.max(6, Math.ceil(d3.max(data, d => Math.max(d.jury, d.tele)) || 6));
     const x = d3.scaleLinear([0, max], [MARGIN.left, SIZE - MARGIN.right]);
@@ -156,6 +160,7 @@ startPage(async () => {
     const fontFor = (d, strong) => ({ size: isFocus(d) ? 13 : strong ? 12.5 : 11.5, weight: isFocus(d) ? 700 : strong ? 600 : 400 });
 
     const placed = [];
+    labelled = placed;   // the gap lists show the same countries
     const required = dots.filter(d => isFocus(d) || isOutlier(d))
       .sort((a, b) => isFocus(b) - isFocus(a) || Math.abs(b.gap - meanGap) - Math.abs(a.gap - meanGap));
     for (const d of required) {
@@ -185,16 +190,16 @@ startPage(async () => {
 
   // ---------- ranked lists
 
-  function renderLists(data) {
-    const sorted = d3.sort(data, d => -d.gap);
+  function renderLists() {
+    const named = labelled.map(p => p.d);
     const fill = (id, list, cls) => d3.select(id).selectAll('li').data(list.length ? list : [null]).join('li')
       .classed('is-selected', d => d && d.id === state.focus)
       .html(d => (d
         ? `<button type="button" data-id="${d.id}">${nameOf(d.id)}${d.finals === 1 ? ' <i class="swatch ring single" title="Single final" aria-label="single final"></i>' : ''}</button>` +
           `<span class="pill ${cls}">${signed(Math.abs(d.gap))}</span>`
         : '<span class="empty">None</span><span></span>'));
-    fill('#jury-list', sorted.filter(d => d.gap > 0).slice(0, 5), 'jury');
-    fill('#tele-list', sorted.filter(d => d.gap < 0).slice(-5).reverse(), 'tele');
+    fill('#jury-list', d3.sort(named.filter(d => d.gap > 0), d => -d.gap), 'jury');
+    fill('#tele-list', d3.sort(named.filter(d => d.gap < 0), d => d.gap), 'tele');
   }
 
   // ---------- year by year
@@ -265,7 +270,7 @@ startPage(async () => {
     $('scatter-years').textContent = yearsLabel(state.from, state.to);
     $('years-value').textContent = yearsLabel(state.from, state.to);
     renderScatter(data);
-    renderLists(data);
+    renderLists();
     renderYearly();
   }
 
