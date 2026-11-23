@@ -1,7 +1,10 @@
-// Top bar, shared by every page.
+// Top bar, shared by every page: the logo on the left (a link to the country map) and the
+// pages as equal boxes in the centre. No page is styled differently from the others; the
+// current one only gets a darker outline so readers know where they are.
 // To add a page: make the .html file, then add one line to PAGES.
 
 const PAGES = [
+  { href: 'index.html', label: 'Country map' },
   { href: 'voting-blocs.html', label: 'Voting blocs' },
   { href: 'jury-televote.html', label: 'Jury vs Televote' },
   { href: 'bias-over-time.html', label: 'Bias over time' },
@@ -30,8 +33,8 @@ export function renderTopbar() {
   const links = PAGES.map(p => `<li><a href="${p.href}"${current(p.href)}>${p.label}</a></li>`).join('');
   bar.innerHTML = `
     <div class="topbar-in">
-      <a class="brand" href="index.html"${current('index.html')} title="Back to the country map">
-        ${LOGO}<span class="brand-txt"><b>Eurovision Favoritism</b><small>Country map</small></span>
+      <a class="brand" href="index.html" title="Country map">
+        ${LOGO}<span class="brand-txt">Eurovision Favoritism</span>
       </a>
       <nav aria-label="Pages"><ul>${links}</ul></nav>
     </div>`;
