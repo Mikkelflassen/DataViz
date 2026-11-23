@@ -248,9 +248,13 @@ startPage(async () => {
     svg.append('g').selectAll('line').data(present).join('line').attr('class', 'gap-bar')
       .attr('x1', d => x(d.year)).attr('x2', d => x(d.year)).attr('y1', d => y(d.jury)).attr('y2', d => y(d.tele))
       .attr('stroke', 'var(--line-strong)').attr('stroke-width', 3).attr('stroke-linecap', 'round');
+    // When the two dots (nearly) coincide, set them side by side so both stay visible.
+    const DOT = 5;
+    const overlap = d => Math.abs(y(d.jury) - y(d.tele)) < DOT * 2;
+    const shift = { jury: -DOT, tele: DOT };
     for (const key of ['jury', 'tele']) {
       svg.append('g').selectAll('circle').data(present).join('circle')
-        .attr('cx', d => x(d.year)).attr('cy', d => y(d[key])).attr('r', 5)
+        .attr('cx', d => x(d.year) + (overlap(d) ? shift[key] : 0)).attr('cy', d => y(d[key])).attr('r', DOT)
         .attr('fill', `var(--${key})`).attr('stroke', 'var(--surface)').attr('stroke-width', 2);
     }
 
@@ -267,14 +271,15 @@ startPage(async () => {
     // Only beside the last column: further left they would run into the next years.
     const last = data.at(-1);
     if (last.jury != null) {
+      const labelX = x(last.year) + 10 + (overlap(last) ? DOT : 0);
       let yJury = y(last.jury), yTele = y(last.tele);
       if (Math.abs(yJury - yTele) < 14) {
         const middle = (yJury + yTele) / 2, up = yJury < yTele ? -7 : 7;
         yJury = middle + up;
         yTele = middle - up;
       }
-      svg.append('text').attr('class', 'end-label').attr('x', x(last.year) + 10).attr('y', yJury + 4).text(`Jury ${last.jury.toFixed(1)}`);
-      svg.append('text').attr('class', 'end-label').attr('x', x(last.year) + 10).attr('y', yTele + 4).text(`Televote ${last.tele.toFixed(1)}`);
+      svg.append('text').attr('class', 'end-label').attr('x', labelX).attr('y', yJury + 4).text(`Jury ${last.jury.toFixed(1)}`);
+      svg.append('text').attr('class', 'end-label').attr('x', labelX).attr('y', yTele + 4).text(`Televote ${last.tele.toFixed(1)}`);
     }
     $('years-title').textContent = `${nameOf(state.focus)} by year`;
   }
