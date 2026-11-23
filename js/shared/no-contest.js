@@ -33,8 +33,8 @@ export function drawNoContestBridge({ svg, parent, x, y, before, after, colour, 
   const id = `no-contest-${++gradientCount}`;
   const gradient = defs.append('linearGradient').attr('id', id)
     .attr('gradientUnits', 'userSpaceOnUse').attr('x1', x0).attr('x2', x1).attr('y1', 0).attr('y2', 0);
-  // Fades fast: mostly gone a quarter of the way from each side, invisible around 2020.
-  const FADE = [[0, 1], [0.12, 0.55], [0.25, 0.15], [0.36, 0], [0.64, 0], [0.75, 0.15], [0.88, 0.55], [1, 1]];
+  // Fades fast toward 2020 but never below a faint floor, so the line is always visible.
+  const FADE = [[0, 1], [0.12, 0.6], [0.25, 0.32], [0.36, 0.25], [0.64, 0.25], [0.75, 0.32], [0.88, 0.6], [1, 1]];
   gradient.selectAll('stop').data(FADE).join('stop')
     .attr('offset', d => d[0]).style('stop-color', colour).style('stop-opacity', d => d[1]);
 
