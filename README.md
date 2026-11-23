@@ -33,7 +33,7 @@ There is no build step and nothing to install. D3 and topojson-client are checke
 
 ## Working together
 
-`main` is what the live site shows. Every push to `main` updates https://mikkelflassen.github.io/DataViz/ within a minute or two, so nobody pushes to `main` directly. Changes go in through a branch and a pull request.
+`main` is what the live site shows, and everyone works directly on `main`. Every push updates https://mikkelflassen.github.io/DataViz/ within a minute or two, so a change goes live as soon as it is pushed. There are no branches or pull requests.
 
 ### One-time setup
 
@@ -49,32 +49,20 @@ There is no build step and nothing to install. D3 and topojson-client are checke
 
 ### Making a change
 
-1. **Get the latest version.** Switch to `main` and pull:
+1. **Get the latest version** before you start:
 
    ```
-   git checkout main
    git pull
    ```
 
-2. **Make a branch** named after you and the change:
+2. **Ask Codex** for the change in its side panel, e.g. "On the voting blocs page, make the legend text larger." Read what it proposes before accepting.
+3. **Check it** with Live Server. Click through the page you changed and at least one other page. What you push is live right away, so this is the only check before the site changes.
+4. **Commit and push** from Source Control (or `git add -A`, `git commit -m "Larger legend on voting blocs page"`, `git push`).
+5. Open https://mikkelflassen.github.io/DataViz/ a minute or two later and check that it looks right.
 
-   ```
-   git checkout -b anna/legend-size
-   ```
+If the push is **rejected** because someone else pushed first, run `git pull`, then push again. If `git pull` reports a **conflict**, two people changed the same lines: let Codex or VS Code help resolve the marked lines, check the page again in Live Server, commit and push.
 
-3. **Ask Codex** for the change in its side panel, e.g. "On the voting blocs page, make the legend text larger." Read what it proposes before accepting.
-4. **Check it** with Live Server. Click through the page you changed and at least one other page.
-5. **Commit and push** from Source Control (or `git add -A`, `git commit -m "Larger legend on voting blocs page"`, `git push -u origin anna/legend-size`).
-
-### Merging a change into main
-
-1. On GitHub, open the repo. A yellow bar offers **Compare & pull request** for the branch you just pushed. Click it, or go to **Pull requests → New pull request** and pick `main` ← your branch.
-2. Write one or two lines on what changed and which page to look at, then **Create pull request**.
-3. Someone else in the group opens the branch locally (`git fetch`, `git checkout anna/legend-size`) and checks it in Live Server, or at least reads the diff under **Files changed**.
-4. When it looks right, click **Merge pull request → Confirm merge**, then **Delete branch**.
-5. Everyone runs `git checkout main` and `git pull` before starting the next change.
-
-If GitHub says the branch **has conflicts**, two people changed the same lines. Pull `main` into your branch (`git checkout anna/legend-size`, `git pull origin main`), let Codex or VS Code help resolve the marked lines, check the page again, commit and push. The pull request updates by itself.
+To undo a change that broke the site, find its commit under **Source Control → Graph** (or `git log --oneline`) and run `git revert <commit>` followed by `git push`.
 
 To keep conflicts rare, agree who works on which page. Each page has its own `js/pages/<page>.js` and `css/<page>.css`, so two people on two different pages never collide. Shared files (`css/site.css`, `js/shared/`) are worth a heads-up in the group chat before changing them.
 
