@@ -1,4 +1,5 @@
-// Favoritism over time: raw favoritism grows with the points system, standardised favoritism does not.
+// Favoritism over time: raw favoritism grows with the points system, standardised favoritism does not;
+// and since 2016 the televote follows old voting patterns more closely than the jury.
 //
 // Two panels on one time axis, raw above and standardised below, each showing the mean for every
 // voting system. Underneath, the points a country awarded under each system. Reading down one
@@ -8,6 +9,7 @@
 /* global d3 */
 
 import { startPage } from '../shared/page.js';
+import { createTooltip } from '../shared/tooltip.js';
 
 const $ = id => document.getElementById(id);
 const WIDTH = 900;
@@ -15,7 +17,10 @@ const YEAR_AXIS = [1956, 2024];
 const DECADES = d3.range(1960, 2030, 10);
 
 startPage(async () => {
-  const [data, systems] = await Promise.all([d3.json('data/bias-over-time.json'), d3.json('data/voting-systems.json')]);
+  const [data, systems, patterns] = await Promise.all([
+    d3.json('data/bias-over-time.json'), d3.json('data/voting-systems.json'), d3.json('data/jury-televote-patterns.json'),
+  ]);
+  const tooltip = createTooltip();
 
   const yearsIn = system => data.years.filter(d => d.y >= system.from && d.y <= system.to);
   const meanOf = (system, key) => d3.mean(yearsIn(system), d => d[key]);
@@ -111,4 +116,51 @@ startPage(async () => {
     pop.style.left = `${left}px`;
     pop.style.top = `${above > 8 ? above : at.bottom + 8}px`;
   }
+
+  // ---------- chart 2: jury and televote against the 2004-2015 pattern
+  //
+  // For every year since the split: the correlation between each pair's jury (or televote)
+  // favoritism that year and the pair's mean favoritism in 2004-2015, when both were combined.
+  // Calculated in scripts/build_data.py. Jury and televote colours as on the jury page.
+
+  function renderPatterns() {
+    const rows = patterns.years;
+    const W = 900, H = 260, M = { left: 48, right: 110, top: 30, bottom: 30 };
+    const svg = d3.select('#patterns').attr('viewBox', `0 0 ${W} ${H}`);
+    svg.selectAll('*').remove();
+    const x = d3.scalePoint(rows.map(d => d.y), [M.left + 24, W - M.right]);
+    const y = d3.scaleLinear([0, 0.8], [H - M.bottom, M.top]);
+
+    const grid = svg.append('g').attr('class', 'grid').selectAll('g').data(y.ticks(4)).join('g');
+    grid.append('line').attr('x1', M.left).attr('x2', W - M.right + 20).attr('y1', y).attr('y2', y).classed('zero', t => !t);
+    grid.append('text').attr('class', 'tick-label').attr('x', M.left - 8).attr('y', t => y(t) + 4).attr('text-anchor', 'end').text(d3.format('.1f'));
+    svg.append('text').attr('class', 'note').attr('x', 4).attr('y', 12).text('correlation with 2004–2015');
+    svg.append('g').selectAll('text').data(rows).join('text').attr('class', 'tick-label')
+      .attr('x', d => x(d.y)).attr('y', H - 8).attr('text-anchor', 'middle').text(d => d.y);
+
+    for (const [key, label] of [['jury', 'Jury'], ['tele', 'Televote']]) {
+      svg.append('path').datum(rows).attr('fill', 'none').attr('stroke', `var(--${key})`).attr('stroke-width', 2.4).attr('stroke-linejoin', 'round')
+        .attr('d', d3.line().x(d => x(d.y)).y(d => y(d[key])));
+      svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', d => x(d.y)).attr('cy', d => y(d[key])).attr('r', 4.5)
+        .attr('fill', `var(--${key})`).attr('stroke', 'var(--surface)').attr('stroke-width', 2);
+      svg.append('text').attr('class', 'end-label').attr('x', x(rows.at(-1).y) + 10).attr('y', y(rows.at(-1)[key]) + 4)
+        .text(`${label} ${rows.at(-1)[key].toFixed(2)}`);
+    }
+
+    // hover anywhere: a guide snaps to the nearest year
+    const guide = svg.append('line').attr('class', 'guide').attr('y1', M.top).attr('y2', H - M.bottom).attr('visibility', 'hidden');
+    svg.append('rect').attr('x', M.left).attr('y', M.top).attr('width', W - M.right - M.left + 20).attr('height', H - M.bottom - M.top).attr('fill', 'transparent')
+      .on('mousemove', function (event) {
+        const [mx] = d3.pointer(event, this);
+        const d = d3.least(rows, r => Math.abs(x(r.y) - mx));
+        guide.attr('x1', x(d.y)).attr('x2', x(d.y)).attr('visibility', 'visible');
+        tooltip.show(event, `<b>${d.y}</b><br><span class="m">jury ${d.jury.toFixed(2)} · televote ${d.tele.toFixed(2)}</span><br><span class="m">${d.n} country pairs</span>`);
+      })
+      .on('mouseleave', () => { guide.attr('visibility', 'hidden'); tooltip.hide(); });
+  }
+
+
+  $('tele-mean').textContent = patterns.mean.tele.toFixed(2);
+  $('jury-mean').textContent = patterns.mean.jury.toFixed(2);
+  renderPatterns();
 });

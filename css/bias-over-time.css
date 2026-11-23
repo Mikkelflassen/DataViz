@@ -26,3 +26,7 @@ svg.wide { min-width: 640px; }
 .system-pop { position: fixed; z-index: 40; pointer-events: none; width: 220px; background: var(--surface); color: var(--fg-2); border: 1px solid var(--line-strong); border-radius: 6px; padding: 8px 10px; font-size: 11.5px; line-height: 1.4; box-shadow: 0 4px 14px rgb(0 0 0 / .14); }
 .system-pop b { display: block; color: var(--fg); font-weight: 600; font-size: 12px; }
 .system-pop p { margin: 2px 0 0; }
+
+/* chart 2: jury and televote against the 2004-2015 pattern */
+.end-label { font-size: 12px; font-weight: 600; fill: var(--fg); }
+.guide { stroke: var(--fg-2); stroke-width: 1; }
