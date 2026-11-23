@@ -111,7 +111,7 @@ export function createEuropeMap(svg, topology, handlers = {}) {
   past.append('rect').attr('class', 'country boxed').attr('data-c', id => id).attr('width', 58).attr('height', 50).attr('rx', 5).call(listen);
   past.each((id, i) => { position[id] = [boxX + i * 66 + 29, boxY + 25]; });
 
-  const auX = boxX, auY = boxY + 80, auW = 150, auH = 128;
+  const auX = boxX, auY = boxY + 178, auW = 150, auH = 128;   // in the sea between Ireland and Spain
   boxes.append('text').attr('class', 'map-note').attr('x', auX).attr('y', auY - 8).text('Australia, since 2015');
   boxes.append('rect').attr('class', 'map-frame').attr('x', auX).attr('y', auY).attr('width', auW).attr('height', auH).attr('rx', 5);
   const auPath = d3.geoPath(d3.geoMercator().fitExtent([[auX + 8, auY + 8], [auX + auW - 8, auY + auH - 8]], australia));
