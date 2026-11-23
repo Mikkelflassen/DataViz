@@ -242,8 +242,10 @@ startPage(async () => {
     const focus = state.focus, incoming = state.direction === 'in';
     const bonds = state.bonds ? strongestBonds() : [];
     const years = yearsLabel(state.from, state.to);
-    const absentFill = 'var(--land)', absentInk = 'color-mix(in srgb, var(--muted) 55%, transparent)';
+    const absentFill = 'var(--land)', absentInk = 'transparent';
     map.markAbsent(isAbsent);
+    // countries in no final in these years can't be picked from the list either
+    for (const option of $('focus').options) option.disabled = !!option.value && isAbsent(option.value);
 
     if (!focus) {
       // ---------- overview: how each country does per final, on the favoritism colours
@@ -337,6 +339,8 @@ startPage(async () => {
     state.to = to;
     $('years-value').textContent = yearsLabel(from, to) + (from === 2020 && to === 2020 ? ' (no contest)' : '');
     markPreset(from, to);
+    // the selected country was in no final in the new years: back to the overview
+    if (state.focus && isAbsent(state.focus)) setFocus(null);
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(render);   // one redraw per frame while dragging
   }
@@ -350,7 +354,7 @@ startPage(async () => {
     const btn = e.target.closest('button[data-id]');
     if (btn) setFocus(btn.dataset.id);
   });
-  addEventListener('hashchange', () => { const id = countryFromHash(known); if (id) setFocus(id); });
+  addEventListener('hashchange', () => { const id = countryFromHash(known); if (id && !isAbsent(id)) setFocus(id); });
 
   function drawLegend() {
     drawFavoritismLegend(d3.select('#legend'), colour, state.focus ? 'points vs expected' : 'points per voter vs average entry');

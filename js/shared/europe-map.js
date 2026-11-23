@@ -161,8 +161,12 @@ export function createEuropeMap(svg, topology, handlers = {}) {
       countries.classed('is-dim', id => !!ids && !ids.has(id));
     },
     /** Mark countries that have no data at all, e.g. were in no final in the selected years. */
+    // They look like the countries outside Eurovision: grey, no code, no hover, no click.
     markAbsent(isAbsent) {
-      countries.classed('is-absent', id => !!isAbsent?.(id));
+      const absent = id => !!isAbsent?.(id);
+      countries.classed('is-absent', absent);
+      labels.classed('is-absent', absent);
+      if (hovered && absent(hovered)) { hovered = null; drawOutlines(); }
     },
     markSelected(selected) {
       countries.classed('is-selected', id => id === selected);
