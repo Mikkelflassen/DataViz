@@ -132,9 +132,9 @@ On the blocs page, the similarity between two countries is the mean of their fav
 
 On the jury page, the values are the average jury and televote points a country received per voting country in 2016–2023 finals, rest-of-world televote included. The gap is jury minus televote. A country gets a bold name when its gap is more than 1.25 standard deviations from the mean gap of the selected years. Other dots get a grey name when they are at least 24 px from the diagonal, have no other dot within 30 px, and the name fits right beside the dot. Every name has to stay 7 to 10 px clear of all other dots, so it cannot be read as a neighbour's. A dot where that is impossible gets no name, outliers included.
 
-On the bias page, the top panel is the mean absolute favoritism per voting system and the middle panel the same, standardised: each year is divided by the standard deviation of that year's points before averaging. The bottom row is the mean number of points a country awarded under each system. Hovering a column pops up a short note on that system; the notes are in `data/voting-systems.json`. The two measures are drawn as separate panels on one time axis instead of one chart with two y-axes.
+On the bias page, the first chart has three rows on one time axis, one bar per voting system, read top to bottom: the mean number of points a country hands out, the mean absolute favoritism in points, and the same favoritism adjusted for the points system (each year divided by the standard deviation of that year's points before averaging). The column on the right gives each row's change from the first to the last voting system (×11.6, ×3.55, ×0.92), so the reader sees that favoritism in points follows the points and the adjusted version does not move. Chart titles state the finding rather than the method. Hovering a column pops up a short note on that system; the notes are in `data/voting-systems.json`. The measures are drawn as separate rows instead of one chart with several y-axes.
 
-The second chart on the bias page is, per year since 2016, the correlation between every pair's jury (or televote) favoritism and the pair's mean favoritism in 2004–2015 (at least three meetings).
+The second chart on the bias page is, per year since 2016, the correlation between every pair's jury (or televote) favoritism and the pair's mean favoritism in 2004–2015 (at least three meetings). The area between the two lines is shaded and labelled with the ratio of the two means.
 
 ## Design choices and where they come from
 
@@ -152,7 +152,7 @@ The scatterplot answers lecture 3's checklist like this. Both axes share one sca
 
 The line charts mark rule changes with vertical lines and keep the y-axis starting at 0. Chart 1 has the strip of voting systems directly under it, on the same time axis, so a jump in the line can be read against the rule change that caused it. Time is mapped to position on a linear axis throughout (lecture 9).
 
-Dividing by each year's standard deviation on the bias page is a data transformation in the sense of lecture 6: the raw numbers are correct but not comparable across voting systems. Showing the raw version first and the corrected one behind a toggle is our answer to "do not visualize to deceive" (ethical design, lecture 5). Hatching for pairs with too few shared finals is explicit encoding of missing data (lecture 6) instead of silently colouring them as 0.
+Dividing by each year's standard deviation on the bias page is a data transformation in the sense of lecture 6: the raw numbers are correct but not comparable across voting systems. Showing the raw version next to the corrected one, with the points that explain the difference above them, is our answer to "do not visualize to deceive" (ethical design, lecture 5). Hatching for pairs with too few shared finals is explicit encoding of missing data (lecture 6) instead of silently colouring them as 0.
 
 ## Limits
 

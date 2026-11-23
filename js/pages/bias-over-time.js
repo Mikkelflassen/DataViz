@@ -1,11 +1,10 @@
 // Favoritism over time: raw favoritism grows with the points system, standardised favoritism does not;
 // and since 2016 the televote follows old voting patterns more closely than the jury.
 //
-// Two panels on one time axis, raw above and standardised below, each showing the mean for every
-// voting system. Underneath, the points a country awarded under each system. Reading down one
-// column shows that a jump in the raw panel lines up with more points, not with a jump in the
-// standardised panel. Two panels rather than one chart with two y-axes, so neither scale can be
-// read against the other.
+// Three rows on one time axis, one bar per voting system: points handed out, favoritism in points,
+// favoritism adjusted for the points. Reading down one column shows that a jump in favoritism lines
+// up with more points, and that the adjusted row stays level. Separate rows rather than one chart
+// with several y-axes, so no scale can be read against another.
 /* global d3 */
 
 import { startPage } from '../shared/page.js';
@@ -27,71 +26,74 @@ startPage(async () => {
   const systemLabel = s => (s.from === s.to ? String(s.from) : `${s.from}–${s.to}`);
   const wide = s => s.to - s.from >= 4;   // wide enough for a value label
 
-  const M = { left: 48, right: 20 };
-  const PANEL = 150, GAP = 46, STRIP = 62, TOP = 26;
-  const panels = [
-    { key: 'raw', label: 'Raw', unit: 'points', top: TOP },
-    { key: 'z', label: 'Standardised', unit: 'SD units', top: TOP + PANEL + GAP },
-  ];
-  const stripTop = TOP + 2 * PANEL + 2 * GAP, stripBottom = stripTop + STRIP, H = stripBottom + 26;
+  // Three rows on one time axis, read top to bottom: the points handed out, favoritism in points,
+  // and favoritism adjusted for the points. The column on the right gives each row's change from
+  // the first to the last voting system, so the reader can compare ×11.6, ×3.5 and ×0.9 directly.
+  const M = { left: 48, right: 150 };
+  const ROW = 118, GAP = 64, TOP = 58;
+  const rows = [
+    { key: 'ppv', title: 'Points each country hands out', sub: 'more points to give → bigger gaps automatically', kind: 'points', max: 120 },
+    { key: 'raw', title: 'Favoritism, in points', sub: 'rises in step with the points', kind: 'fav', digits: 2 },
+    { key: 'z', title: 'Favoritism, adjusted for the points system', sub: 'flat: no real growth', kind: 'fav', digits: 2 },
+  ].map((r, i) => ({ ...r, top: TOP + i * (ROW + GAP) }));
+  const lastBottom = rows.at(-1).top + ROW, H = lastBottom + 28;
 
   const svg = d3.select('#raw-chart').attr('viewBox', `0 0 ${WIDTH} ${H}`);
   const x = d3.scaleLinear(YEAR_AXIS, [M.left, WIDTH - M.right]);
   const span = s => [x(s.from), x(s.to + 1) - x(s.from)];
+  const value = (s, key) => (key === 'ppv' ? Math.round(meanOf(s, key)) : meanOf(s, key));
+  const fmt = (row, v) => (row.kind === 'points' ? String(v) : v.toFixed(row.digits));
 
   // band behind the hovered voting system, through all three rows
-  const band = svg.append('rect').attr('class', 'system-band').attr('y', TOP - 6).attr('height', stripBottom - TOP + 6).attr('visibility', 'hidden');
-
-  // ---------- the two panels: one bar per voting system, from zero to its mean
+  const band = svg.append('rect').attr('class', 'system-band').attr('y', TOP - 6).attr('height', lastBottom - TOP + 6).attr('visibility', 'hidden');
 
   const first = systems[0], last = systems.at(-1);
-  for (const panel of panels) {
-    const bottom = panel.top + PANEL;
-    const y = d3.scaleLinear([0, d3.max(systems, s => meanOf(s, panel.key)) * 1.15], [bottom, panel.top]).nice();
-    const g = svg.append('g');
+  const colX = WIDTH - M.right + 34;
+  svg.append('text').attr('class', 'change-head').attr('x', colX).attr('y', TOP - 40).text(`${systemLabel(last)}`);
+  svg.append('text').attr('class', 'change-head').attr('x', colX).attr('y', TOP - 26).text(`vs ${systemLabel(first)}`);
 
-    const ticks = g.append('g').attr('class', 'grid').selectAll('g').data(y.ticks(4)).join('g');
+  for (const row of rows) {
+    const bottom = row.top + ROW;
+    const y = d3.scaleLinear([0, row.max ?? d3.max(systems, s => value(s, row.key)) * 1.2], [bottom, row.top]).nice();
+    const g = svg.append('g').attr('class', `row row-${row.kind}`);
+
+    g.append('text').attr('class', 'panel-title').attr('x', M.left).attr('y', row.top - 24).text(row.title);
+    g.append('text').attr('class', 'panel-sub').attr('x', M.left).attr('y', row.top - 9).text(row.sub);
+
+    const ticks = g.append('g').attr('class', 'grid').selectAll('g').data(y.ticks(3)).join('g');
     ticks.append('line').attr('x1', M.left).attr('x2', WIDTH - M.right).attr('y1', y).attr('y2', y).classed('zero', t => !t);
-    ticks.append('text').attr('class', 'tick-label').attr('x', M.left - 8).attr('y', t => y(t) + 4).attr('text-anchor', 'end').text(d3.format('.1f'));
+    ticks.append('text').attr('class', 'tick-label').attr('x', M.left - 8).attr('y', t => y(t) + 4).attr('text-anchor', 'end')
+      .text(row.kind === 'points' ? d3.format('d') : d3.format('.1f'));
 
-    const title = g.append('text').attr('class', 'panel-title').attr('x', M.left).attr('y', panel.top - 12).text(panel.label);
-    g.append('text').attr('class', 'note').attr('x', M.left + title.node().getComputedTextLength() + 8).attr('y', panel.top - 12).text(panel.unit);
-    const ratio = meanOf(last, panel.key) / meanOf(first, panel.key);
-    g.append('text').attr('class', 'panel-change').attr('x', WIDTH - M.right).attr('y', panel.top - 12).attr('text-anchor', 'end')
-      .text(`${systemLabel(last)} vs ${systemLabel(first)}: ×${ratio.toFixed(2)}`);
-
-    const bars = g.append('g').selectAll('g').data(systems).join('g').attr('class', 'mean-bar');
-    bars.append('rect').attr('x', s => span(s)[0] + 1).attr('width', s => span(s)[1] - 2)
-      .attr('y', s => y(meanOf(s, panel.key))).attr('height', s => bottom - y(meanOf(s, panel.key)));
+    const bars = g.append('g').selectAll('g').data(systems).join('g').attr('class', row.kind === 'points' ? 'strip-block' : 'mean-bar');
+    bars.append('rect').attr('class', 'block').attr('x', s => span(s)[0] + 1).attr('width', s => span(s)[1] - 2)
+      .attr('y', s => y(value(s, row.key))).attr('height', s => bottom - y(value(s, row.key)));
     bars.append('line').attr('x1', s => span(s)[0] + 1).attr('x2', s => span(s)[0] + span(s)[1] - 1)
-      .attr('y1', s => y(meanOf(s, panel.key))).attr('y2', s => y(meanOf(s, panel.key)));
-    bars.filter(wide).append('text').attr('text-anchor', 'middle')
-      .attr('x', s => span(s)[0] + span(s)[1] / 2).attr('y', s => y(meanOf(s, panel.key)) - 6)
-      .text(s => meanOf(s, panel.key).toFixed(2));
+      .attr('y1', s => y(value(s, row.key))).attr('y2', s => y(value(s, row.key)));
+    bars.filter(s => wide(s) || (row.kind === 'points' && s.to - s.from >= 2)).append('text').attr('text-anchor', 'middle')
+      .attr('x', s => span(s)[0] + span(s)[1] / 2).attr('y', s => y(value(s, row.key)) - 6)
+      .text(s => fmt(row, value(s, row.key)));
+
+    // the change from the first to the last voting system, in the right-hand column
+    const ratio = value(last, row.key) / value(first, row.key);
+    const flat = Math.abs(ratio - 1) < 0.15;
+    const c = g.append('g').attr('class', `change ${flat ? 'is-flat' : 'is-up'}`).attr('transform', `translate(${colX},${row.top + ROW / 2})`);
+    c.append('text').attr('class', 'change-value').attr('y', 4).text(`×${ratio.toFixed(ratio >= 10 ? 1 : 2)}`);
+    c.append('text').attr('class', 'change-word').attr('y', 22).text(flat ? 'about the same' : `${fmt(row, value(first, row.key))} → ${fmt(row, value(last, row.key))}`);
   }
-
-  // ---------- the strip: points a country awarded under each system
-
-  const height = d3.scaleLinear([0, 120], [0, STRIP]).clamp(true);
-  const points = s => Math.round(meanOf(s, 'ppv'));
-  svg.append('text').attr('class', 'panel-title').attr('x', M.left).attr('y', stripTop - 12).text('Points awarded per country');
-  const strip = svg.append('g').selectAll('g').data(systems).join('g').attr('class', 'strip-block');
-  strip.append('rect').attr('class', 'block').attr('x', s => span(s)[0] + 1).attr('width', s => span(s)[1] - 2)
-    .attr('y', s => stripBottom - height(points(s))).attr('height', s => height(points(s)));
-  strip.filter(s => s.to - s.from >= 2).append('text').attr('text-anchor', 'middle')
-    .attr('x', s => span(s)[0] + span(s)[1] / 2).attr('y', s => Math.min(stripBottom - 6, stripBottom - height(points(s)) + 15))
-    .text(s => points(s));
 
   svg.append('g').selectAll('text').data(DECADES).join('text').attr('class', 'tick-label')
     .attr('x', x).attr('y', H - 6).attr('text-anchor', 'middle').text(d => d);
+
+  const strip = svg.selectAll('.strip-block');
 
   // ---------- hover: one column per voting system, through all three rows
 
   const columns = svg.append('g').selectAll('rect').data(systems).join('rect')
     .attr('class', 'system').attr('tabindex', 0)
-    .attr('aria-label', s => `${systemLabel(s)}, ${s.title}: raw ${meanOf(s, 'raw').toFixed(2)}, standardised ${meanOf(s, 'z').toFixed(2)}, ${points(s)} points per country`)
+    .attr('aria-label', s => `${systemLabel(s)}, ${s.title}: raw ${meanOf(s, 'raw').toFixed(2)}, standardised ${meanOf(s, 'z').toFixed(2)}, ${Math.round(meanOf(s, 'ppv'))} points per country`)
     .attr('x', s => span(s)[0]).attr('width', s => Math.max(span(s)[1], 8))
-    .attr('y', TOP - 6).attr('height', stripBottom - TOP + 6).attr('fill', 'transparent');
+    .attr('y', TOP - 6).attr('height', lastBottom - TOP + 6).attr('fill', 'transparent');
 
   function show(system) {
     svg.selectAll('.mean-bar, .strip-block').classed('is-on', s => s === system);
@@ -103,16 +105,16 @@ startPage(async () => {
     .on('mouseenter focus touchstart', (e, s) => show(s))
     .on('mouseleave blur touchend', () => show(null));
 
-  // Short note for one voting system, placed just above its block in the strip.
+  // Short note for one voting system, placed just above its bar in the points row.
   function describe(system) {
     const pop = $('system-pop');
     if (!system) { pop.hidden = true; return; }
     pop.innerHTML = `<b>${systemLabel(system)} · ${system.title}</b><p>${system.text}</p>`;
     pop.hidden = false;
-    const block = strip.filter(s => s === system).select('rect').node();
+    const block = svg.selectAll('.strip-block').filter(s => s === system).select('rect').node();
     const at = block.getBoundingClientRect(), size = pop.getBoundingClientRect();
     const left = Math.max(8, Math.min(at.left + at.width / 2 - size.width / 2, innerWidth - size.width - 8));
-    const above = at.top - size.height - 8;
+    const above = at.top - size.height - 24;   // clear of the value label on the bar
     pop.style.left = `${left}px`;
     pop.style.top = `${above > 8 ? above : at.bottom + 8}px`;
   }
@@ -134,7 +136,15 @@ startPage(async () => {
     const grid = svg.append('g').attr('class', 'grid').selectAll('g').data(y.ticks(4)).join('g');
     grid.append('line').attr('x1', M.left).attr('x2', W - M.right + 20).attr('y1', y).attr('y2', y).classed('zero', t => !t);
     grid.append('text').attr('class', 'tick-label').attr('x', M.left - 8).attr('y', t => y(t) + 4).attr('text-anchor', 'end').text(d3.format('.1f'));
-    svg.append('text').attr('class', 'note').attr('x', 4).attr('y', 12).text('correlation with 2004–2015');
+    svg.append('text').attr('class', 'note').attr('x', 4).attr('y', 12).text('↑ how closely the votes follow the 2004–2015 friendships   (1 = same pattern, 0 = no link)');
+
+    // the gap between the two lines, shaded, with how many times closer the televote follows them
+    svg.append('path').datum(rows).attr('class', 'gap-band')
+      .attr('d', d3.area().x(d => x(d.y)).y0(d => y(d.jury)).y1(d => y(d.tele)));
+    const mid = rows[Math.floor(rows.length / 2)];
+    svg.append('text').attr('class', 'gap-label').attr('text-anchor', 'middle')
+      .attr('x', (x(mid.y) + x(rows[Math.floor(rows.length / 2) - 1].y)) / 2).attr('y', y((mid.jury + mid.tele) / 2) + 5)
+      .text(`televote follows them ×${(patterns.mean.tele / patterns.mean.jury).toFixed(1)} as closely`);
     svg.append('g').selectAll('text').data(rows).join('text').attr('class', 'tick-label')
       .attr('x', d => x(d.y)).attr('y', H - 8).attr('text-anchor', 'middle').text(d => d.y);
 

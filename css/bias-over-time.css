@@ -4,7 +4,14 @@ svg.wide { min-width: 640px; }
 .swatch.c-points { background: color-mix(in srgb, var(--fg-2) 22%, transparent); border-color: var(--fg-2); }
 
 .panel-title { font: 600 13px var(--body); fill: var(--fg); }
-.panel-change { font: 500 11.5px var(--mono); fill: var(--fg-2); }
+.panel-sub { font-size: 12px; fill: var(--muted); }
+
+/* change from the first to the last voting system, right of each row */
+.change-head { font: 500 11px var(--mono); fill: var(--muted); }
+.change-value { font: 700 22px var(--mono); }
+.change-word { font: 500 11px var(--mono); fill: var(--fg-2); }
+.change.is-up .change-value { fill: var(--fg); }
+.change.is-flat .change-value { fill: var(--accent); }
 .note { font-size: 11px; fill: var(--muted); }
 
 /* mean per voting system: a bar from zero with a darker top edge */
@@ -15,6 +22,7 @@ svg.wide { min-width: 640px; }
 
 /* points awarded per country */
 .strip-block .block { fill: var(--fg-2); fill-opacity: .16; }
+.strip-block line { stroke: var(--fg-2); stroke-width: 2.5; }
 .strip-block text { font: 500 11px var(--mono); fill: var(--fg); }
 .strip-block.is-on .block { fill-opacity: .34; }
 
@@ -30,3 +38,5 @@ svg.wide { min-width: 640px; }
 /* chart 2: jury and televote against the 2004-2015 pattern */
 .end-label { font-size: 12px; font-weight: 600; fill: var(--fg); }
 .guide { stroke: var(--fg-2); stroke-width: 1; }
+.gap-band { fill: var(--fg-2); fill-opacity: .07; }
+.gap-label { font: 600 12px var(--mono); fill: var(--fg-2); paint-order: stroke; stroke: var(--surface); stroke-width: 5px; stroke-linejoin: round; }

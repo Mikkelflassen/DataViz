@@ -24,22 +24,20 @@
   <section class="stage" aria-labelledby="raw-title">
     <div class="stage-head">
       <div class="ttl">
-        <h2 id="raw-title">Raw and standardised favoritism by voting system</h2>
+        <h2 id="raw-title">Favoritism only looks bigger because more points are handed out</h2>
         <button type="button" class="help" aria-label="About this chart" aria-controls="h-raw" aria-expanded="false">?</button>
       </div>
       <div class="keys">
-        <span class="key"><i class="swatch c-strip"></i>Mean per voting system</span>
-        <span class="key"><i class="swatch c-points"></i>Points awarded per country</span>
-        <span class="key">Hover a period for its rules</span>
+        <span class="key">One bar per voting system · hover a bar for its rules</span>
       </div>
     </div>
-    <div class="scroll"><svg id="raw-chart" class="wide" role="img" aria-label="Mean favoritism per voting system, raw and standardised, with the points awarded per country below"></svg></div>
+    <div class="scroll"><svg id="raw-chart" class="wide" role="img" aria-label="Per voting system: points each country hands out, favoritism in points, and favoritism adjusted for the points system"></svg></div>
   </section>
 
   <section class="stage" aria-labelledby="patterns-title">
     <div class="stage-head">
       <div class="ttl">
-        <h2 id="patterns-title">Jury and televote agreement with 2004–2015 voting patterns</h2>
+        <h2 id="patterns-title">Since 2016, viewers repeat old voting friendships far more than juries</h2>
         <button type="button" class="help" aria-label="About this chart" aria-controls="h-patterns" aria-expanded="false">?</button>
       </div>
       <div class="keys">
@@ -53,15 +51,17 @@
 <div class="system-pop" id="system-pop" role="status" hidden></div>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p>Raw favoritism rises each time the scoring system hands out more points. Standardised for the spread of points, it stays level across all periods.</p>
-  <p>What has changed is who repeats old preferences. Since 2016 the televote follows the established voting patterns about twice as closely as the jury.</p>
+  <p><b>Favoritism</b> is how far one country's vote is from what the other countries gave the same song. If a song averages 5 points and Denmark gives it 12, Denmark's favoritism is +7.</p>
+  <p>Favoritism has not grown; only the number of points has. Where old friendships do show up in the votes, it is mostly the televote.</p>
 </div>
 <div class="help-pop" id="h-raw" role="tooltip" hidden>
-  <p>Each bar is the mean absolute favoritism for one voting system. <b>Raw</b> is in points. <b>Standardised</b> divides each year by the standard deviation of the points awarded, which removes the effect of the scoring system.</p>
+  <p><b>Favoritism, in points:</b> the average size of the gap between a country's vote and the other countries' average, plus or minus. More points per country make every gap bigger.</p>
+  <p><b>Adjusted:</b> each year's gaps divided by how widely that year's points are spread (the standard deviation). This removes the scoring system, so all years can be compared.</p>
+  <p>Note: this measures any disagreement with the other countries, whether taste, chance or friendship. The chart below tests friendship on its own.</p>
 </div>
 <div class="help-pop" id="h-patterns" role="tooltip" hidden>
-  <p>How closely each year's jury and televote favoritism follows the country pairs' mean favoritism in 2004–2015, when the two were combined. 1 = same pattern, 0 = no relation.</p>
-  <p>Mean 2016–2023: televote <span id="tele-mean">0.54</span>, jury <span id="jury-mean">0.22</span>. Juries depart from the average as much as viewers do, but much less along established friendships.</p>
+  <p>For each pair of countries, e.g. Greece → Cyprus, we take the average favoritism in 2004–2015, when jury and televote were combined. That is the "old friendship".</p>
+  <p>Each year since 2016, the jury's and the televote's favoritism is compared with it (correlation). Mean: televote <span id="tele-mean">0.54</span>, jury <span id="jury-mean">0.22</span>.</p>
 </div>
 </body>
 </html>
