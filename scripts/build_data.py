@@ -6,24 +6,22 @@ Run from the repo root:  python3 scripts/build_data.py
 Writes
   data/votes-finals.csv     one row per vote in a final, with its favoritism
   data/jury-televote.csv    2016-2023 finals with jury and televote points apart
-  data/bias-over-time.json  yearly series for the "Bias over time" page
-  data/jury-televote-patterns.json  jury and televote against the 2004-2015 pattern
+  data/favoritism-years.json  votes far above the song's average, per year, for the bias page
 
 Only the standard library is used, so there is nothing to install.
 """
 import csv
 import json
-import math
 from collections import defaultdict
 from pathlib import Path
-from statistics import mean, stdev
+from statistics import mean
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "raw" / "votes.csv"
 OUT = ROOT / "data"
 
-ERAS = {"1957–1974": (1957, 1974), "1975–2003": (1975, 2003),
-        "2004–2015": (2004, 2015), "2016–2023": (2016, 2023)}
+TOP_VOTES = 5   # biggest votes per year kept for the tooltip on the bias page
+
 
 
 def read_finals():
@@ -48,29 +46,12 @@ def add_favoritism(rows, field="points", out="fav"):
             r[out] = r[field] - avg
 
 
-def pearson(xs, ys):
-    n = len(xs)
-    if n < 3:
-        return None
-    mx, my = mean(xs), mean(ys)
-    sxx = sum((x - mx) ** 2 for x in xs)
-    syy = sum((y - my) ** 2 for y in ys)
-    if not sxx or not syy:
-        return None
-    return sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / math.sqrt(sxx * syy)
-
-
 def write_csv(path, header, rows):
     with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh, lineterminator="\n")
         w.writerow(header)
         w.writerows(rows)
     print(f"{path.relative_to(ROOT)}: {len(rows)} rows")
-
-
-def era_mean(series, key):
-    return {name: round(mean(d[key] for d in series if a <= d["y"] <= b), 2)
-            for name, (a, b) in ERAS.items()}
 
 
 def main():
@@ -90,48 +71,42 @@ def main():
                 "" if r["jury_points"] == "" else int(float(r["jury_points"])),
                 int(float(r["tele_points"]))) for r in sorted(split, key=lambda r: (r["year"], r["giver"], r["receiver"]))])
 
-    # ---- 3. yearly series for the bias-over-time page
-    years = sorted({r["year"] for r in votes})
-    per_year = defaultdict(list)
-    for r in votes:
-        per_year[r["year"]].append(r)
-
-    series = []
-    for y in years:
-        rows = per_year[y]
-        handed_out = defaultdict(int)
+    # ---- 3. bias page: how many votes are far above the average for the song, per year
+    # Favoritism of a vote = its points minus the average the OTHER voting countries gave the same
+    # song that year. For every year since 1975 (top score always 12) and every threshold t from
+    # 0 to 12 points (the page uses 5 to 12): how many votes had favoritism >= t. From 2016 jury and televote are counted
+    # apart, each against the other juries / other televotes. The biggest votes go along for the
+    # tooltip.
+    def leave_one_out(rows, field):
+        song = defaultdict(list)
         for r in rows:
-            handed_out[r["giver"]] += r["points"]
-        raw = mean(abs(r["fav"]) for r in rows)
-        series.append({"y": y, "raw": round(raw, 3),
-                       "z": round(raw / stdev(r["points"] for r in rows), 3),
-                       "ppv": round(mean(handed_out.values()))})
+            song[r["receiver"]].append(r[field])
+        out = []
+        for r in rows:
+            pts = song[r["receiver"]]
+            out.append((r["giver"], r["receiver"], r[field] - (sum(pts) - r[field]) / (len(pts) - 1)))
+        return out
 
-    bias = {"years": series, "eraRaw": era_mean(series, "raw"), "eraZ": era_mean(series, "z")}
-    (OUT / "bias-over-time.json").write_text(json.dumps(bias, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"data/bias-over-time.json: {len(series)} years")
+    def summary(favs):
+        return {"n": len(favs), "c": [sum(f >= t for _, _, f in favs) for t in range(13)],
+                "top": [[g, t, round(f, 1)] for g, t, f in sorted(favs, key=lambda x: -x[2])[:TOP_VOTES]]}
 
-    # ---- 4. jury-televote page: does each vote still follow the 2004-2015 pattern?
-    # jury and televote favoritism against each pair's 2004-2015 average
-    old = defaultdict(list)
-    for r in votes:
-        if 2004 <= r["year"] <= 2015:
-            old[(r["giver"], r["receiver"])].append(r["fav"])
-    old = {pair: mean(v) for pair, v in old.items() if len(v) >= 3}
-    both = [dict(r, jury=int(float(r["jury_points"])), tele=int(float(r["tele_points"])))
-            for r in split if r["giver"] != "wld"]
-    add_favoritism(both, "jury", "jfav")
-    add_favoritism(both, "tele", "tfav")
-    jt = []
-    for y in sorted({r["year"] for r in both}):
-        rows = [r for r in both if r["year"] == y and (r["giver"], r["receiver"]) in old]
-        base = [old[(r["giver"], r["receiver"])] for r in rows]
-        jt.append({"y": y, "jury": round(pearson(base, [r["jfav"] for r in rows]), 3),
-                   "tele": round(pearson(base, [r["tfav"] for r in rows]), 3), "n": len(rows)})
+    per_year = defaultdict(list)
+    for r in finals:
+        if r["giver"] != "wld" and r["year"] >= 1975:
+            per_year[r["year"]].append(r)
+    years = []
+    for y in sorted(per_year):
+        rows = per_year[y]
+        if y < 2016:
+            years.append({"y": y, "all": summary(leave_one_out(rows, "points"))})
+        else:
+            for r in rows:
+                r["jury"], r["tele"] = int(float(r["jury_points"])), int(float(r["tele_points"]))
+            years.append({"y": y, "jury": summary(leave_one_out(rows, "jury")), "tele": summary(leave_one_out(rows, "tele"))})
+    (OUT / "favoritism-years.json").write_text(json.dumps({"years": years}, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    print(f"data/favoritism-years.json: {len(years)} years")
 
-    patterns = {"years": jt, "mean": {"jury": round(mean(d["jury"] for d in jt), 2), "tele": round(mean(d["tele"] for d in jt), 2)}}
-    (OUT / "jury-televote-patterns.json").write_text(json.dumps(patterns, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"data/jury-televote-patterns.json: {len(jt)} years, mean jury {patterns['mean']['jury']}, televote {patterns['mean']['tele']}")
 
 if __name__ == "__main__":
     main()

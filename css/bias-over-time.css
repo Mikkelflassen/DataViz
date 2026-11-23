@@ -1,32 +1,13 @@
 /* Favoritism over time page */
-svg.wide { min-width: 640px; }
-.swatch.c-strip { background: color-mix(in srgb, var(--accent) 30%, transparent); border-color: var(--accent); }
-.swatch.c-points { background: color-mix(in srgb, var(--fg-2) 22%, transparent); border-color: var(--fg-2); }
+svg.wide { min-width: 720px; }
 
-.panel-title { font: 600 13px var(--body); fill: var(--fg); }
-.panel-change { font: 500 11.5px var(--mono); fill: var(--fg-2); }
-.note { font-size: 11px; fill: var(--muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; }
+.threshold { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--fg-2); }
+.threshold b { font: 700 16px var(--mono); color: var(--fg); }
+.threshold input { width: 220px; accent-color: var(--accent); }
 
-/* mean per voting system: a bar from zero with a darker top edge */
-.mean-bar rect { fill: var(--accent); fill-opacity: .22; }
-.mean-bar line { stroke: var(--accent); stroke-width: 2.5; }
-.mean-bar text { font: 700 12px var(--mono); fill: var(--accent); }
-.mean-bar.is-on rect { fill-opacity: .45; }
-
-/* points awarded per country */
-.strip-block .block { fill: var(--fg-2); fill-opacity: .16; }
-.strip-block text { font: 500 11px var(--mono); fill: var(--fg); }
-.strip-block.is-on .block { fill-opacity: .34; }
-
-.system { cursor: pointer; outline: none; }
-.system:focus-visible { stroke: var(--accent); stroke-width: 1.5; }
-.system-band { fill: var(--fg); fill-opacity: .05; pointer-events: none; }
-
-/* small note that appears over a hovered voting system and goes away again */
-.system-pop { position: fixed; z-index: 40; pointer-events: none; width: 220px; background: var(--surface); color: var(--fg-2); border: 1px solid var(--line-strong); border-radius: 6px; padding: 8px 10px; font-size: 11.5px; line-height: 1.4; box-shadow: 0 4px 14px rgb(0 0 0 / .14); }
-.system-pop b { display: block; color: var(--fg); font-weight: 600; font-size: 12px; }
-.system-pop p { margin: 2px 0 0; }
-
-/* chart 2: jury and televote against the 2004-2015 pattern */
-.end-label { font-size: 12px; font-weight: 600; fill: var(--fg); }
-.guide { stroke: var(--fg-2); stroke-width: 1; }
+.bar.all { fill: var(--accent); }
+.bar.jury { fill: var(--jury); }
+.bar.tele { fill: var(--tele); }
+.bar:hover { stroke: var(--fg); stroke-width: 1; }
+.swatch.c-all { --c: var(--accent); }

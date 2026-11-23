@@ -21,45 +21,36 @@
     <button type="button" class="help" aria-label="Summary" aria-controls="h-page" aria-expanded="false">?</button>
   </header>
 
-  <section class="stage" aria-labelledby="raw-title">
+  <section class="stage" aria-labelledby="bars-title">
     <div class="stage-head">
       <div class="ttl">
-        <h2 id="raw-title">Raw and standardised favoritism by voting system</h2>
-        <button type="button" class="help" aria-label="About this chart" aria-controls="h-raw" aria-expanded="false">?</button>
+        <h2 id="bars-title">Votes far above the other countries' average, 1975–2023</h2>
+        <button type="button" class="help" aria-label="About this chart" aria-controls="h-bars" aria-expanded="false">?</button>
       </div>
       <div class="keys">
-        <span class="key"><i class="swatch c-strip"></i>Mean per voting system</span>
-        <span class="key"><i class="swatch c-points"></i>Points awarded per country</span>
-        <span class="key">Hover a period for its rules</span>
+        <span class="key"><i class="swatch c-all"></i>All votes</span>
+        <span class="key"><i class="swatch c-jury"></i>Jury</span>
+        <span class="key"><i class="swatch c-tele"></i>Televote</span>
       </div>
     </div>
-    <div class="scroll"><svg id="raw-chart" class="wide" role="img" aria-label="Mean favoritism per voting system, raw and standardised, with the points awarded per country below"></svg></div>
-  </section>
-
-  <section class="stage" aria-labelledby="patterns-title">
-    <div class="stage-head">
-      <div class="ttl">
-        <h2 id="patterns-title">Jury and televote agreement with 2004–2015 voting patterns</h2>
-        <button type="button" class="help" aria-label="About this chart" aria-controls="h-patterns" aria-expanded="false">?</button>
-      </div>
-      <div class="keys">
-        <span class="key"><i class="swatch line c-jury"></i>Jury</span>
-        <span class="key"><i class="swatch line c-tele"></i>Televote</span>
+    <div class="controls">
+      <label class="threshold" for="threshold"><span>At least <b id="t-value">5</b> <span id="t-unit">points</span> above the average</span>
+        <input type="range" id="threshold" min="5" max="12" step="1" value="5">
+      </label>
+      <div class="seg" id="measure" role="group" aria-label="Show">
+        <button type="button" data-value="count" aria-pressed="true">Number of votes</button>
+        <button type="button" data-value="share" aria-pressed="false">Share of votes</button>
       </div>
     </div>
-    <div class="scroll"><svg id="patterns" class="wide" role="img" aria-label="Correlation of each year's jury and televote favoritism with the 2004–2015 pattern"></svg></div>
+    <div class="scroll"><svg id="bars" class="wide" role="img" aria-label="Bar chart: per year, the votes that were at least the chosen number of points above what the other countries gave the same song"></svg></div>
   </section>
 </main>
-<div class="system-pop" id="system-pop" role="status" hidden></div>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p>Raw favoritism grows with the points system; standardised, it stays level. Since 2016 the televote follows old patterns more than the jury.</p>
+  <p><b>Favoritism</b>: the points a country gave a song minus the average the other countries gave it. Greece gives Cyprus 12, the others give Cyprus 3 on average: +9.</p>
 </div>
-<div class="help-pop" id="h-raw" role="tooltip" hidden>
-  <p>Mean absolute favoritism per voting system. Standardised: divided by each year's spread of points.</p>
-</div>
-<div class="help-pop" id="h-patterns" role="tooltip" hidden>
-  <p>Correlation with each pair's 2004–2015 favoritism. Mean: televote <span id="tele-mean">0.54</span>, jury <span id="jury-mean">0.22</span>.</p>
+<div class="help-pop" id="h-bars" role="tooltip" hidden>
+  <p>From 1975, when the top score became 12. From 2016 the jury and the televote each give a set of points.</p>
 </div>
 </body>
 </html>
