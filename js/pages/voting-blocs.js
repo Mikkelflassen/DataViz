@@ -82,7 +82,7 @@ startPage(async () => {
       bloc.letter = String.fromCharCode(65 + i);
       bloc.colour = `var(--bloc-${bloc.slot})`;
       bloc.ink = DARK_INK_SLOTS.has(bloc.slot) ? '#15151b' : '#ffffff';
-      bloc.name = blocName(bloc);
+      bloc.name = `Group ${bloc.letter}`;
     });
     return blocs;
   }
@@ -107,7 +107,7 @@ startPage(async () => {
   const blocOf = id => blocs.find(b => b.set.has(id));
   const countryTip = id => {
     const bloc = blocOf(id);
-    return `<b>${nameOf(id)}</b><br><span class="m">${bloc ? `Bloc ${bloc.letter}: ${bloc.name}` : model.included.has(id) ? 'No bloc' : 'Insufficient data'}</span>`;
+    return `<b>${nameOf(id)}</b><br><span class="m">${bloc ? bloc.name : model.included.has(id) ? 'No bloc' : 'Insufficient data'}</span>`;
   };
 
   // ---------- the matrix
