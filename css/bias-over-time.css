@@ -1,27 +1,26 @@
-/* Bias over time page */
+/* Favoritism over time page */
 svg.wide { min-width: 640px; }
-svg.mid { min-width: 560px; }
-.swatch.thick { border-top-width: 4px; opacity: .6; }
-.swatch.c-strip { background: color-mix(in srgb, var(--accent) 22%, transparent); border-color: var(--accent); }
+.swatch.c-strip { background: color-mix(in srgb, var(--accent) 30%, transparent); border-color: var(--accent); }
+.swatch.c-points { background: color-mix(in srgb, var(--fg-2) 22%, transparent); border-color: var(--fg-2); }
 
-.reform line { stroke: var(--line-strong); stroke-dasharray: 3 3; }
-.reform text { font-size: 10.5px; fill: var(--muted); }
-.era-mean line { stroke: var(--accent); stroke-width: 3; stroke-opacity: .45; stroke-linecap: round; }
-.era-mean text { font: 700 12px var(--mono); fill: var(--accent); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; }
-.series { fill: none; stroke: var(--fg); stroke-width: 2; stroke-linejoin: round; }
-.series.dashed { stroke: var(--fg-2); stroke-width: 1.6; stroke-dasharray: 5 4; }
+.panel-title { font: 600 13px var(--body); fill: var(--fg); }
+.panel-change { font: 500 11.5px var(--mono); fill: var(--fg-2); }
 .note { font-size: 11px; fill: var(--muted); }
-.value-label { font-size: 12px; font-weight: 600; fill: var(--fg); }
-.guide { stroke: var(--fg-2); stroke-width: 1; }
 
-/* the strip of voting systems under the first chart */
+/* mean per voting system: a bar from zero with a darker top edge */
+.mean-bar rect { fill: var(--accent); fill-opacity: .22; }
+.mean-bar line { stroke: var(--accent); stroke-width: 2.5; }
+.mean-bar text { font: 700 12px var(--mono); fill: var(--accent); }
+.mean-bar.is-on rect { fill-opacity: .45; }
+
+/* points awarded per country */
+.strip-block .block { fill: var(--fg-2); fill-opacity: .16; }
+.strip-block text { font: 500 11px var(--mono); fill: var(--fg); }
+.strip-block.is-on .block { fill-opacity: .34; }
+
 .system { cursor: pointer; outline: none; }
-.system .block { fill: var(--accent); fill-opacity: .18; stroke: var(--surface); stroke-width: 1.5; transition: fill-opacity .15s; }
-.system .top { stroke: var(--accent); stroke-width: 1.5; }
-.system text { font: 500 11px var(--mono); fill: var(--fg); pointer-events: none; }
-.system:hover .block, .system:focus-visible .block, .system.is-on .block { fill-opacity: .5; }
-.system:focus-visible .block { stroke: var(--fg); }
-.system-band { fill: var(--accent); fill-opacity: .09; pointer-events: none; }
+.system:focus-visible { stroke: var(--accent); stroke-width: 1.5; }
+.system-band { fill: var(--fg); fill-opacity: .05; pointer-events: none; }
 
 /* small note that appears over a hovered voting system and goes away again */
 .system-pop { position: fixed; z-index: 40; pointer-events: none; width: 220px; background: var(--surface); color: var(--fg-2); border: 1px solid var(--line-strong); border-radius: 6px; padding: 8px 10px; font-size: 11.5px; line-height: 1.4; box-shadow: 0 4px 14px rgb(0 0 0 / .14); }

@@ -24,63 +24,25 @@
   <section class="stage" aria-labelledby="raw-title">
     <div class="stage-head">
       <div class="ttl">
-        <h2 id="raw-title">Mean favoritism per year</h2>
+        <h2 id="raw-title">Raw and standardised favoritism by voting system</h2>
         <button type="button" class="help" aria-label="About this chart" aria-controls="h-raw" aria-expanded="false">?</button>
       </div>
-      <div class="seg" id="scale" role="group" aria-label="Scale">
-        <button type="button" data-value="raw" aria-pressed="true">Raw</button>
-        <button type="button" data-value="z" aria-pressed="false">Standardised</button>
-      </div>
-    </div>
-    <div class="keys">
-      <span class="key"><i class="swatch line"></i>Yearly mean</span>
-      <span class="key"><i class="swatch line c-accent thick"></i>Period mean</span>
-      <span class="key"><i class="swatch c-strip"></i>Points awarded per country (hover for details)</span>
-    </div>
-    <div class="scroll"><svg id="raw-chart" class="wide" role="img" aria-label="Average absolute favoritism per year, with the points each country hands out below"></svg></div>
-  </section>
-
-  <section class="stage" aria-labelledby="persist-title">
-    <div class="stage-head">
-      <div class="ttl">
-        <h2 id="persist-title">Persistence of voting patterns</h2>
-        <button type="button" class="help" aria-label="About this chart" aria-controls="h-persist" aria-expanded="false">?</button>
-      </div>
       <div class="keys">
-        <span class="key"><i class="swatch line"></i>All countries</span>
-        <span class="key"><i class="swatch line dash c-fg2"></i><span id="stable-count">32</span> countries present in all eras</span>
+        <span class="key"><i class="swatch c-strip"></i>Mean per voting system</span>
+        <span class="key"><i class="swatch c-points"></i>Points awarded per country</span>
+        <span class="key">Hover a period for its rules</span>
       </div>
     </div>
-    <div class="scroll"><svg id="persist-chart" class="wide" role="img" aria-label="Correlation between this year's favoritism and the previous five contests, per year"></svg></div>
-  </section>
-
-  <section class="stage" aria-labelledby="split-title">
-    <div class="stage-head">
-      <div class="ttl">
-        <h2 id="split-title">Jury and televote against 2004–2015 patterns</h2>
-        <button type="button" class="help" aria-label="About this chart" aria-controls="h-split" aria-expanded="false">?</button>
-      </div>
-      <div class="keys">
-        <span class="key"><i class="swatch line c-jury"></i>Jury</span>
-        <span class="key"><i class="swatch line c-tele"></i>Televote</span>
-      </div>
-    </div>
-    <div class="scroll"><svg id="split-chart" class="mid" role="img" aria-label="Correlation with 2004–2015 favoritism for jury and televote points, per year"></svg></div>
+    <div class="scroll"><svg id="raw-chart" class="wide" role="img" aria-label="Mean favoritism per voting system, raw and standardised, with the points awarded per country below"></svg></div>
   </section>
 </main>
 <div class="system-pop" id="system-pop" role="status" hidden></div>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p>Raw favoritism rises with each change to the scoring system. A scale-independent measure shows that bloc voting peaked in 2008 under full televoting, and that since 2016 it comes mainly from the televote.</p>
+  <p>Raw favoritism rises each time the scoring system hands out more points. Standardised for the spread of points, it stays level across all periods.</p>
 </div>
 <div class="help-pop" id="h-raw" role="tooltip" hidden>
-  <p>Mean absolute favoritism per year. The number of points awarded varies by voting system and inflates the raw values. Standardised divides each year by the standard deviation of its points.</p>
-</div>
-<div class="help-pop" id="h-persist" role="tooltip" hidden>
-  <p>Correlation between each pair's favoritism and its mean over the previous five contests (minimum two meetings). Random allocation gives <span id="shuffled">0.00</span>. The dashed line includes only countries present in all three eras.</p>
-</div>
-<div class="help-pop" id="h-split" role="tooltip" hidden>
-  <p>Correlation of each year's jury and televote favoritism with the pair's 2004–2015 mean (minimum three meetings). Mean: televote <span id="tele-mean">0.54</span>, jury <span id="jury-mean">0.22</span>.</p>
+  <p>Each bar is the mean absolute favoritism for one voting system. <b>Raw</b> is in points. <b>Standardised</b> divides each year by the standard deviation of the points awarded, which removes the effect of the scoring system.</p>
 </div>
 </body>
 </html>

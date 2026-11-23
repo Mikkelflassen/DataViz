@@ -1,15 +1,22 @@
-/* Jury vs televote page */
-:root { --aside: 300px; --range-w: 300px; }
-.scatter-box { max-width: 680px; width: 100%; margin: 0 auto; }
+/* Jury vs televote page: scatterplot left, lists and year chart right, pattern chart below */
+:root { --aside: minmax(0, 1fr); --range-w: 300px; }
+.scatter-box { max-width: 560px; width: 100%; margin: 0 auto; }
 .dot { cursor: pointer; }
 .key-strong { font-weight: 700; color: var(--fg); }
 .key-soft { color: var(--muted); }
+.gap-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+.gap-lists .lbl { margin-bottom: 4px; }
+@media (max-width: 520px) { .gap-lists { grid-template-columns: 1fr; gap: 12px; } }
+.card-title { font-size: 17px; }
 .rank li.is-selected button { font-weight: 600; }
 .rank small { color: var(--muted); font-size: 12px; }
 .pill.jury { background: var(--jury); color: #fff; }
 .pill.tele { background: var(--tele); color: #fff; }
 .pill { min-width: 52px; }
+#patterns { min-width: 640px; }
 
 .plot-label { paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
 .axis-title { font-size: 13px; font-weight: 600; fill: var(--fg-2); }
 .end-label { font-size: 12px; font-weight: 600; fill: var(--fg); }
+.note { font-size: 11px; fill: var(--muted); }
+.guide { stroke: var(--fg-2); stroke-width: 1; }
