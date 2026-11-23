@@ -14,13 +14,14 @@ import csv
 import json
 from collections import defaultdict
 from pathlib import Path
-from statistics import mean
+from statistics import mean, stdev
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "raw" / "votes.csv"
 OUT = ROOT / "data"
 
 TOP_VOTES = 5   # biggest votes per year kept for the tooltip on the bias page
+REFERENCE_YEARS = (1975, 2015)   # as in js/shared/data.js: the 12-point system before the split vote
 
 
 
@@ -73,39 +74,47 @@ def main():
 
     # ---- 3. bias page: how many votes are far above the average for the song, per year
     # Favoritism of a vote = its points minus the average the OTHER voting countries gave the same
-    # song that year. For every year since 1975 (top score always 12) and every threshold t from
-    # 0 to 12 points (the page uses 5 to 12): how many votes had favoritism >= t. From 2016 jury and televote are counted
-    # apart, each against the other juries / other televotes. The biggest votes go along for the
-    # tooltip.
-    def leave_one_out(rows, field):
+    # song that year, standardised to the 12-point scale the way js/shared/data.js does it for the
+    # other pages: each year's points are scaled so their spread (standard deviation) matches an
+    # average 1975-2015 final. From 2016 the jury and the televote are separate sets, each scaled
+    # on its own and compared with the other juries / other televotes. For every threshold t from
+    # 0 to 12 standardised points (the page uses 5 to 12): how many votes had favoritism >= t.
+    # The biggest votes go along for the tooltip, with the points actually given.
+    per_year = defaultdict(list)
+    for r in finals:
+        if r["giver"] != "wld":
+            per_year[r["year"]].append(r)
+    for y, rows in per_year.items():
+        if y >= 2016:
+            for r in rows:
+                r["jury"], r["tele"] = int(float(r["jury_points"])), int(float(r["tele_points"]))
+    reference = mean(stdev(r["points"] for r in rows) for y, rows in per_year.items()
+                     if REFERENCE_YEARS[0] <= y <= REFERENCE_YEARS[1])
+
+    def standardised_favs(rows, field):
+        k = reference / stdev(r[field] for r in rows)
         song = defaultdict(list)
         for r in rows:
             song[r["receiver"]].append(r[field])
         out = []
         for r in rows:
             pts = song[r["receiver"]]
-            out.append((r["giver"], r["receiver"], r[field] - (sum(pts) - r[field]) / (len(pts) - 1)))
+            out.append((r["giver"], r["receiver"], k * (r[field] - (sum(pts) - r[field]) / (len(pts) - 1)), r[field]))
         return out
 
     def summary(favs):
-        return {"n": len(favs), "c": [sum(f >= t for _, _, f in favs) for t in range(13)],
-                "top": [[g, t, round(f, 1)] for g, t, f in sorted(favs, key=lambda x: -x[2])[:TOP_VOTES]]}
+        return {"n": len(favs), "c": [sum(f >= t - 1e-9 for _, _, f, _ in favs) for t in range(13)],
+                "top": [[g, t, round(f, 1), p] for g, t, f, p in sorted(favs, key=lambda x: -x[2])[:TOP_VOTES]]}
 
-    per_year = defaultdict(list)
-    for r in finals:
-        if r["giver"] != "wld" and r["year"] >= 1975:
-            per_year[r["year"]].append(r)
     years = []
     for y in sorted(per_year):
         rows = per_year[y]
         if y < 2016:
-            years.append({"y": y, "all": summary(leave_one_out(rows, "points"))})
+            years.append({"y": y, "all": summary(standardised_favs(rows, "points"))})
         else:
-            for r in rows:
-                r["jury"], r["tele"] = int(float(r["jury_points"])), int(float(r["tele_points"]))
-            years.append({"y": y, "jury": summary(leave_one_out(rows, "jury")), "tele": summary(leave_one_out(rows, "tele"))})
-    (OUT / "favoritism-years.json").write_text(json.dumps({"years": years}, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"data/favoritism-years.json: {len(years)} years")
+            years.append({"y": y, "jury": summary(standardised_favs(rows, "jury")), "tele": summary(standardised_favs(rows, "tele"))})
+    (OUT / "favoritism-years.json").write_text(json.dumps({"years": years, "reference": round(reference, 3)}, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    print(f"data/favoritism-years.json: {len(years)} years, reference spread {reference:.2f} points")
 
 
 if __name__ == "__main__":

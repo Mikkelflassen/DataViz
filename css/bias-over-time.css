@@ -11,3 +11,5 @@ svg.wide { min-width: 720px; }
 .bar.tele { fill: var(--tele); }
 .bar:hover { stroke: var(--fg); stroke-width: 1; }
 .swatch.c-all { --c: var(--accent); }
+.trend { fill: none; stroke: var(--fg); stroke-width: 2.2; stroke-linejoin: round; pointer-events: none; }
+.swatch.c-trend { --c: var(--fg); }
