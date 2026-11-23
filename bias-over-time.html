@@ -28,10 +28,12 @@
         <button type="button" class="help" aria-label="About this chart" aria-controls="h-raw" aria-expanded="false">?</button>
       </div>
       <div class="keys">
-        <span class="key">One bar per voting system · hover a bar for its rules</span>
+        <span class="key"><i class="swatch c-strip"></i>Real votes</span>
+        <span class="key"><i class="swatch c-random"></i>If every country voted at random</span>
+        <span class="key">Hover a bar for its voting rules</span>
       </div>
     </div>
-    <div class="scroll"><svg id="raw-chart" class="wide" role="img" aria-label="Per voting system: points each country hands out, favoritism in points, and favoritism adjusted for the points system"></svg></div>
+    <div class="scroll"><svg id="raw-chart" class="wide" role="img" aria-label="Per voting system: points each country gives in the final, and favoritism in points for the real votes and for random votes"></svg></div>
   </section>
 
   <section class="stage" aria-labelledby="patterns-title">
@@ -55,9 +57,9 @@
   <p>Favoritism has not grown; only the number of points has. Where old friendships do show up in the votes, it is mostly the televote.</p>
 </div>
 <div class="help-pop" id="h-raw" role="tooltip" hidden>
-  <p><b>Favoritism, in points:</b> the average size of the gap between a country's vote and the other countries' average, plus or minus. More points per country make every gap bigger.</p>
-  <p><b>Adjusted:</b> each year's gaps divided by how widely that year's points are spread (the standard deviation). This removes the scoring system, so all years can be compared.</p>
-  <p>Note: this measures any disagreement with the other countries, whether taste, chance or friendship. The chart below tests friendship on its own.</p>
+  <p><b>Points:</b> the points each country gave in the final, averaged over the voting countries. Every country gives the same fixed amount, except 1971–73, when two jurors scored every song from 1 to 5.</p>
+  <p><b>Favoritism, in points:</b> the average size of the gap between a country's vote and the other countries' average, plus or minus.</p>
+  <p><b>Random (dashed):</b> the same, if each country gave its usual points to random songs (mean of 50 shuffles). Random votes have no favorites, yet their gaps grow even more with the points.</p>
 </div>
 <div class="help-pop" id="h-patterns" role="tooltip" hidden>
   <p>For each pair of countries, e.g. Greece → Cyprus, we take the average favoritism in 2004–2015, when jury and televote were combined. That is the "old friendship".</p>

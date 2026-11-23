@@ -5,19 +5,24 @@ svg.wide { min-width: 640px; }
 
 .panel-title { font: 600 13px var(--body); fill: var(--fg); }
 .panel-sub { font-size: 12px; fill: var(--muted); }
+.note { font-size: 11px; fill: var(--muted); }
 
 /* change from the first to the last voting system, right of each row */
 .change-head { font: 500 11px var(--mono); fill: var(--muted); }
-.change-value { font: 700 22px var(--mono); }
+.change-value { font: 700 22px var(--mono); fill: var(--fg); }
 .change-word { font: 500 11px var(--mono); fill: var(--fg-2); }
-.change.is-up .change-value { fill: var(--fg); }
-.change.is-flat .change-value { fill: var(--accent); }
-.note { font-size: 11px; fill: var(--muted); }
+.change.is-real .change-value { fill: var(--accent); }
+.change.is-random .change-value { fill: var(--fg-2); font-size: 18px; }
+
+/* what random votes would give: dashed outline over the real bar */
+.random-ref { fill: none; stroke: var(--fg-2); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.random-label { font: 500 11px var(--mono); fill: var(--fg-2); }
+.real-label { font: 700 12px var(--mono); fill: var(--accent); }
+.swatch.c-random { background: none; border: 1.5px dashed var(--fg-2); }
 
 /* mean per voting system: a bar from zero with a darker top edge */
 .mean-bar rect { fill: var(--accent); fill-opacity: .22; }
 .mean-bar line { stroke: var(--accent); stroke-width: 2.5; }
-.mean-bar text { font: 700 12px var(--mono); fill: var(--accent); }
 .mean-bar.is-on rect { fill-opacity: .45; }
 
 /* points awarded per country */

@@ -1,10 +1,11 @@
-// Favoritism over time: raw favoritism grows with the points system, standardised favoritism does not;
-// and since 2016 the televote follows old voting patterns more closely than the jury.
+// Favoritism over time: favoritism in points grows with the points system, and random votes under
+// the same points would grow even more; since 2016 the televote follows old voting patterns more
+// closely than the jury.
 //
-// Three rows on one time axis, one bar per voting system: points handed out, favoritism in points,
-// favoritism adjusted for the points. Reading down one column shows that a jump in favoritism lines
-// up with more points, and that the adjusted row stays level. Separate rows rather than one chart
-// with several y-axes, so no scale can be read against another.
+// Two rows on one time axis, one bar per voting system: the points each country gives, and
+// favoritism in points with a dashed outline for what random votes would give. Reading down one
+// column shows that a jump in favoritism lines up with more points, and that random votes jump at
+// least as much. Separate rows rather than one chart with two y-axes.
 /* global d3 */
 
 import { startPage } from '../shared/page.js';
@@ -26,15 +27,14 @@ startPage(async () => {
   const systemLabel = s => (s.from === s.to ? String(s.from) : `${s.from}–${s.to}`);
   const wide = s => s.to - s.from >= 4;   // wide enough for a value label
 
-  // Three rows on one time axis, read top to bottom: the points handed out, favoritism in points,
-  // and favoritism adjusted for the points. The column on the right gives each row's change from
-  // the first to the last voting system, so the reader can compare ×11.6, ×3.5 and ×0.9 directly.
-  const M = { left: 48, right: 150 };
-  const ROW = 118, GAP = 64, TOP = 58;
+  // Two rows on one time axis, read top to bottom: the points each country gives, and favoritism in
+  // points for the real votes next to what random votes would give under the same points. The
+  // column on the right gives each series' change from the first to the last voting system.
+  const M = { left: 48, right: 175 };
+  const ROW = 130, GAP = 70, TOP = 58;
   const rows = [
-    { key: 'ppv', title: 'Points each country hands out', sub: 'more points to give → bigger gaps automatically', kind: 'points', max: 120 },
-    { key: 'raw', title: 'Favoritism, in points', sub: 'rises in step with the points', kind: 'fav', digits: 2 },
-    { key: 'z', title: 'Favoritism, adjusted for the points system', sub: 'flat: no real growth', kind: 'fav', digits: 2 },
+    { key: 'ppv', title: 'Points each country gives in the final', sub: 'more points to give → bigger gaps between votes', kind: 'points', max: 120 },
+    { key: 'raw', ref: 'rnd', title: 'Favoritism, in points', sub: 'random votes (dashed) rise even more, so the rise comes from the points', kind: 'fav' },
   ].map((r, i) => ({ ...r, top: TOP + i * (ROW + GAP) }));
   const lastBottom = rows.at(-1).top + ROW, H = lastBottom + 28;
 
@@ -42,19 +42,28 @@ startPage(async () => {
   const x = d3.scaleLinear(YEAR_AXIS, [M.left, WIDTH - M.right]);
   const span = s => [x(s.from), x(s.to + 1) - x(s.from)];
   const value = (s, key) => (key === 'ppv' ? Math.round(meanOf(s, key)) : meanOf(s, key));
-  const fmt = (row, v) => (row.kind === 'points' ? String(v) : v.toFixed(row.digits));
+  const fmt = (row, v) => (row.kind === 'points' ? String(v) : v.toFixed(2));
 
-  // band behind the hovered voting system, through all three rows
+  // band behind the hovered voting system, through both rows
   const band = svg.append('rect').attr('class', 'system-band').attr('y', TOP - 6).attr('height', lastBottom - TOP + 6).attr('visibility', 'hidden');
 
   const first = systems[0], last = systems.at(-1);
-  const colX = WIDTH - M.right + 34;
+  const colX = WIDTH - M.right + 28;
   svg.append('text').attr('class', 'change-head').attr('x', colX).attr('y', TOP - 40).text(`${systemLabel(last)}`);
   svg.append('text').attr('class', 'change-head').attr('x', colX).attr('y', TOP - 26).text(`vs ${systemLabel(first)}`);
 
+  // the change from the first to the last voting system, in the right-hand column
+  function change(g, key, row, at, label, cls) {
+    const ratio = value(last, key) / value(first, key);
+    const c = g.append('g').attr('class', `change ${cls}`).attr('transform', `translate(${colX},${at})`);
+    c.append('text').attr('class', 'change-value').attr('y', 4).text(`×${ratio.toFixed(ratio >= 10 ? 1 : 2)}`);
+    c.append('text').attr('class', 'change-word').attr('y', 21).text(label ?? `${fmt(row, value(first, key))} → ${fmt(row, value(last, key))}`);
+  }
+
   for (const row of rows) {
     const bottom = row.top + ROW;
-    const y = d3.scaleLinear([0, row.max ?? d3.max(systems, s => value(s, row.key)) * 1.2], [bottom, row.top]).nice();
+    const top = row.max ?? d3.max(systems, s => Math.max(value(s, row.key), row.ref ? value(s, row.ref) : 0)) * 1.15;
+    const y = d3.scaleLinear([0, top], [bottom, row.top]).nice();
     const g = svg.append('g').attr('class', `row row-${row.kind}`);
 
     g.append('text').attr('class', 'panel-title').attr('x', M.left).attr('y', row.top - 24).text(row.title);
@@ -63,35 +72,46 @@ startPage(async () => {
     const ticks = g.append('g').attr('class', 'grid').selectAll('g').data(y.ticks(3)).join('g');
     ticks.append('line').attr('x1', M.left).attr('x2', WIDTH - M.right).attr('y1', y).attr('y2', y).classed('zero', t => !t);
     ticks.append('text').attr('class', 'tick-label').attr('x', M.left - 8).attr('y', t => y(t) + 4).attr('text-anchor', 'end')
-      .text(row.kind === 'points' ? d3.format('d') : d3.format('.1f'));
+      .text(row.kind === 'points' ? d3.format('d') : d3.format('.0f'));
 
     const bars = g.append('g').selectAll('g').data(systems).join('g').attr('class', row.kind === 'points' ? 'strip-block' : 'mean-bar');
     bars.append('rect').attr('class', 'block').attr('x', s => span(s)[0] + 1).attr('width', s => span(s)[1] - 2)
       .attr('y', s => y(value(s, row.key))).attr('height', s => bottom - y(value(s, row.key)));
     bars.append('line').attr('x1', s => span(s)[0] + 1).attr('x2', s => span(s)[0] + span(s)[1] - 1)
       .attr('y1', s => y(value(s, row.key))).attr('y2', s => y(value(s, row.key)));
-    bars.filter(s => wide(s) || (row.kind === 'points' && s.to - s.from >= 2)).append('text').attr('text-anchor', 'middle')
-      .attr('x', s => span(s)[0] + span(s)[1] / 2).attr('y', s => y(value(s, row.key)) - 6)
-      .text(s => fmt(row, value(s, row.key)));
 
-    // the change from the first to the last voting system, in the right-hand column
-    const ratio = value(last, row.key) / value(first, row.key);
-    const flat = Math.abs(ratio - 1) < 0.15;
-    const c = g.append('g').attr('class', `change ${flat ? 'is-flat' : 'is-up'}`).attr('transform', `translate(${colX},${row.top + ROW / 2})`);
-    c.append('text').attr('class', 'change-value').attr('y', 4).text(`×${ratio.toFixed(ratio >= 10 ? 1 : 2)}`);
-    c.append('text').attr('class', 'change-word').attr('y', 22).text(flat ? 'about the same' : `${fmt(row, value(first, row.key))} → ${fmt(row, value(last, row.key))}`);
+    if (row.ref) {
+      // what random votes would give: a dashed outline over the real bar
+      bars.append('path').attr('class', 'random-ref').attr('d', s => {
+        const [x0, w] = span(s), yr = y(value(s, row.ref));
+        return `M${x0 + 1},${bottom}V${yr}H${x0 + w - 1}V${bottom}`;
+      });
+      // labels on wide bars: real inside the bar, random above the dashed line
+      const lab = bars.filter(wide);
+      lab.append('text').attr('class', 'random-label').attr('text-anchor', 'middle')
+        .attr('x', s => span(s)[0] + span(s)[1] / 2).attr('y', s => y(value(s, row.ref)) - 6)
+        .text(s => value(s, row.ref).toFixed(2));
+      lab.append('text').attr('class', 'real-label').attr('text-anchor', 'middle')
+        .attr('x', s => span(s)[0] + span(s)[1] / 2).attr('y', s => y(value(s, row.key)) + 15)
+        .text(s => value(s, row.key).toFixed(2));
+      change(g, row.key, row, row.top + ROW / 2 - 18, `real ${fmt(row, value(first, row.key))} → ${fmt(row, value(last, row.key))}`, 'is-real');
+      change(g, row.ref, row, row.top + ROW / 2 + 30, `random ${fmt(row, value(first, row.ref))} → ${fmt(row, value(last, row.ref))}`, 'is-random');
+    } else {
+      bars.filter(s => wide(s) || s.to - s.from >= 2).append('text').attr('text-anchor', 'middle')
+        .attr('x', s => span(s)[0] + span(s)[1] / 2).attr('y', s => y(value(s, row.key)) - 6)
+        .text(s => (s.from === 1971 ? `≈${value(s, row.key)}` : value(s, row.key)));
+      change(g, row.key, row, row.top + ROW / 2, null, 'is-points');
+    }
   }
 
   svg.append('g').selectAll('text').data(DECADES).join('text').attr('class', 'tick-label')
     .attr('x', x).attr('y', H - 6).attr('text-anchor', 'middle').text(d => d);
 
-  const strip = svg.selectAll('.strip-block');
-
-  // ---------- hover: one column per voting system, through all three rows
+    // ---------- hover: one column per voting system, through all three rows
 
   const columns = svg.append('g').selectAll('rect').data(systems).join('rect')
     .attr('class', 'system').attr('tabindex', 0)
-    .attr('aria-label', s => `${systemLabel(s)}, ${s.title}: raw ${meanOf(s, 'raw').toFixed(2)}, standardised ${meanOf(s, 'z').toFixed(2)}, ${Math.round(meanOf(s, 'ppv'))} points per country`)
+    .attr('aria-label', s => `${systemLabel(s)}, ${s.title}: ${Math.round(meanOf(s, 'ppv'))} points per country, favoritism ${meanOf(s, 'raw').toFixed(2)} points, random votes would give ${meanOf(s, 'rnd').toFixed(2)}`)
     .attr('x', s => span(s)[0]).attr('width', s => Math.max(span(s)[1], 8))
     .attr('y', TOP - 6).attr('height', lastBottom - TOP + 6).attr('fill', 'transparent');
 
