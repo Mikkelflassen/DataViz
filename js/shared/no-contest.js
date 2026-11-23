@@ -43,8 +43,9 @@ export function drawNoContestBridge({ svg, parent, x, y, before, after, colour, 
     .attr('fill', 'none').attr('stroke', `url(#${id})`).attr('stroke-width', width).attr('stroke-linecap', 'round');
 
   return parent.append('circle').attr('class', 'no-contest-point')
-    .attr('cx', x(NO_CONTEST)).attr('cy', (y0 + y1) / 2).attr('r', radius - 0.5)
-    .attr('fill', 'var(--surface)').attr('stroke', colour).attr('stroke-width', 2);
+    // small, thin and faint, so it marks the year without competing with the real points
+    .attr('cx', x(NO_CONTEST)).attr('cy', (y0 + y1) / 2).attr('r', radius - 1.5)
+    .attr('fill', 'var(--surface)').attr('stroke', colour).attr('stroke-width', 1.2).attr('stroke-opacity', 0.4);
 }
 
 /** All years from first to last, 2020 included. */
