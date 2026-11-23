@@ -108,11 +108,15 @@ reads `data/raw/votes.csv` and rewrites `votes-finals.csv`, `jury-televote.csv`,
 
 ## How the numbers work
 
-Favoritism is the points a country gave minus the average the receiver got from all voters that year. It is then averaged over the finals both countries were in. The 2023 "rest of world" televote is left out, a country's own row (always 0) is dropped, and there was no contest in 2020.
+Favoritism is the points a country gave minus the average the receiver got from all voters that year. It is then averaged over the finals both countries were in.
+
+Points are standardised before averaging, because the points systems hand out very different amounts: one point per juror in the 1960s, 58 points per voter from 1975, and twice that since jury and televote were split in 2016. Each year's points are scaled so they have the same spread (standard deviation) as an average 1975–2015 final. Values stay in points on the familiar 12-point scale, and a 1960s final counts as much as a recent one. This happens in `loadVotes` in `js/shared/data.js`, so the map and the blocs page both use it. Totals in tooltips are the points actually given.
+
+The 2023 "rest of world" televote is left out, a country's own row (always 0) is dropped, and there was no contest in 2020.
 
 A pair needs enough shared finals before its average is shown: at least 5 for ranges of 20 years or more, 3 for 8 to 19 years and 1 for shorter ranges.
 
-With no country picked, the map shows how many points each country received per final: for each final, the mean points it got per voting country minus the mean for every entry in that final, averaged over the finals it was in, with the same minimum number of finals as for pairs. That is in points per voter like favoritism, so both views use the same red/blue scale; averaging per final keeps countries with many finals from looking stronger just for having been there more often. A country that was in no final in those years is grey, like the countries outside Eurovision; a country that was there but shared too few finals with the selected one is hatched.
+With no country picked, the map shows how many points each country received per final: for each final, the mean points it got per voting country minus the mean for every entry in that final, averaged over the finals it was in, with the same minimum number of finals as for pairs. That is in points per voter like favoritism, so both views use the same red/blue scale; averaging per final keeps countries with many finals from looking stronger just for having been there more often. A country without data is grey, like the countries outside Eurovision, and cannot be hovered or selected: it was in no final in those years, or in too few finals (with no country selected) or too few shared finals with the selected one.
 
 There was no contest in 2020. The line charts keep 2020 on the time axis as a hollow point on a straight 2019–2021 line that fades out toward 2020 and back in (`js/shared/no-contest.js`).
 
@@ -144,7 +148,7 @@ The scatterplot answers lecture 3's checklist like this. Both axes share one sca
 
 The line charts mark rule changes with vertical lines and keep the y-axis starting at 0. Chart 1 has the strip of voting systems directly under it, on the same time axis, so a jump in the line can be read against the rule change that caused it. Time is mapped to position on a linear axis throughout (lecture 9).
 
-Dividing by each year's standard deviation on the bias page is a data transformation in the sense of lecture 6: the raw numbers are correct but not comparable across voting systems. Showing the raw version first and the corrected one behind a toggle is our answer to "do not visualize to deceive" (ethical design, lecture 5). Hatching for pairs with too few shared finals is explicit encoding of missing data (lecture 6) instead of silently colouring them as 0.
+Dividing by each year's standard deviation on the bias page is a data transformation in the sense of lecture 6: the raw numbers are correct but not comparable across voting systems. Showing the raw version first and the corrected one behind a toggle is our answer to "do not visualize to deceive" (ethical design, lecture 5). Countries and pairs with too little data are greyed out (hatched in the blocs matrix) instead of being coloured as 0, an explicit encoding of missing data (lecture 6).
 
 ## Limits
 

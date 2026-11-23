@@ -85,21 +85,19 @@
 </main>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p>Blocs are derived from the votes by hierarchical clustering. Countries below the threshold remain unassigned.</p>
-  <p>Hover a bloc, country or cell to highlight it in all views.</p>
+  <p>Blocs found by clustering the votes. Hover anything to highlight it everywhere.</p>
 </div>
 <div class="help-pop" id="h-years" role="tooltip" hidden>
-  <p>Finals only. Minimum shared finals per pair: 5 for ranges of 20+ years, 3 for 8–19 years, 1 otherwise. Countries with too little data in the range are excluded.</p>
+  <p>Finals only. Points standardised to the 12-point scale.</p>
 </div>
 <div class="help-pop" id="h-groups" role="tooltip" hidden>
-  <p>Average-linkage clustering on mutual favoritism. A cluster is a bloc when the mean favoritism between its members meets the threshold; members below it are removed. Up to eight blocs are shown.</p>
+  <p>A group is a bloc when its members favour each other by at least the threshold.</p>
 </div>
 <div class="help-pop" id="h-matrix" role="tooltip" hidden>
-  <p>Rows give, columns receive; colours as on the map page. Countries are ordered by the clustering, so blocs appear as squares on the diagonal.</p>
-  <p>A matrix is used because almost every pair has a value; as a network the connections would overlap.</p>
+  <p>Rows give, columns receive. Blocs form squares on the diagonal.</p>
 </div>
 <div class="help-pop" id="h-map" role="tooltip" hidden>
-  <p>Bloc colours are categorical only. Grey: no bloc. Hatched: insufficient data.</p>
+  <p>Grey: no bloc. Hatched: too little data.</p>
 </div>
 </body>
 </html>

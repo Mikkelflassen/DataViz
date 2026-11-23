@@ -107,7 +107,7 @@ startPage(async () => {
   const blocOf = id => blocs.find(b => b.set.has(id));
   const countryTip = id => {
     const bloc = blocOf(id);
-    return `<b>${nameOf(id)}</b><br><span class="m">${bloc ? `Bloc ${bloc.letter}: ${bloc.name}` : model.included.has(id) ? 'No bloc' : 'Insufficient data'}</span>`;
+    return `<b>${nameOf(id)}</b><br><span class="m">${bloc ? `Bloc ${bloc.letter}: ${bloc.name}` : model.included.has(id) ? 'No bloc' : 'Too little data'}</span>`;
   };
 
   // ---------- the matrix
@@ -203,9 +203,9 @@ startPage(async () => {
 
   const cellTip = d => {
     const head = `<b>${nameOf(d.giver)} → ${nameOf(d.receiver)}</b><br>`;
-    if (d.giver === d.receiver) return `<b>${nameOf(d.giver)}</b><br><span class="m">no self-votes</span>`;
-    if (!d.value) return `${head}<span class="m">insufficient data</span>`;
-    return `${head}<span class="m">${signed(d.value.fav)} pts vs expected</span><br><span class="m">over ${d.value.finals} finals</span>`;
+    if (d.giver === d.receiver) return `<b>${nameOf(d.giver)}</b>`;
+    if (!d.value) return `${head}<span class="m">Too little data</span>`;
+    return `${head}<span class="m">Average ${signed(d.value.fav)}</span><br><span class="m">Total points ${d3.format(',')(d.value.points)}</span><br><span class="m">Finals ${d.value.finals}</span>`;
   };
 
   // ---------- linking the views: one group in focus, in the matrix, on the map and in the list

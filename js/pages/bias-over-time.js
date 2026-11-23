@@ -108,7 +108,7 @@ startPage(async () => {
   function describe(system) {
     const pop = $('system-pop');
     if (!system) { pop.hidden = true; return; }
-    pop.innerHTML = `<b>${systemLabel(system)} · ${system.title}</b><p>${system.text}</p>`;
+    pop.innerHTML = `<b>${systemLabel(system)} · ${system.title}</b>${system.text}`;
     pop.hidden = false;
     const block = strip.filter(s => s === system).select('rect').node();
     const at = block.getBoundingClientRect(), size = pop.getBoundingClientRect();
@@ -162,7 +162,7 @@ startPage(async () => {
         const d = d3.least(withGap, r => Math.abs(x(r.y) - mx));
         guide.attr('x1', x(d.y)).attr('x2', x(d.y)).attr('visibility', 'visible');
         if (d.jury == null) { tooltip.show(event, NO_CONTEST_TIP); return; }
-        tooltip.show(event, `<b>${d.y}</b><br><span class="m">jury ${d.jury.toFixed(2)} · televote ${d.tele.toFixed(2)}</span><br><span class="m">${d.n} country pairs</span>`);
+        tooltip.show(event, `<b>${d.y}</b><br><span class="m">Jury ${d.jury.toFixed(2)} · Televote ${d.tele.toFixed(2)}</span>`);
       })
       .on('mouseleave', () => { guide.attr('visibility', 'hidden'); tooltip.hide(); });
   }

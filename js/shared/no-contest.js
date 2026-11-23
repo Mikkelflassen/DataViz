@@ -7,7 +7,7 @@
 /* global d3 */
 
 export const NO_CONTEST = 2020;
-export const NO_CONTEST_TIP = '<b>2020</b><br><span class="m">no contest (cancelled)</span>';
+export const NO_CONTEST_TIP = '<b>2020</b><br><span class="m">No contest</span>';
 
 let gradientCount = 0;
 

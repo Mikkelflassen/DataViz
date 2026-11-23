@@ -49,9 +49,8 @@ startPage(async () => {
 
   const side = d => (d.gap >= 0 ? 'jury' : 'tele');   // below the diagonal, juries give more
   const sideColour = d => `var(--${side(d)})`;
-  const countryTip = d => `<b>${nameOf(d.id)}</b><br><span class="m">jury ${two(d.jury)} · televote ${two(d.tele)}</span><br>` +
-    `<span class="m">gap ${signed(d.gap)}</span><br>` +
-    `<span class="m">${d.finals} final${d.finals > 1 ? 's' : ''}</span>`;
+  const countryTip = d => `<b>${nameOf(d.id)}</b><br><span class="m">Jury ${two(d.jury)} · Televote ${two(d.tele)}</span><br>` +
+    `<span class="m">Finals ${d.finals}</span>`;
 
   // ---------- scatterplot
   //
@@ -239,7 +238,7 @@ startPage(async () => {
     svg.append('g').selectAll('text').data(data.filter(d => d.jury == null && d.year !== NO_CONTEST)).join('text')
       .attr('x', d => x(d.year)).attr('y', y(0) - 8).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--muted)').text('not in final');
 
-    const yearTip = d => `<b>${nameOf(state.focus)} ${d.year}</b><br><span class="m">jury ${two(d.jury)} · televote ${two(d.tele)}</span><br><span class="m">gap ${signed(d.jury - d.tele)}</span>`;
+    const yearTip = d => `<b>${nameOf(state.focus)} ${d.year}</b><br><span class="m">Jury ${two(d.jury)} · Televote ${two(d.tele)}</span>`;
     for (const key of ['jury', 'tele']) {
       const line = d3.line().defined(d => d[key] != null).x(d => x(d.year)).y(d => y(d[key]));
       svg.append('path').datum(data).attr('d', line).attr('fill', 'none').attr('stroke', `var(--${key})`).attr('stroke-width', 2.2).attr('stroke-linejoin', 'round');
