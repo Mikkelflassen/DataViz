@@ -11,3 +11,7 @@ svg.wide { min-width: 720px; }
 .bar.tele { fill: var(--tele); }
 .bar:hover { stroke: var(--fg); stroke-width: 1; }
 .swatch.c-all { --c: var(--accent); }
+#country { font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--fg); }
+.seg.is-off { opacity: .4; }
+.seg button:disabled { cursor: default; }
+.note { font-size: 12px; fill: var(--muted); }
