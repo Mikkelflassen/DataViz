@@ -13,7 +13,6 @@ Only the standard library is used, so there is nothing to install.
 """
 import csv
 import json
-import random
 from collections import defaultdict
 from pathlib import Path
 from statistics import mean
@@ -58,31 +57,6 @@ def write_csv(path, header, rows):
     print(f"{path.relative_to(ROOT)}: {len(rows)} rows")
 
 
-def random_favoritism(rows, rounds=50, seed=1):
-    """Mean absolute favoritism if every country gave its own points to random songs.
-
-    Each voter keeps exactly the points it handed out that year (e.g. 12, 10, 8 ... 1 and zeros),
-    but they are shuffled over the songs it could vote for. Averaged over `rounds` shuffles.
-    """
-    rng = random.Random(seed)
-    by_giver = defaultdict(list)
-    for r in rows:
-        by_giver[r["giver"]].append(r)
-    results = []
-    for _ in range(rounds):
-        shuffled = []
-        for votes in by_giver.values():
-            pts = [r["points"] for r in votes]
-            rng.shuffle(pts)
-            shuffled += [{"receiver": r["receiver"], "points": p} for r, p in zip(votes, pts)]
-        per_song = defaultdict(list)
-        for r in shuffled:
-            per_song[r["receiver"]].append(r["points"])
-        avg = {song: mean(p) for song, p in per_song.items()}
-        results.append(mean(abs(r["points"] - avg[r["receiver"]]) for r in shuffled))
-    return mean(results)
-
-
 def era_mean(series, key):
     return {name: round(mean(d[key] for d in series if a <= d["y"] <= b), 2)
             for name, (a, b) in ERAS.items()}
@@ -119,10 +93,9 @@ def main():
             handed_out[r["giver"]] += r["points"]
         raw = mean(abs(r["fav"]) for r in rows)
         series.append({"y": y, "raw": round(raw, 3),
-                       "rnd": round(random_favoritism(rows), 3),
                        "ppv": round(mean(handed_out.values()), 1)})
 
-    bias = {"years": series, "eraRaw": era_mean(series, "raw"), "eraRandom": era_mean(series, "rnd")}
+    bias = {"years": series, "eraRaw": era_mean(series, "raw")}
     (OUT / "bias-over-time.json").write_text(json.dumps(bias, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     print(f"data/bias-over-time.json: {len(series)} years")
 
