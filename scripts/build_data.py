@@ -6,7 +6,7 @@ Run from the repo root:  python3 scripts/build_data.py
 Writes
   data/votes-finals.csv     one row per vote in a final, with its favoritism
   data/jury-televote.csv    2016-2023 finals with jury and televote points apart
-  data/top-pairs.json       points between the pairs with the most 12-point scores since 1975
+  data/twelve-arcs.json     12-point scores between pairs, per period, for the bias page
 
 Only the standard library is used, so there is nothing to install.
 """
@@ -20,7 +20,9 @@ ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "raw" / "votes.csv"
 OUT = ROOT / "data"
 
-TOP_PAIRS = 12   # how many pairs the bias page shows
+PERIODS = [(1975, 1984), (1985, 1994), (1995, 2004), (2005, 2015), (2016, 2023)]
+MIN_MEETINGS = 3     # shared finals in a period before a pair can get an arc
+MIN_WEIGHT = 0.25    # share of possible 12s the pair gave each other
 
 
 
@@ -71,26 +73,44 @@ def main():
                 "" if r["jury_points"] == "" else int(float(r["jury_points"])),
                 int(float(r["tele_points"]))) for r in sorted(split, key=lambda r: (r["year"], r["giver"], r["receiver"]))])
 
-    # ---- 3. bias page: points between the pairs with the most 12-point scores since 1975
-    # Since 1975 every country's top score is 12 (since 2016 once from the jury and once from the
-    # televote), so all years share one scale. A 12 counts once before 2016, and once each for
-    # jury and televote from 2016.
+    # ---- 3. bias page: 12-point scores between pairs of countries, as arcs, per period
+    # Weight of an arc = the share of possible 12s the two countries gave each other: 12s in both
+    # directions divided by 2 x the finals both took part in. From 2016 the jury and the televote
+    # each give a set; the period view counts both (so 4 possible 12s per final), the split view
+    # keeps them apart. Arcs need at least MIN_MEETINGS shared finals and weight >= MIN_WEIGHT.
     era = [r for r in finals if r["giver"] != "wld" and r["year"] >= 1975]
     for r in era:
         if r["year"] >= 2016:
             r["jury"], r["tele"] = int(float(r["jury_points"])), int(float(r["tele_points"]))
-    twelves = defaultdict(int)
-    for r in era:
-        twelves[(r["giver"], r["receiver"])] += (r["points"] == 12) if r["year"] < 2016 else (r["jury"] == 12) + (r["tele"] == 12)
-    top = sorted(twelves, key=lambda p: (-twelves[p], p))[:TOP_PAIRS]
-    by_pair = defaultdict(list)
-    for r in sorted(era, key=lambda r: r["year"]):
-        if (r["giver"], r["receiver"]) in top:
-            by_pair[(r["giver"], r["receiver"])].append(
-                {"y": r["year"], "p": r["points"]} if r["year"] < 2016 else {"y": r["year"], "j": r["jury"], "t": r["tele"]})
-    pairs = [{"from": g, "to": t, "twelves": twelves[(g, t)], "votes": by_pair[(g, t)]} for g, t in top]
-    (OUT / "top-pairs.json").write_text(json.dumps({"pairs": pairs}, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"data/top-pairs.json: {len(pairs)} pairs, " + ", ".join(f"{g}>{t} {twelves[(g, t)]}" for g, t in top[:3]))
+
+    def arcs(rows, twelves_in, per_final):
+        met, got = defaultdict(set), defaultdict(int)
+        for r in rows:
+            pair = tuple(sorted((r["giver"], r["receiver"])))
+            met[pair].add(r["year"])
+            got[(r["giver"], r["receiver"])] += twelves_in(r)
+        out = []
+        for (a, b), years in met.items():
+            n = len(years)
+            w = (got[(a, b)] + got[(b, a)]) / (2 * per_final * n)
+            if n >= MIN_MEETINGS and w >= MIN_WEIGHT:
+                out.append({"a": a, "b": b, "ab": got[(a, b)], "ba": got[(b, a)], "n": n, "w": round(w, 3)})
+        return sorted(out, key=lambda d: -d["w"])
+
+    def all_twelves(r):
+        return (r["points"] == 12) if r["year"] < 2016 else (r["jury"] == 12) + (r["tele"] == 12)
+
+    periods = []
+    for lo, hi in PERIODS:
+        rows = [r for r in era if lo <= r["year"] <= hi]
+        periods.append({"from": lo, "to": hi, "arcs": arcs(rows, all_twelves, 2 if lo >= 2016 else 1)})
+    split = [r for r in era if r["year"] >= 2016]
+    arc_data = {"periods": periods,
+                "jury": arcs(split, lambda r: r["jury"] == 12, 1),
+                "tele": arcs(split, lambda r: r["tele"] == 12, 1)}
+    (OUT / "twelve-arcs.json").write_text(json.dumps(arc_data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    print("data/twelve-arcs.json: " + ", ".join(f"{p['from']}-{p['to']} {len(p['arcs'])}" for p in periods)
+          + f"; 2016-2023 jury {len(arc_data['jury'])}, televote {len(arc_data['tele'])} arcs")
 
 
 if __name__ == "__main__":
