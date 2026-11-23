@@ -13,7 +13,7 @@ The question behind every page is the same: which countries give each other more
 | Country map | `index.html` | Pick a country and see who gives it more or fewer points than expected, or who it favours. Beside the map, the strongest mutual pairs as paired bars. |
 | Voting blocs | `voting-blocs.html` | All countries at once, in a matrix sorted by clustering, next to a map of the groups that come out. |
 | Jury vs televote | `jury-televote.html` | Finding 3.3. Average jury points against average televote points per country for 2016–2023, and one country year by year. |
-| Bias over time | `bias-over-time.html` | Finding 3.4. A heatmap of each country's favoritism per final (1957–2023) under a strip with the points per country, and two maps (jury, televote) of the points the 15 strongest 2004–2015 friendships got in 2016–2023. |
+| Bias over time | `bias-over-time.html` | Finding 3.4. The points between the 12 country pairs with the most 12-point scores since 1975, one small bar chart per pair, with jury and televote apart from 2016. |
 
 The logo in the top bar leads back to the country map.
 
@@ -116,7 +116,7 @@ Colours live in CSS custom properties in `css/site.css`, with a second set for d
 python3 scripts/build_data.py
 ```
 
-reads `data/raw/votes.csv` and rewrites `votes-finals.csv`, `jury-televote.csv`, `bias-over-time.json` and `old-friendships.json`. It only uses Python's standard library. `countries.json`, `europe.topo.json` and `voting-systems.json` are edited by hand.
+reads `data/raw/votes.csv` and rewrites `votes-finals.csv`, `jury-televote.csv`, `top-pairs.json`. It only uses Python's standard library. `countries.json`, `europe.topo.json` and `voting-systems.json` are edited by hand.
 
 ## How the numbers work
 
@@ -132,9 +132,8 @@ On the blocs page, the similarity between two countries is the mean of their fav
 
 On the jury page, the values are the average jury and televote points a country received per voting country in 2016–2023 finals, rest-of-world televote included. The gap is jury minus televote. A country gets a bold name when its gap is more than 1.25 standard deviations from the mean gap of the selected years. Other dots get a grey name when they are at least 24 px from the diagonal, have no other dot within 30 px, and the name fits right beside the dot. Every name has to stay 7 to 10 px clear of all other dots, so it cannot be read as a neighbour's. A dot where that is impossible gets no name, outliers included.
 
-On the bias page, the first chart is a heatmap: one row per voting country, ordered by first final, and one column per final. A cell's colour is that country's mean absolute favoritism in that final (the average gap, in points, between its vote and what the other countries gave the same song), on a sequential scale clamped at 4.5. Blank cells: the country did not vote in that final. A strip above the columns gives the points each country gave under the voting system of the time (10, 6, 15, 9, ≈86 in 1971–73, 58, 116). A heatmap shows every country and every year at once, so a change that affects all countries in the same year appears as a vertical edge, while a change in one country's behaviour appears in its row only. Data: `countries` in `data/bias-over-time.json`.
+The bias page shows the 12 country pairs with the most 12-point scores in the finals since 1975 (a 12 counts once before 2016, and once each for jury and televote from 2016), as small multiples (lecture 9): one bar chart per pair, one bar per final in which both countries took part, height = the points the first country gave the second. From 2016 the jury and the televote award separate scores, so those finals have two thin bars side by side in the jury and televote colours used on the jury page. The page starts in 1975 because from then on the top score is always 12, so every panel shares one 0–12 scale and one time axis, and the bars are the points as awarded, with no derived measure. A thin mark on the baseline means the countries met and 0 points were given; no bar means they were not in the same final. Data: `data/top-pairs.json`; `TOP_PAIRS` in `scripts/build_data.py` sets the number of pairs.
 
-The second chart is two maps of Europe side by side, jury on the left and televote on the right (small multiples, lecture 4). A curved line joins each of the 15 pairs with the highest mean favoritism in the 2004–2015 finals (at least 5 meetings, and at least 3 since 2016). Its width is the average points the first country gave the second in the 2016–2023 finals, on the same scale on both maps; a dashed line means 0. Lines bend to the right of their direction so that A→B and B→A do not cover each other. Data: `data/old-friendships.json`; `FRIENDSHIPS` in `scripts/build_data.py` sets the number of pairs.
 
 ## Design choices and where they come from
 
@@ -152,7 +151,7 @@ The scatterplot answers lecture 3's checklist like this. Both axes share one sca
 
 The line charts mark rule changes with vertical lines and keep the y-axis starting at 0. Chart 1 has the strip of voting systems directly under it, on the same time axis, so a jump in the line can be read against the rule change that caused it. Time is mapped to position on a linear axis throughout (lecture 9).
 
-Showing the points per country above the heatmap on the bias page is our answer to "do not visualize to deceive" (ethical design, lecture 5): favoritism is measured in points, so the reader needs to see how many points there were to give. Titles describe what is shown and leave the conclusion to the reader. Hatching for pairs with too few shared finals is explicit encoding of missing data (lecture 6) instead of silently colouring them as 0.
+The bias page shows points as awarded rather than a derived favoritism measure, and its title describes what is shown and leaves the conclusion to the reader. Hatching for pairs with too few shared finals is explicit encoding of missing data (lecture 6) instead of silently colouring them as 0.
 
 ## Limits
 

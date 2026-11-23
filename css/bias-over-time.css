@@ -1,33 +1,12 @@
 /* Favoritism over time page */
-svg.wide { min-width: 640px; }
+svg.wide { min-width: 720px; }
 
-:root { --heat-lo: #eef4f5; --heat-hi: #0b3f47; --land-strong: color-mix(in srgb, var(--fg-2) 22%, var(--land)); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --heat-lo: #1f2a2d; --heat-hi: #7fd3dc; } }
-:root[data-theme="dark"] { --heat-lo: #1f2a2d; --heat-hi: #7fd3dc; }
-
-/* chart 1: heatmap */
-.cell { shape-rendering: crispEdges; }
-.cell:hover { stroke: var(--fg); stroke-width: 1.5; }
-.row-label { font-size: 9.5px; fill: var(--fg-2); }
-.strip-label { font-size: 11px; fill: var(--muted); }
-.pts-strip rect { fill: var(--fg-2); fill-opacity: .12; stroke: var(--surface); stroke-width: 1; }
-.pts-strip text { font: 600 11px var(--mono); fill: var(--fg-2); }
-
-/* chart 2: two maps */
-.maps { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.maps figure { margin: 0; min-width: 0; }
-.maps figcaption { font: 600 14px var(--body); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: baseline; }
-.maps figcaption span { font: 500 12px var(--mono); color: var(--muted); }
-.maps figcaption.jury { color: var(--jury); }
-.maps figcaption.tele { color: var(--tele); }
-.maps svg { width: 100%; height: auto; display: block; border-radius: 6px; }
-@media (max-width: 760px) { .maps { grid-template-columns: 1fr; } }
-
-.bond { fill: none; stroke-linecap: round; stroke-opacity: .85; }
-.bond.jury { stroke: var(--jury); }
-.bond.tele { stroke: var(--tele); }
-.bond.legend { stroke: var(--fg-2); }
-.bond.none { stroke-width: 1.2px; stroke-dasharray: 3 3; stroke-opacity: .7; }
-.bond:hover { stroke-opacity: 1; }
-#width-legend { width: 420px; max-width: 100%; display: block; margin: 8px auto 0; }
-.maps .map-labels text { font-weight: 700; paint-order: stroke; stroke: var(--land-strong); stroke-width: 4px; }
+.panel-title { font: 600 13px var(--body); fill: var(--fg); }
+.bar.combined { fill: var(--fg-2); fill-opacity: .55; }
+.bar.jury { fill: var(--jury); }
+.bar.tele { fill: var(--tele); }
+.zero-mark { fill: var(--fg-2); fill-opacity: .55; }
+.split-band { fill: var(--fg); fill-opacity: .04; }
+.vote .hit { fill: transparent; }
+.vote:hover .bar { fill-opacity: 1; stroke: var(--fg); stroke-width: .8; }
+.swatch.c-combined { --c: color-mix(in srgb, var(--fg-2) 55%, transparent); }

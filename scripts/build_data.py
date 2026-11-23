@@ -6,8 +6,7 @@ Run from the repo root:  python3 scripts/build_data.py
 Writes
   data/votes-finals.csv     one row per vote in a final, with its favoritism
   data/jury-televote.csv    2016-2023 finals with jury and televote points apart
-  data/bias-over-time.json  yearly series for the "Bias over time" page
-  data/old-friendships.json  jury and televote points to the strongest 2004-2015 friendships
+  data/top-pairs.json       points between the pairs with the most 12-point scores since 1975
 
 Only the standard library is used, so there is nothing to install.
 """
@@ -21,10 +20,8 @@ ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "raw" / "votes.csv"
 OUT = ROOT / "data"
 
-FRIENDSHIPS = 15   # how many old friendships the bias page shows
+TOP_PAIRS = 12   # how many pairs the bias page shows
 
-ERAS = {"1957–1974": (1957, 1974), "1975–2003": (1975, 2003),
-        "2004–2015": (2004, 2015), "2016–2023": (2016, 2023)}
 
 
 def read_finals():
@@ -57,11 +54,6 @@ def write_csv(path, header, rows):
     print(f"{path.relative_to(ROOT)}: {len(rows)} rows")
 
 
-def era_mean(series, key):
-    return {name: round(mean(d[key] for d in series if a <= d["y"] <= b), 2)
-            for name, (a, b) in ERAS.items()}
-
-
 def main():
     finals = read_finals()
 
@@ -79,56 +71,26 @@ def main():
                 "" if r["jury_points"] == "" else int(float(r["jury_points"])),
                 int(float(r["tele_points"]))) for r in sorted(split, key=lambda r: (r["year"], r["giver"], r["receiver"]))])
 
-    # ---- 3. yearly series for the bias-over-time page
-    years = sorted({r["year"] for r in votes})
-    per_year = defaultdict(list)
-    for r in votes:
-        per_year[r["year"]].append(r)
-
-    series = []
-    for y in years:
-        rows = per_year[y]
-        handed_out = defaultdict(int)
-        for r in rows:
-            handed_out[r["giver"]] += r["points"]
-        raw = mean(abs(r["fav"]) for r in rows)
-        series.append({"y": y, "raw": round(raw, 3),
-                       "ppv": round(mean(handed_out.values()), 1)})
-
-    # each voting country's mean absolute favoritism per final, for the heatmap
-    by_giver = defaultdict(lambda: defaultdict(list))
-    for r in votes:
-        by_giver[r["giver"]][r["year"]].append(abs(r["fav"]))
-    first = {g: min(ys) for g, ys in by_giver.items()}
-    grid = [{"c": g, "v": {str(y): round(mean(v), 2) for y, v in sorted(ys.items())}}
-            for g, ys in sorted(by_giver.items(), key=lambda kv: (first[kv[0]], kv[0]))]
-    bias = {"years": series, "eraRaw": era_mean(series, "raw"), "countries": grid}
-    (OUT / "bias-over-time.json").write_text(json.dumps(bias, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"data/bias-over-time.json: {len(series)} years")
-
-    # ---- 4. bias page: what the strongest old friendships get from jury and televote since 2016
-    # Old friendship = a pair's mean favoritism in the 2004-2015 finals (at least 5 meetings).
-    # For the strongest pairs that met at least 3 times since 2016: the average jury and televote
-    # points the giver gave the receiver in 2016-2023 finals.
-    old = defaultdict(list)
-    for r in votes:
-        if 2004 <= r["year"] <= 2015:
-            old[(r["giver"], r["receiver"])].append(r["fav"])
-    old = {pair: mean(v) for pair, v in old.items() if len(v) >= 5}
-    since = defaultdict(list)
-    for r in split:
-        if r["giver"] != "wld":
-            since[(r["giver"], r["receiver"])].append((float(r["jury_points"]), float(r["tele_points"])))
-    pairs = sorted((p for p in old if len(since.get(p, [])) >= 3), key=lambda p: -old[p])[:FRIENDSHIPS]
-    rows = [{"from": g, "to": t, "old": round(old[(g, t)], 1), "n": len(since[(g, t)]),
-             "jury": round(mean(j for j, _ in since[(g, t)]), 1),
-             "tele": round(mean(v for _, v in since[(g, t)]), 1)} for g, t in pairs]
-    every = [x for v in since.values() for x in v]
-    friends = {"pairs": rows,
-               "mean": {"jury": round(mean(r["jury"] for r in rows), 1), "tele": round(mean(r["tele"] for r in rows), 1)},
-               "anyPair": {"jury": round(mean(j for j, _ in every), 1), "tele": round(mean(v for _, v in every), 1)}}
-    (OUT / "old-friendships.json").write_text(json.dumps(friends, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"data/old-friendships.json: {len(rows)} pairs, jury {friends['mean']['jury']}, televote {friends['mean']['tele']}")
+    # ---- 3. bias page: points between the pairs with the most 12-point scores since 1975
+    # Since 1975 every country's top score is 12 (since 2016 once from the jury and once from the
+    # televote), so all years share one scale. A 12 counts once before 2016, and once each for
+    # jury and televote from 2016.
+    era = [r for r in finals if r["giver"] != "wld" and r["year"] >= 1975]
+    for r in era:
+        if r["year"] >= 2016:
+            r["jury"], r["tele"] = int(float(r["jury_points"])), int(float(r["tele_points"]))
+    twelves = defaultdict(int)
+    for r in era:
+        twelves[(r["giver"], r["receiver"])] += (r["points"] == 12) if r["year"] < 2016 else (r["jury"] == 12) + (r["tele"] == 12)
+    top = sorted(twelves, key=lambda p: (-twelves[p], p))[:TOP_PAIRS]
+    by_pair = defaultdict(list)
+    for r in sorted(era, key=lambda r: r["year"]):
+        if (r["giver"], r["receiver"]) in top:
+            by_pair[(r["giver"], r["receiver"])].append(
+                {"y": r["year"], "p": r["points"]} if r["year"] < 2016 else {"y": r["year"], "j": r["jury"], "t": r["tele"]})
+    pairs = [{"from": g, "to": t, "twelves": twelves[(g, t)], "votes": by_pair[(g, t)]} for g, t in top]
+    (OUT / "top-pairs.json").write_text(json.dumps({"pairs": pairs}, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    print(f"data/top-pairs.json: {len(pairs)} pairs, " + ", ".join(f"{g}>{t} {twelves[(g, t)]}" for g, t in top[:3]))
 
 
 if __name__ == "__main__":

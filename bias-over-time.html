@@ -8,10 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="css/site.css">
-  <link rel="stylesheet" href="css/europe-map.css">
   <link rel="stylesheet" href="css/bias-over-time.css">
   <script src="js/vendor/d3.min.js" defer></script>
-  <script src="js/vendor/topojson-client.min.js" defer></script>
   <script type="module" src="js/pages/bias-over-time.js"></script>
 </head>
 <body>
@@ -23,35 +21,27 @@
     <button type="button" class="help" aria-label="Summary" aria-controls="h-page" aria-expanded="false">?</button>
   </header>
 
-  <section class="stage" aria-labelledby="heat-title">
-    <div class="ttl">
-      <h2 id="heat-title">Favoritism per country and final, 1957–2023</h2>
-      <button type="button" class="help" aria-label="About this chart" aria-controls="h-heat" aria-expanded="false">?</button>
+  <section class="stage" aria-labelledby="pairs-title">
+    <div class="stage-head">
+      <div class="ttl">
+        <h2 id="pairs-title">Points between the 12 pairs with the most 12-point scores, 1975–2023</h2>
+        <button type="button" class="help" aria-label="About this chart" aria-controls="h-pairs" aria-expanded="false">?</button>
+      </div>
+      <div class="keys">
+        <span class="key"><i class="swatch c-combined"></i>Points</span>
+        <span class="key"><i class="swatch c-jury"></i>Jury</span>
+        <span class="key"><i class="swatch c-tele"></i>Televote</span>
+      </div>
     </div>
-    <div class="scroll"><svg id="heatmap" class="wide" role="img" aria-label="Heatmap: one row per voting country, one column per final, colour is the country's favoritism in points"></svg></div>
-  </section>
-
-  <section class="stage" aria-labelledby="maps-title">
-    <div class="ttl">
-      <h2 id="maps-title">The 15 strongest 2004–2015 friendships: points in 2016–2023</h2>
-      <button type="button" class="help" aria-label="About this chart" aria-controls="h-maps" aria-expanded="false">?</button>
-    </div>
-    <div class="maps">
-      <figure><figcaption class="jury">Jury <span>average <b id="avg-jury"></b> points</span></figcaption><svg id="map-jury" role="img" aria-label="Map: jury points between the 15 friendship pairs"></svg></figure>
-      <figure><figcaption class="tele">Televote <span>average <b id="avg-tele"></b> points</span></figcaption><svg id="map-tele" role="img" aria-label="Map: televote points between the 15 friendship pairs"></svg></figure>
-    </div>
-    <svg id="width-legend" aria-hidden="true"></svg>
+    <div class="scroll"><svg id="pairs" class="wide" role="img" aria-label="One bar chart per country pair: the points the first country gave the second in each final since 1975, jury and televote apart from 2016"></svg></div>
   </section>
 </main>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p><b>Favoritism</b>: how far a country's vote is from what the other countries gave the same song, in points.</p>
+  <p>Since 1975 each country gives 12, 10 and 8 to 1 points. From 2016 the jury and the televote each give a set.</p>
 </div>
-<div class="help-pop" id="h-heat" role="tooltip" hidden>
-  <p>Each cell: one country's average favoritism in one final. Blank: not in that final.</p>
-</div>
-<div class="help-pop" id="h-maps" role="tooltip" hidden>
-  <p>The 15 pairs with the highest favoritism in 2004–2015. Line width: average points the first country gave the second in the 2016–2023 finals.</p>
+<div class="help-pop" id="h-pairs" role="tooltip" hidden>
+  <p>One bar per final in which both countries took part. No bar: not in the same final.</p>
 </div>
 </body>
 </html>
