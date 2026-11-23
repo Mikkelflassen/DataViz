@@ -1,12 +1,11 @@
 /* Jury vs televote page: scatterplot left, lists and year chart right, pattern chart below */
 :root { --range-w: 300px; }
 
-/* The scatterplot is square and sized to fit the window: never taller than the screen below the
-   top bar and its own heading, never wider than 700 px or 62% of the page. Its column is exactly
-   as wide as the plot, and the lists and the year chart take the rest. */
-.jt-panel { --plot: clamp(400px, min(calc(100vh - 260px), 62vw), 700px); grid-template-columns: calc(var(--plot) + 34px) minmax(0, 1fr); }
-@media (max-width: 920px) { .jt-panel { grid-template-columns: minmax(0, 1fr); --plot: min(100%, 640px); } }
-.scatter-box { width: var(--plot); max-width: 100%; margin: 0 auto; }
+/* The scatterplot takes about 60% of the width and fills its card; the gap lists and the
+   year chart share the remaining 40%. */
+.jt-panel { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+@media (max-width: 920px) { .jt-panel { grid-template-columns: minmax(0, 1fr); } }
+.scatter-box { width: 100%; max-width: 760px; margin: 0 auto; }
 .dot { cursor: pointer; }
 .key-strong { font-weight: 700; color: var(--fg); }
 .key-soft { color: var(--muted); }

@@ -353,7 +353,15 @@ startPage(async () => {
   onThemeChange(render);
   // both charts beside each other are sized from the layout, so redraw when the layout changes
   let resizeFrame = 0;
-  addEventListener('resize', () => { cancelAnimationFrame(resizeFrame); resizeFrame = requestAnimationFrame(render); });
+  // Only a change of width matters: phones change the height while scrolling, and redrawing then
+  // would make the names flicker.
+  let lastWidth = innerWidth;
+  addEventListener('resize', () => {
+    if (innerWidth === lastWidth) return;
+    lastWidth = innerWidth;
+    cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(render);
+  });
   document.fonts?.ready.then(render);
   render();
 });
