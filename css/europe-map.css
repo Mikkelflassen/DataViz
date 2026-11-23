@@ -11,3 +11,5 @@
 .map-frame { fill: var(--surface); stroke: var(--line-strong); }
 .map-note { font-size: 11px; fill: var(--muted); }
 .map-labels { pointer-events: none; font-weight: 600; }
+.country.is-absent { stroke: var(--sea); }
+.country.micro.is-absent { stroke: var(--line-strong); }

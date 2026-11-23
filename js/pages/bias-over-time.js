@@ -10,6 +10,7 @@
 
 import { startPage } from '../shared/page.js';
 import { createTooltip } from '../shared/tooltip.js';
+import { NO_CONTEST, NO_CONTEST_TIP, axisYears, drawNoContestBridge } from '../shared/no-contest.js';
 
 const $ = id => document.getElementById(id);
 const WIDTH = 900;
@@ -128,19 +129,25 @@ startPage(async () => {
     const W = 900, H = 260, M = { left: 48, right: 110, top: 30, bottom: 30 };
     const svg = d3.select('#patterns').attr('viewBox', `0 0 ${W} ${H}`);
     svg.selectAll('*').remove();
-    const x = d3.scalePoint(rows.map(d => d.y), [M.left + 24, W - M.right]);
+    // 2020 stays on the axis, as a gap in the data (see no-contest.js)
+    const years = axisYears(rows[0].y, rows.at(-1).y);
+    const x = d3.scalePoint(years, [M.left + 24, W - M.right]);
+    const withGap = years.map(year => rows.find(r => r.y === year) ?? { y: year, jury: null, tele: null });
     const y = d3.scaleLinear([0, 0.8], [H - M.bottom, M.top]);
 
     const grid = svg.append('g').attr('class', 'grid').selectAll('g').data(y.ticks(4)).join('g');
     grid.append('line').attr('x1', M.left).attr('x2', W - M.right + 20).attr('y1', y).attr('y2', y).classed('zero', t => !t);
     grid.append('text').attr('class', 'tick-label').attr('x', M.left - 8).attr('y', t => y(t) + 4).attr('text-anchor', 'end').text(d3.format('.1f'));
     svg.append('text').attr('class', 'note').attr('x', 4).attr('y', 12).text('correlation with 2004–2015');
-    svg.append('g').selectAll('text').data(rows).join('text').attr('class', 'tick-label')
-      .attr('x', d => x(d.y)).attr('y', H - 8).attr('text-anchor', 'middle').text(d => d.y);
+    svg.append('g').selectAll('text').data(years).join('text').attr('class', 'tick-label')
+      .classed('no-contest', d => d === NO_CONTEST)
+      .attr('x', x).attr('y', H - 8).attr('text-anchor', 'middle').text(d => d);
 
     for (const [key, label] of [['jury', 'Jury'], ['tele', 'Televote']]) {
-      svg.append('path').datum(rows).attr('fill', 'none').attr('stroke', `var(--${key})`).attr('stroke-width', 2.4).attr('stroke-linejoin', 'round')
-        .attr('d', d3.line().x(d => x(d.y)).y(d => y(d[key])));
+      svg.append('path').datum(withGap).attr('fill', 'none').attr('stroke', `var(--${key})`).attr('stroke-width', 2.4).attr('stroke-linejoin', 'round')
+        .attr('d', d3.line().defined(d => d[key] != null).x(d => x(d.y)).y(d => y(d[key])));
+      const at = year => rows.find(r => r.y === year)?.[key];
+      drawNoContestBridge({ svg, parent: svg, x, y, before: at(NO_CONTEST - 1), after: at(NO_CONTEST + 1), colour: `var(--${key})` });
       svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', d => x(d.y)).attr('cy', d => y(d[key])).attr('r', 4.5)
         .attr('fill', `var(--${key})`).attr('stroke', 'var(--surface)').attr('stroke-width', 2);
       svg.append('text').attr('class', 'end-label').attr('x', x(rows.at(-1).y) + 10).attr('y', y(rows.at(-1)[key]) + 4)
@@ -152,8 +159,9 @@ startPage(async () => {
     svg.append('rect').attr('x', M.left).attr('y', M.top).attr('width', W - M.right - M.left + 20).attr('height', H - M.bottom - M.top).attr('fill', 'transparent')
       .on('mousemove', function (event) {
         const [mx] = d3.pointer(event, this);
-        const d = d3.least(rows, r => Math.abs(x(r.y) - mx));
+        const d = d3.least(withGap, r => Math.abs(x(r.y) - mx));
         guide.attr('x1', x(d.y)).attr('x2', x(d.y)).attr('visibility', 'visible');
+        if (d.jury == null) { tooltip.show(event, NO_CONTEST_TIP); return; }
         tooltip.show(event, `<b>${d.y}</b><br><span class="m">jury ${d.jury.toFixed(2)} · televote ${d.tele.toFixed(2)}</span><br><span class="m">${d.n} country pairs</span>`);
       })
       .on('mouseleave', () => { guide.attr('visibility', 'hidden'); tooltip.hide(); });
