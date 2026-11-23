@@ -224,8 +224,7 @@ startPage(async () => {
   function renderList() {
     d3.select('#blocs').selectAll('li').data(blocs.length ? blocs : [null]).join('li')
       .html(b => (!b ? '<span></span><span class="members">No blocs at this threshold.</span>' : `
-        <span class="badge" style="background:${b.colour};color:${b.ink}">${b.letter}</span>
-        <span class="name">${b.name}</span>
+        <span class="badge" style="background:${b.colour};color:${b.ink}">${b.name}</span>
         ${b.inside == null ? '<span></span>' : `<span class="inside" style="background:${colour(b.inside)};color:${colour.ink(b.inside)}" title="Average favoritism between members">${signed(b.inside)}</span>`}
         <span class="members">${b.members.map(id => `<a href="index.html#${id}">${nameOf(id)}</a>`).join(', ')}</span>`))
       .on('mouseenter', (e, b) => focusBloc(b ?? null))
