@@ -34,20 +34,15 @@
       </div>
     </div>
     <div class="controls">
-      <select id="country" aria-label="Country"><option value="">All countries</option></select>
-      <div class="seg" id="direction" role="group" aria-label="Direction">
-        <button type="button" data-value="g" aria-pressed="true">Given</button>
-        <button type="button" data-value="r" aria-pressed="false">Received</button>
-      </div>
-      <label class="threshold" for="threshold"><span>At least <b id="t-value">6</b> <span id="t-unit">points</span> above the average</span>
-        <input type="range" id="threshold" min="1" max="12" step="1" value="6">
+      <label class="threshold" for="threshold"><span>At least <b id="t-value">5</b> <span id="t-unit">points</span> above the average</span>
+        <input type="range" id="threshold" min="5" max="12" step="1" value="5">
       </label>
       <div class="seg" id="measure" role="group" aria-label="Show">
         <button type="button" data-value="count" aria-pressed="true">Number of votes</button>
         <button type="button" data-value="share" aria-pressed="false">Share of votes</button>
       </div>
     </div>
-    <div class="scroll"><svg id="bars" class="wide" role="img" aria-label="Bar chart: per year, the votes that were at least the chosen number of points above what the other countries gave the same song, for all countries or the chosen country"></svg></div>
+    <div class="scroll"><svg id="bars" class="wide" role="img" aria-label="Bar chart: per year, the votes that were at least the chosen number of points above what the other countries gave the same song"></svg></div>
   </section>
 </main>
 
