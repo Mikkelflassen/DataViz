@@ -16,3 +16,4 @@
 .country.micro.is-absent { display: none; }
 .country.boxed.is-absent { stroke: var(--line); }
 .map-labels text.is-absent { display: none; }
+.country.is-inert { pointer-events: none; cursor: default; }

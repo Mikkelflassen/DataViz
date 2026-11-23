@@ -37,3 +37,5 @@
 .side .map-labels { font-family: var(--display); font-weight: 700; }
 /* this map is drawn at less than half size, so the hover outline is made heavier to match */
 .side .country-outline { stroke-width: 6; }
+/* cells without a value (own row, too little data) have no hover */
+.cell.self, .cell.none { pointer-events: none; }

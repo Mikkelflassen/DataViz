@@ -168,6 +168,10 @@ export function createEuropeMap(svg, topology, handlers = {}) {
       labels.classed('is-absent', absent);
       if (hovered && absent(hovered)) { hovered = null; drawOutlines(); }
     },
+    /** Countries without data: no hover or click, but they keep their fill (e.g. hatched). */
+    markInert(isInert) {
+      countries.classed('is-inert', id => !!isInert?.(id));
+    },
     markSelected(selected) {
       countries.classed('is-selected', id => id === selected);
     },

@@ -258,11 +258,9 @@ startPage(async () => {
         .attr('fill', `var(--${key})`).attr('stroke', 'var(--surface)').attr('stroke-width', 2);
     }
 
-    // hover anywhere in a year's column
-    const yearTip = d => (missing(d)
-      ? `<b>${d.year === NO_CONTEST ? '2020' : `${nameOf(state.focus)} ${d.year}`}</b><br><span class="m">${d.year === NO_CONTEST ? 'No contest' : 'Not in final'}</span>`
-      : `<b>${nameOf(state.focus)} ${d.year}</b><br><span class="m">Jury ${two(d.jury)} · Televote ${two(d.tele)}</span>`);
-    svg.append('g').selectAll('rect').data(data).join('rect')
+    // hover anywhere in a year's column; years without data have no hover
+    const yearTip = d => `<b>${nameOf(state.focus)} ${d.year}</b><br><span class="m">Jury ${two(d.jury)} · Televote ${two(d.tele)}</span>`;
+    svg.append('g').selectAll('rect').data(present).join('rect')
       .attr('x', d => x(d.year) - x.step() / 2).attr('width', x.step()).attr('y', M.top - 6).attr('height', H - M.bottom - M.top + 6)
       .attr('fill', 'transparent')
       .on('mousemove', (e, d) => tooltip.show(e, yearTip(d))).on('mouseleave', () => tooltip.hide());
