@@ -6,11 +6,11 @@ import { loadCountries, loadJuryTelevote, signed, yearsLabel } from '../shared/d
 import { createYearRange } from '../shared/year-range.js';
 import { createTooltip } from '../shared/tooltip.js';
 import { createLabelPlacer } from '../shared/label-placement.js';
-import { NO_CONTEST, NO_CONTEST_TIP, axisYears, drawNoContestBridge } from '../shared/no-contest.js';
+import { NO_CONTEST, axisYears } from '../shared/no-contest.js';
 
 const $ = id => document.getElementById(id);
 const CONTESTS = [2016, 2017, 2018, 2019, 2021, 2022, 2023];   // no contest in 2020
-const AXIS_YEARS = axisYears(2016, 2023);                      // the year chart keeps 2020 on its axis
+const AXIS_YEARS = axisYears(2016, 2023);                      // the year chart keeps 2020 as an empty column
 const OUTLIER_SD = 1.25;       // a gap this many standard deviations from the mean gets a bold name
 const two = d3.format('.2f');
 
@@ -235,25 +235,38 @@ startPage(async () => {
     svg.append('g').selectAll('text').data(AXIS_YEARS).join('text').attr('class', 'tick-label')
       .classed('no-contest', d => d === NO_CONTEST)
       .attr('x', x).attr('y', H - 10).attr('text-anchor', 'middle').text(d => d);
-    svg.append('g').selectAll('text').data(data.filter(d => d.jury == null && d.year !== NO_CONTEST)).join('text')
-      .attr('x', d => x(d.year)).attr('y', y(0) - 8).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--muted)').text('not in final');
+    // Each final is a separate event, so the years are not joined by a line. A dumbbell per year
+    // shows that year's jury and televote points, and the bar between them is the gap.
+    // Years without a value (2020, or not in the final) are an empty column with a short note.
+    const missing = d => d.jury == null;
+    const note = svg.append('g').selectAll('text').data(data.filter(missing)).join('text')
+      .attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--muted)');
+    note.append('tspan').attr('x', d => x(d.year)).attr('y', y(0) - 20).text(d => (d.year === NO_CONTEST ? 'no' : 'not in'));
+    note.append('tspan').attr('x', d => x(d.year)).attr('y', y(0) - 8).text(d => (d.year === NO_CONTEST ? 'contest' : 'final'));
 
-    const yearTip = d => `<b>${nameOf(state.focus)} ${d.year}</b><br><span class="m">Jury ${two(d.jury)} · Televote ${two(d.tele)}</span>`;
+    const present = data.filter(d => !missing(d));
+    svg.append('g').selectAll('line').data(present).join('line').attr('class', 'gap-bar')
+      .attr('x1', d => x(d.year)).attr('x2', d => x(d.year)).attr('y1', d => y(d.jury)).attr('y2', d => y(d.tele))
+      .attr('stroke', 'var(--line-strong)').attr('stroke-width', 3).attr('stroke-linecap', 'round');
     for (const key of ['jury', 'tele']) {
-      const line = d3.line().defined(d => d[key] != null).x(d => x(d.year)).y(d => y(d[key]));
-      svg.append('path').datum(data).attr('d', line).attr('fill', 'none').attr('stroke', `var(--${key})`).attr('stroke-width', 2.2).attr('stroke-linejoin', 'round');
-      svg.append('g').selectAll('circle').data(data.filter(d => d[key] != null)).join('circle')
-        .attr('cx', d => x(d.year)).attr('cy', d => y(d[key])).attr('r', 4.5)
-        .attr('fill', `var(--${key})`).attr('stroke', 'var(--surface)').attr('stroke-width', 2)
-        .on('mousemove', (e, d) => tooltip.show(e, yearTip(d))).on('mouseleave', () => tooltip.hide());
-      const at = year => data.find(d => d.year === year)?.[key];
-      drawNoContestBridge({ svg, parent: svg, x, y, before: at(NO_CONTEST - 1), after: at(NO_CONTEST + 1), colour: `var(--${key})`, width: 2.2 })
-        ?.on('mousemove', e => tooltip.show(e, NO_CONTEST_TIP)).on('mouseleave', () => tooltip.hide());
+      svg.append('g').selectAll('circle').data(present).join('circle')
+        .attr('cx', d => x(d.year)).attr('cy', d => y(d[key])).attr('r', 5)
+        .attr('fill', `var(--${key})`).attr('stroke', 'var(--surface)').attr('stroke-width', 2);
     }
 
-    // name the lines at their last point; nudge the two apart if they would overlap
-    const last = data.findLast(d => d.jury != null);
-    if (last) {
+    // hover anywhere in a year's column
+    const yearTip = d => (missing(d)
+      ? `<b>${d.year === NO_CONTEST ? '2020' : `${nameOf(state.focus)} ${d.year}`}</b><br><span class="m">${d.year === NO_CONTEST ? 'No contest' : 'Not in final'}</span>`
+      : `<b>${nameOf(state.focus)} ${d.year}</b><br><span class="m">Jury ${two(d.jury)} · Televote ${two(d.tele)}</span>`);
+    svg.append('g').selectAll('rect').data(data).join('rect')
+      .attr('x', d => x(d.year) - x.step() / 2).attr('width', x.step()).attr('y', M.top - 6).attr('height', H - M.bottom - M.top + 6)
+      .attr('fill', 'transparent')
+      .on('mousemove', (e, d) => tooltip.show(e, yearTip(d))).on('mouseleave', () => tooltip.hide());
+
+    // name the two dots at the last final; nudge the names apart if they would overlap
+    // Only beside the last column: further left they would run into the next years.
+    const last = data.at(-1);
+    if (last.jury != null) {
       let yJury = y(last.jury), yTele = y(last.tele);
       if (Math.abs(yJury - yTele) < 14) {
         const middle = (yJury + yTele) / 2, up = yJury < yTele ? -7 : 7;
