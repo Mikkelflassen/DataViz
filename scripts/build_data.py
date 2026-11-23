@@ -7,13 +7,13 @@ Writes
   data/votes-finals.csv     one row per vote in a final, with its favoritism
   data/jury-televote.csv    2016-2023 finals with jury and televote points apart
   data/bias-over-time.json  yearly series for the "Bias over time" page
+  data/jury-televote-patterns.json  jury and televote against the 2004-2015 pattern
 
 Only the standard library is used, so there is nothing to install.
 """
 import csv
 import json
 import math
-import random
 from collections import defaultdict
 from pathlib import Path
 from statistics import mean, stdev
@@ -73,28 +73,6 @@ def era_mean(series, key):
             for name, (a, b) in ERAS.items()}
 
 
-def persistence(votes, years, keep=None, window=5, min_meetings=2):
-    """Correlation between each pair's favoritism in a year and its average
-    over the previous `window` contests (pairs that met at least twice in them)."""
-    by_year = defaultdict(dict)
-    for r in votes:
-        if keep and (r["giver"] not in keep or r["receiver"] not in keep):
-            continue
-        by_year[r["year"]][(r["giver"], r["receiver"])] = r["fav"]
-    out = {}
-    for i, y in enumerate(years):
-        if i < window:
-            continue
-        xs, ys = [], []
-        for pair, fav in by_year[y].items():
-            past = [by_year[p][pair] for p in years[i - window:i] if pair in by_year[p]]
-            if len(past) >= min_meetings:
-                xs.append(mean(past))
-                ys.append(fav)
-        out[y] = pearson(xs, ys)
-    return out
-
-
 def main():
     finals = read_finals()
 
@@ -129,32 +107,11 @@ def main():
                        "z": round(raw / stdev(r["points"] for r in rows), 3),
                        "ppv": round(mean(handed_out.values()))})
 
-    # countries that were in a final before 2004, in 2004-2015 and after 2016
-    seen = defaultdict(set)
-    for r in votes:
-        era = 0 if r["year"] < 2004 else 1 if r["year"] < 2016 else 2
-        seen[r["giver"]].add(era)
-        seen[r["receiver"]].add(era)
-    stable = {c for c, eras in seen.items() if len(eras) == 3}
+    bias = {"years": series, "eraRaw": era_mean(series, "raw"), "eraZ": era_mean(series, "z")}
+    (OUT / "bias-over-time.json").write_text(json.dumps(bias, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    print(f"data/bias-over-time.json: {len(series)} years")
 
-    p_all, p_stable = persistence(votes, years), persistence(votes, years, keep=stable)
-    persist = [{"y": y, "all": round(p_all[y], 3), "stable": round(p_stable[y], 3)}
-               for y in years if p_all.get(y) is not None]
-
-    # shuffle baseline: the same test with each giver's points dealt out at random
-    random.seed(1)
-    shuffled = [dict(r) for r in votes]
-    by_giver_year = defaultdict(list)
-    for r in shuffled:
-        by_giver_year[(r["year"], r["giver"])].append(r)
-    for group in by_giver_year.values():
-        pts = [r["points"] for r in group]
-        random.shuffle(pts)
-        for r, p in zip(group, pts):
-            r["points"] = p
-    add_favoritism(shuffled)
-    p_shuffled = [v for v in persistence(shuffled, years).values() if v is not None]
-
+    # ---- 4. jury-televote page: does each vote still follow the 2004-2015 pattern?
     # jury and televote favoritism against each pair's 2004-2015 average
     old = defaultdict(list)
     for r in votes:
@@ -172,16 +129,9 @@ def main():
         jt.append({"y": y, "jury": round(pearson(base, [r["jfav"] for r in rows]), 3),
                    "tele": round(pearson(base, [r["tfav"] for r in rows]), 3), "n": len(rows)})
 
-    era_p = {name: {"all": round(mean(d["all"] for d in persist if a <= d["y"] <= b), 2),
-                    "stable": round(mean(d["stable"] for d in persist if a <= d["y"] <= b), 2)}
-             for name, (a, b) in ERAS.items()}
-    bias = {"years": series, "persist": persist, "jt": jt,
-            "eraRaw": era_mean(series, "raw"), "eraZ": era_mean(series, "z"), "eraP": era_p,
-            "jtMean": {"jury": round(mean(d["jury"] for d in jt), 2), "tele": round(mean(d["tele"] for d in jt), 2)},
-            "shuffled": round(mean(p_shuffled), 2), "stableCount": len(stable)}
-    (OUT / "bias-over-time.json").write_text(json.dumps(bias, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"data/bias-over-time.json: {len(series)} years, {len(stable)} countries in every era, shuffled baseline {bias['shuffled']}")
-
+    patterns = {"years": jt, "mean": {"jury": round(mean(d["jury"] for d in jt), 2), "tele": round(mean(d["tele"] for d in jt), 2)}}
+    (OUT / "jury-televote-patterns.json").write_text(json.dumps(patterns, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    print(f"data/jury-televote-patterns.json: {len(jt)} years, mean jury {patterns['mean']['jury']}, televote {patterns['mean']['tele']}")
 
 if __name__ == "__main__":
     main()

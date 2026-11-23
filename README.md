@@ -12,8 +12,8 @@ The question behind every page is the same: which countries give each other more
 | --- | --- | --- |
 | Country map | `index.html` | Pick a country and see who gives it more or fewer points than expected, or who it favours. Beside the map, the strongest mutual pairs as paired bars. |
 | Voting blocs | `voting-blocs.html` | All countries at once, in a matrix sorted by clustering, next to a map of the groups that come out. |
-| Jury vs televote | `jury-televote.html` | Finding 3.3. Average jury points against average televote points per country for 2016–2023, and one country year by year. |
-| Bias over time | `bias-over-time.html` | Finding 3.4. Why the raw favoritism curve jumps, a measure the points system cannot affect, and jury against televote since 2016. |
+| Jury vs televote | `jury-televote.html` | Finding 3.3. Average jury points against average televote points per country for 2016–2023, one country year by year, and how closely each vote follows the 2004–2015 pattern. |
+| Bias over time | `bias-over-time.html` | Finding 3.4. Raw and standardised favoritism per voting system: the raw value grows with the points system, the standardised one does not. |
 
 The logo in the top bar leads back to the country map.
 
@@ -116,7 +116,7 @@ Colours live in CSS custom properties in `css/site.css`, with a second set for d
 python3 scripts/build_data.py
 ```
 
-reads `data/raw/votes.csv` and rewrites `votes-finals.csv`, `jury-televote.csv` and `bias-over-time.json`. It only uses Python's standard library. `countries.json`, `europe.topo.json` and `voting-systems.json` are edited by hand.
+reads `data/raw/votes.csv` and rewrites `votes-finals.csv`, `jury-televote.csv`, `bias-over-time.json` and `jury-televote-patterns.json`. It only uses Python's standard library. `countries.json`, `europe.topo.json` and `voting-systems.json` are edited by hand.
 
 ## How the numbers work
 
@@ -132,9 +132,9 @@ On the blocs page, the similarity between two countries is the mean of their fav
 
 On the jury page, the values are the average jury and televote points a country received per voting country in 2016–2023 finals, rest-of-world televote included. The gap is jury minus televote. A country gets a bold name when its gap is more than 1.25 standard deviations from the mean gap of the selected years. Other dots get a grey name when they are at least 24 px from the diagonal, have no other dot within 30 px, and the name fits right beside the dot. Every name has to stay 7 to 10 px clear of all other dots, so it cannot be read as a neighbour's. A dot where that is impossible gets no name, outliers included.
 
-Bias over time, chart 1, is the mean absolute favoritism per year. "Standardised" divides each year by the standard deviation of that year's points. The strip underneath is the mean number of points a country handed out, grouped by voting system. Hovering a block pops up a short note on that system; the notes are in `data/voting-systems.json`.
+On the bias page, the top panel is the mean absolute favoritism per voting system and the middle panel the same, standardised: each year is divided by the standard deviation of that year's points before averaging. The bottom row is the mean number of points a country awarded under each system. Hovering a column pops up a short note on that system; the notes are in `data/voting-systems.json`. The two measures are drawn as separate panels on one time axis instead of one chart with two y-axes.
 
-Chart 2 is, per year, the correlation between every pair's favoritism that year and the pair's average over the previous five contests (pairs that met at least twice in them). The dashed line keeps the 32 countries that were in finals before 2004, in 2004–2015 and after 2016. Chart 3 does the same for 2016–2023 with jury and televote favoritism separately, against each pair's 2004–2015 average (at least three meetings).
+The last chart on the jury page is, per year since 2016, the correlation between every pair's jury (or televote) favoritism and the pair's mean favoritism in 2004–2015 (at least three meetings).
 
 ## Design choices and where they come from
 
@@ -152,15 +152,13 @@ The scatterplot answers lecture 3's checklist like this. Both axes share one sca
 
 The line charts mark rule changes with vertical lines and keep the y-axis starting at 0. Chart 1 has the strip of voting systems directly under it, on the same time axis, so a jump in the line can be read against the rule change that caused it. Time is mapped to position on a linear axis throughout (lecture 9).
 
-Dividing by each year's standard deviation in chart 1 is a data transformation in the sense of lecture 6: the raw numbers are correct but not comparable across voting systems. Showing the raw version first and the corrected one behind a toggle is our answer to "do not visualize to deceive" (ethical design, lecture 5). Hatching for pairs with too few shared finals is explicit encoding of missing data (lecture 6) instead of silently colouring them as 0.
+Dividing by each year's standard deviation on the bias page is a data transformation in the sense of lecture 6: the raw numbers are correct but not comparable across voting systems. Showing the raw version first and the corrected one behind a toggle is our answer to "do not visualize to deceive" (ethical design, lecture 5). Hatching for pairs with too few shared finals is explicit encoding of missing data (lecture 6) instead of silently colouring them as 0.
 
 ## Limits
 
 Favoritism here is a description of voting patterns. It does not show why countries vote as they do: shared language, diaspora and similar music taste all produce the same pattern.
 
 The clustering is one reasonable method among several, and bloc borders move when the years or the strength bar change. Blocs that hold together across settings deserve more trust than ones that appear at a single setting. The eight bloc colours cannot all be told apart by colour-blind readers, which is why each bloc also has a letter on the map and in the matrix.
-
-Chart 2's five-contest window is a choice. Other window lengths give the same shape with slightly different values.
 
 ## Sources
 
