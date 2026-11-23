@@ -21,49 +21,31 @@
     <button type="button" class="help" aria-label="Summary" aria-controls="h-page" aria-expanded="false">?</button>
   </header>
 
-  <section class="stage" aria-labelledby="raw-title">
-    <div class="stage-head">
-      <div class="ttl">
-        <h2 id="raw-title">Favoritism only looks bigger because more points are handed out</h2>
-        <button type="button" class="help" aria-label="About this chart" aria-controls="h-raw" aria-expanded="false">?</button>
-      </div>
-      <div class="keys">
-        <span class="key"><i class="swatch c-strip"></i>Real votes</span>
-        <span class="key"><i class="swatch c-random"></i>If every country voted at random</span>
-        <span class="key">Hover a bar for its voting rules</span>
-      </div>
+  <section class="stage" aria-labelledby="fav-title">
+    <div class="ttl">
+      <h2 id="fav-title">Favoritism only rose because more points are handed out</h2>
+      <button type="button" class="help" aria-label="About this chart" aria-controls="h-fav" aria-expanded="false">?</button>
     </div>
-    <div class="scroll"><svg id="raw-chart" class="wide" role="img" aria-label="Per voting system: points each country gives in the final, and favoritism in points for the real votes and for random votes"></svg></div>
+    <div class="scroll"><svg id="fav-chart" class="wide" role="img" aria-label="Favoritism in points per year for real votes and for random votes; both jump in 1975 and 2016 when the points per country rise"></svg></div>
   </section>
 
   <section class="stage" aria-labelledby="patterns-title">
-    <div class="stage-head">
-      <div class="ttl">
-        <h2 id="patterns-title">Since 2016, viewers repeat old voting friendships far more than juries</h2>
-        <button type="button" class="help" aria-label="About this chart" aria-controls="h-patterns" aria-expanded="false">?</button>
-      </div>
-      <div class="keys">
-        <span class="key"><i class="swatch line c-jury"></i>Jury</span>
-        <span class="key"><i class="swatch line c-tele"></i>Televote</span>
-      </div>
+    <div class="ttl">
+      <h2 id="patterns-title">Viewers repeat old voting friendships far more than juries</h2>
+      <button type="button" class="help" aria-label="About this chart" aria-controls="h-patterns" aria-expanded="false">?</button>
     </div>
-    <div class="scroll"><svg id="patterns" class="wide" role="img" aria-label="Correlation of each year's jury and televote favoritism with the 2004–2015 pattern"></svg></div>
+    <div class="scroll"><svg id="patterns" class="wide" role="img" aria-label="Since 2016, how closely jury and televote votes follow the 2004–2015 voting friendships"></svg></div>
   </section>
 </main>
-<div class="system-pop" id="system-pop" role="status" hidden></div>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p><b>Favoritism</b> is how far one country's vote is from what the other countries gave the same song. If a song averages 5 points and Denmark gives it 12, Denmark's favoritism is +7.</p>
-  <p>Favoritism has not grown; only the number of points has. Where old friendships do show up in the votes, it is mostly the televote.</p>
+  <p><b>Favoritism</b>: how far a country's vote is from what the others gave the same song. Song averages 5, Denmark gives 12: favoritism +7.</p>
 </div>
-<div class="help-pop" id="h-raw" role="tooltip" hidden>
-  <p><b>Points:</b> the points each country gave in the final, averaged over the voting countries. Every country gives the same fixed amount, except 1971–73, when two jurors scored every song from 1 to 5.</p>
-  <p><b>Favoritism, in points:</b> the average size of the gap between a country's vote and the other countries' average, plus or minus.</p>
-  <p><b>Random (dashed):</b> the same, if each country gave its usual points to random songs (mean of 50 shuffles). Random votes have no favorites, yet their gaps grow even more with the points.</p>
+<div class="help-pop" id="h-fav" role="tooltip" hidden>
+  <p>Average favoritism per year. <b>Random votes</b>: each country gives its usual points to random songs. They have no favorites, yet rise just as much.</p>
 </div>
 <div class="help-pop" id="h-patterns" role="tooltip" hidden>
-  <p>For each pair of countries, e.g. Greece → Cyprus, we take the average favoritism in 2004–2015, when jury and televote were combined. That is the "old friendship".</p>
-  <p>Each year since 2016, the jury's and the televote's favoritism is compared with it (correlation). Mean: televote <span id="tele-mean">0.54</span>, jury <span id="jury-mean">0.22</span>.</p>
+  <p>How closely each year's votes match each country pair's average favoritism in 2004–2015 (correlation, 0 = no link).</p>
 </div>
 </body>
 </html>
