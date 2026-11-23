@@ -7,13 +7,12 @@ Writes
   data/votes-finals.csv     one row per vote in a final, with its favoritism
   data/jury-televote.csv    2016-2023 finals with jury and televote points apart
   data/bias-over-time.json  yearly series for the "Bias over time" page
-  data/jury-televote-patterns.json  jury and televote against the 2004-2015 pattern
+  data/old-friendships.json  jury and televote points to the strongest 2004-2015 friendships
 
 Only the standard library is used, so there is nothing to install.
 """
 import csv
 import json
-import math
 import random
 from collections import defaultdict
 from pathlib import Path
@@ -22,6 +21,8 @@ from statistics import mean
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "raw" / "votes.csv"
 OUT = ROOT / "data"
+
+FRIENDSHIPS = 15   # how many old friendships the bias page shows
 
 ERAS = {"1957–1974": (1957, 1974), "1975–2003": (1975, 2003),
         "2004–2015": (2004, 2015), "2016–2023": (2016, 2023)}
@@ -47,18 +48,6 @@ def add_favoritism(rows, field="points", out="fav"):
         avg = mean(r[field] for r in group)
         for r in group:
             r[out] = r[field] - avg
-
-
-def pearson(xs, ys):
-    n = len(xs)
-    if n < 3:
-        return None
-    mx, my = mean(xs), mean(ys)
-    sxx = sum((x - mx) ** 2 for x in xs)
-    syy = sum((y - my) ** 2 for y in ys)
-    if not sxx or not syy:
-        return None
-    return sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / math.sqrt(sxx * syy)
 
 
 def write_csv(path, header, rows):
@@ -137,27 +126,30 @@ def main():
     (OUT / "bias-over-time.json").write_text(json.dumps(bias, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     print(f"data/bias-over-time.json: {len(series)} years")
 
-    # ---- 4. jury-televote page: does each vote still follow the 2004-2015 pattern?
-    # jury and televote favoritism against each pair's 2004-2015 average
+    # ---- 4. bias page: what the strongest old friendships get from jury and televote since 2016
+    # Old friendship = a pair's mean favoritism in the 2004-2015 finals (at least 5 meetings).
+    # For the strongest pairs that met at least 3 times since 2016: the average jury and televote
+    # points the giver gave the receiver in 2016-2023 finals.
     old = defaultdict(list)
     for r in votes:
         if 2004 <= r["year"] <= 2015:
             old[(r["giver"], r["receiver"])].append(r["fav"])
-    old = {pair: mean(v) for pair, v in old.items() if len(v) >= 3}
-    both = [dict(r, jury=int(float(r["jury_points"])), tele=int(float(r["tele_points"])))
-            for r in split if r["giver"] != "wld"]
-    add_favoritism(both, "jury", "jfav")
-    add_favoritism(both, "tele", "tfav")
-    jt = []
-    for y in sorted({r["year"] for r in both}):
-        rows = [r for r in both if r["year"] == y and (r["giver"], r["receiver"]) in old]
-        base = [old[(r["giver"], r["receiver"])] for r in rows]
-        jt.append({"y": y, "jury": round(pearson(base, [r["jfav"] for r in rows]), 3),
-                   "tele": round(pearson(base, [r["tfav"] for r in rows]), 3), "n": len(rows)})
+    old = {pair: mean(v) for pair, v in old.items() if len(v) >= 5}
+    since = defaultdict(list)
+    for r in split:
+        if r["giver"] != "wld":
+            since[(r["giver"], r["receiver"])].append((float(r["jury_points"]), float(r["tele_points"])))
+    pairs = sorted((p for p in old if len(since.get(p, [])) >= 3), key=lambda p: -old[p])[:FRIENDSHIPS]
+    rows = [{"from": g, "to": t, "old": round(old[(g, t)], 1), "n": len(since[(g, t)]),
+             "jury": round(mean(j for j, _ in since[(g, t)]), 1),
+             "tele": round(mean(v for _, v in since[(g, t)]), 1)} for g, t in pairs]
+    every = [x for v in since.values() for x in v]
+    friends = {"pairs": rows,
+               "mean": {"jury": round(mean(r["jury"] for r in rows), 1), "tele": round(mean(r["tele"] for r in rows), 1)},
+               "anyPair": {"jury": round(mean(j for j, _ in every), 1), "tele": round(mean(v for _, v in every), 1)}}
+    (OUT / "old-friendships.json").write_text(json.dumps(friends, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    print(f"data/old-friendships.json: {len(rows)} pairs, jury {friends['mean']['jury']}, televote {friends['mean']['tele']}")
 
-    patterns = {"years": jt, "mean": {"jury": round(mean(d["jury"] for d in jt), 2), "tele": round(mean(d["tele"] for d in jt), 2)}}
-    (OUT / "jury-televote-patterns.json").write_text(json.dumps(patterns, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"data/jury-televote-patterns.json: {len(jt)} years, mean jury {patterns['mean']['jury']}, televote {patterns['mean']['tele']}")
 
 if __name__ == "__main__":
     main()

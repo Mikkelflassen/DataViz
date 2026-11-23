@@ -17,6 +17,20 @@ svg.wide { min-width: 640px; }
 .end-label.tele { fill: var(--tele); }
 .guide { stroke: var(--fg-2); stroke-width: 1; }
 
-/* chart 2: the gap between televote and jury */
-.gap-band { fill: var(--fg-2); fill-opacity: .07; }
-.gap-label { font: 700 16px var(--mono); fill: var(--fg-2); paint-order: stroke; stroke: var(--surface); stroke-width: 5px; stroke-linejoin: round; }
+/* chart 2: jury and televote points to old friendships */
+.pair .bar { stroke: var(--line-strong); stroke-width: 2.5; }
+.pair .dot { stroke: var(--surface); stroke-width: 1.5; }
+.pair .dot.jury { fill: var(--jury); }
+.pair .dot.tele { fill: var(--tele); }
+.pair-label { font-size: 13px; fill: var(--fg-2); }
+.pair .row-hit { fill: transparent; }
+.pair:hover .row-hit { fill: var(--fg); fill-opacity: .04; }
+.pair:hover .pair-label { fill: var(--fg); }
+.pair.avg .pair-label { font-weight: 700; fill: var(--fg); }
+.pair.avg .bar { stroke-width: 3.5; }
+.avg-value { font: 700 13px var(--mono); }
+.avg-value.jury { fill: var(--jury); }
+.avg-value.tele { fill: var(--tele); }
+.avg-rule { stroke: var(--line-strong); }
+.any-pair { stroke: var(--fg-2); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.any-label { font: 500 11px var(--mono); fill: var(--muted); }

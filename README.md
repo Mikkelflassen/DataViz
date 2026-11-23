@@ -13,7 +13,7 @@ The question behind every page is the same: which countries give each other more
 | Country map | `index.html` | Pick a country and see who gives it more or fewer points than expected, or who it favours. Beside the map, the strongest mutual pairs as paired bars. |
 | Voting blocs | `voting-blocs.html` | All countries at once, in a matrix sorted by clustering, next to a map of the groups that come out. |
 | Jury vs televote | `jury-televote.html` | Finding 3.3. Average jury points against average televote points per country for 2016–2023, and one country year by year. |
-| Bias over time | `bias-over-time.html` | Finding 3.4. Favoritism in points per year for the real votes and for random votes under the same points: both jump when the points per country rise in 1975 and 2016. Below, how closely jury and televote follow the 2004–2015 voting friendships. |
+| Bias over time | `bias-over-time.html` | Finding 3.4. Favoritism in points per year for the real votes and if voting were random: both jump when the points per country rise in 1975 and 2016. Below, the points the 15 strongest 2004–2015 friendships got from jury and televote since 2016. |
 
 The logo in the top bar leads back to the country map.
 
@@ -116,7 +116,7 @@ Colours live in CSS custom properties in `css/site.css`, with a second set for d
 python3 scripts/build_data.py
 ```
 
-reads `data/raw/votes.csv` and rewrites `votes-finals.csv`, `jury-televote.csv`, `bias-over-time.json` and `jury-televote-patterns.json`. It only uses Python's standard library. `countries.json`, `europe.topo.json` and `voting-systems.json` are edited by hand.
+reads `data/raw/votes.csv` and rewrites `votes-finals.csv`, `jury-televote.csv`, `bias-over-time.json` and `old-friendships.json`. It only uses Python's standard library. `countries.json`, `europe.topo.json` and `voting-systems.json` are edited by hand.
 
 ## How the numbers work
 
@@ -134,7 +134,7 @@ On the jury page, the values are the average jury and televote points a country 
 
 On the bias page, the first chart is one line per year for the mean absolute favoritism in points (the gap between a country's vote and the average the song got from all voters), for the real votes and for random votes. Random votes: each country keeps the points it actually gave that year, but they are shuffled over the songs it could vote for, averaged over 50 shuffles with a fixed seed (`random_favoritism` in `scripts/build_data.py`). Random votes have no favorites by construction, yet they jump at the same moments as the real votes (1975: 10 → 58 points per country, 2016: 58 → 116) and rise more (×4.5 against ×3.55 from 1957–61 to 2016–23). The rise in points-based favoritism is therefore a property of the scoring system, not of the voters. The chart shows this with a reference line instead of a paragraph, the lines are labelled at their ends instead of with a legend, and the two lasting changes in the points system are marked on the time axis. Points are drawn as straight segments between contests, since there is one value per contest (discrete time, lecture 9). The tooltip gives each year's values and voting system, from `data/voting-systems.json`.
 
-The second chart on the bias page is, per year since 2016, the correlation between every pair's jury (or televote) favoritism and the pair's mean favoritism in 2004–2015 (at least three meetings). The area between the two lines is shaded and labelled with the ratio of the two means.
+The second chart on the bias page takes the 15 country pairs with the highest mean favoritism in the 2004–2015 finals (at least 5 meetings, and at least 3 since 2016) and shows the average jury and televote points the giver gave the receiver in the 2016–2023 finals, as a dumbbell per pair on one 0–12 axis. The televote is higher for 14 of the 15 pairs (average 9.7 against 4.4); the dashed line is what any pair gets on average (2.3). Showing points instead of a correlation keeps the chart in the unit the reader already knows. Written to `data/old-friendships.json`; `FRIENDSHIPS` in `scripts/build_data.py` sets the number of pairs.
 
 ## Design choices and where they come from
 
