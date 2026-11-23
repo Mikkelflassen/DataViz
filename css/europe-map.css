@@ -11,3 +11,8 @@
 .map-frame { fill: var(--surface); stroke: var(--line-strong); }
 .map-note { font-size: 11px; fill: var(--muted); }
 .map-labels { pointer-events: none; font-weight: 600; }
+/* countries in no final in the selected years: drawn like the countries outside Eurovision */
+.country.is-absent { fill: var(--land); stroke: var(--sea); stroke-width: .6; pointer-events: none; cursor: default; }
+.country.micro.is-absent { display: none; }
+.country.boxed.is-absent { stroke: var(--line); }
+.map-labels text.is-absent { display: none; }

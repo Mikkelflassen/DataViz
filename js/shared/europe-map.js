@@ -33,7 +33,10 @@ export function createEuropeMap(svg, topology, handlers = {}) {
   const idOf = f => f.properties.c;
   const participants = features.filter(f => idOf(f) && idOf(f) !== 'au');
   const others = features.filter(f => !idOf(f));
-  const australia = features.find(f => idOf(f) === 'au');
+  // Australia without Macquarie Island, which lies far to the south and would shrink the inset.
+  const australiaFull = features.find(f => idOf(f) === 'au');
+  const australia = { ...australiaFull, geometry: { type: 'MultiPolygon',
+    coordinates: australiaFull.geometry.coordinates.filter(poly => d3.min(poly[0], p => p[1]) > -50) } };
 
   /** Where lines and labels attach, per country id. */
   const position = {};
@@ -108,10 +111,10 @@ export function createEuropeMap(svg, topology, handlers = {}) {
   past.append('rect').attr('class', 'country boxed').attr('data-c', id => id).attr('width', 58).attr('height', 50).attr('rx', 5).call(listen);
   past.each((id, i) => { position[id] = [boxX + i * 66 + 29, boxY + 25]; });
 
-  const auX = boxX, auY = boxY + 80, auW = 124, auH = 104;
+  const auX = boxX, auY = boxY + 178, auW = 150, auH = 128;   // in the sea between Ireland and Spain
   boxes.append('text').attr('class', 'map-note').attr('x', auX).attr('y', auY - 8).text('Australia, since 2015');
   boxes.append('rect').attr('class', 'map-frame').attr('x', auX).attr('y', auY).attr('width', auW).attr('height', auH).attr('rx', 5);
-  const auPath = d3.geoPath(d3.geoMercator().fitExtent([[auX + 10, auY + 8], [auX + auW - 10, auY + auH - 10]], australia));
+  const auPath = d3.geoPath(d3.geoMercator().fitExtent([[auX + 8, auY + 8], [auX + auW - 8, auY + auH - 8]], australia));
   boxes.append('path').datum('au').attr('class', 'country').attr('data-c', 'au').attr('d', auPath(australia)).call(listen);
   position.au = auPath.centroid(australia);
 
@@ -156,6 +159,14 @@ export function createEuropeMap(svg, topology, handlers = {}) {
     /** Dim every country outside the set, or pass null to clear. */
     spotlight(ids) {
       countries.classed('is-dim', id => !!ids && !ids.has(id));
+    },
+    /** Mark countries that have no data at all, e.g. were in no final in the selected years. */
+    // They look like the countries outside Eurovision: grey, no code, no hover, no click.
+    markAbsent(isAbsent) {
+      const absent = id => !!isAbsent?.(id);
+      countries.classed('is-absent', absent);
+      labels.classed('is-absent', absent);
+      if (hovered && absent(hovered)) { hovered = null; drawOutlines(); }
     },
     markSelected(selected) {
       countries.classed('is-selected', id => id === selected);

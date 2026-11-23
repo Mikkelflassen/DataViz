@@ -32,7 +32,7 @@
       <span class="lbl">Direction</span>
       <div class="seg" id="direction" role="group" aria-label="Direction">
         <button type="button" data-value="in" aria-pressed="true">Received</button>
-        <button type="button" data-value="out" aria-pressed="false">Given</button>
+        <button type="button" data-value="out" id="dir-out" aria-pressed="false" disabled title="Select a country to see what it gives">Given</button>
       </div>
     </div>
     <div class="ctl">
@@ -53,17 +53,16 @@
   <section class="panel" aria-label="Favoritism map">
     <div class="stage">
       <div class="stage-head">
-        <h2><span id="map-title">Favoritism toward Cyprus</span> <span class="yr" id="map-years"></span></h2>
+        <h2><span id="map-title">Points received per final</span> <span class="yr" id="map-years"></span></h2>
         <div class="ttl">
           <svg id="legend" class="legend" role="img" aria-label="Colour scale: points above or below expected, on a symmetric log scale"></svg>
           <button type="button" class="help" aria-label="About the colour scale" aria-controls="h-scale" aria-expanded="false">?</button>
         </div>
       </div>
-      <div class="mapbox"><svg id="map" role="img" aria-label="Map of Europe coloured by favoritism toward the selected country"></svg></div>
+      <div class="mapbox"><svg id="map" role="img" aria-label="Map of Europe coloured by points received per final, compared with the average entry"></svg></div>
       <div class="keys">
-        <span class="key"><i class="swatch c-fg"></i>Selected country</span>
-        <span class="key"><i class="swatch hatch"></i><span id="hatch-text">Insufficient data</span></span>
-        <span class="key"><i class="swatch c-land"></i>Not in Eurovision</span>
+        <span class="key" id="key-selected" hidden><i class="swatch c-fg"></i>Selected country</span>
+        <span class="key"><i class="swatch c-land"></i>No data</span>
         <button type="button" class="help" aria-label="About the map" aria-controls="h-keys" aria-expanded="false">?</button>
       </div>
     </div>
@@ -96,21 +95,19 @@
 </main>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
-  <p><b>Favoritism</b> is the points one country gives another, minus the average the recipient received from all voters that year, averaged over their shared finals.</p>
-  <p>Select a country in the list or on the map.</p>
+  <p>Favoritism: points given minus what the receiver got on average that year. No country selected: points per final vs the average entry.<br>Click a country to select it, again to go back.</p>
 </div>
 <div class="help-pop" id="h-years" role="tooltip" hidden>
-  <p>Finals only, 1957–2023; no contest in 2020. Minimum shared finals per pair: 5 for ranges of 20+ years, 3 for 8–19 years, 1 otherwise.</p>
+  <p>Finals 1957–2023, no contest in 2020. Points are standardised to the 12-point scale.</p>
 </div>
 <div class="help-pop" id="h-scale" role="tooltip" hidden>
-  <p>Symmetric log scale: linear near zero and logarithmic beyond ±1, so both small and large values remain distinguishable. Red and blue are symmetric.</p>
+  <p>Red: more than expected. Blue: fewer. Log scale beyond ±1.</p>
 </div>
 <div class="help-pop" id="h-keys" role="tooltip" hidden>
-  <p>Micro-states are shown as dots; Australia and former states in the inset boxes.</p>
+  <p>Grey: not in a final, or too few finals for an average.</p>
 </div>
 <div class="help-pop" id="h-bonds" role="tooltip" hidden>
-  <p>Pairs ranked by mutual favoritism (mean of both directions). Each bar shows the points given by the country on that side, on a shared scale from zero.</p>
-  <p>Hover a row to locate the pair on the map.</p>
+  <p>Pairs ranked by the average of both directions. Hover a row to find it on the map.</p>
 </div>
 </body>
 </html>

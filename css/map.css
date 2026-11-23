@@ -20,3 +20,5 @@
 .mid-line { stroke: var(--fg-2); stroke-width: 1.2; }
 .empty-note { font-size: 13px; fill: var(--muted); }
 #bond-chart.has-focus .pair:not(.is-on) { opacity: .3; }
+/* "Given" needs a selected country */
+.seg button:disabled { color: var(--line-strong); background: var(--surface); cursor: not-allowed; }

@@ -190,3 +190,5 @@ input[type=range] { width: 200px; accent-color: var(--fg); margin: 6px 0 2px; }
 .grid line { stroke: var(--line); stroke-width: .8; }
 .grid .zero { stroke-width: 1.2; }
 .country { cursor: pointer; transition: fill .25s; }
+/* 2020, the year without a contest, on line chart axes */
+.tick-label.no-contest { fill-opacity: .6; font-style: italic; }

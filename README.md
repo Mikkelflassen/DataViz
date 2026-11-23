@@ -10,7 +10,7 @@ The question behind every page is the same: which countries give each other more
 
 | Page | File | What it shows |
 | --- | --- | --- |
-| Country map | `index.html` | Pick a country and see who gives it more or fewer points than expected, or who it favours. Beside the map, the strongest mutual pairs as paired bars. |
+| Country map | `index.html` | Opens on the points each country received per final, compared with the average entry. Pick a country (click it again to go back) and see who gives it more or fewer points than expected, or who it favours. Countries in no final in the chosen years are grey. Beside the map, the strongest mutual pairs as paired bars. |
 | Voting blocs | `voting-blocs.html` | All countries at once, in a matrix sorted by clustering, next to a map of the groups that come out. |
 | Jury vs televote | `jury-televote.html` | Finding 3.3. Average jury points against average televote points per country for 2016–2023, and one country year by year. |
 | Bias over time | `bias-over-time.html` | Finding 3.4. Per year since 1975, how many votes were at least a chosen number of points above what the other countries gave the same song (slider), as a number or a share of all votes, with jury and televote apart from 2016. |
@@ -33,7 +33,7 @@ There is no build step and nothing to install. D3 and topojson-client are checke
 
 ## Working together
 
-`main` is what the live site shows. Every push to `main` updates https://mikkelflassen.github.io/DataViz/ within a minute or two, so nobody pushes to `main` directly. Changes go in through a branch and a pull request.
+`main` is what the live site shows, and everyone works directly on `main`. Every push updates https://mikkelflassen.github.io/DataViz/ within a minute or two, so a change goes live as soon as it is pushed. There are no branches or pull requests.
 
 ### One-time setup
 
@@ -49,32 +49,20 @@ There is no build step and nothing to install. D3 and topojson-client are checke
 
 ### Making a change
 
-1. **Get the latest version.** Switch to `main` and pull:
+1. **Get the latest version** before you start:
 
    ```
-   git checkout main
    git pull
    ```
 
-2. **Make a branch** named after you and the change:
+2. **Ask Codex** for the change in its side panel, e.g. "On the voting blocs page, make the legend text larger." Read what it proposes before accepting.
+3. **Check it** with Live Server. Click through the page you changed and at least one other page. What you push is live right away, so this is the only check before the site changes.
+4. **Commit and push** from Source Control (or `git add -A`, `git commit -m "Larger legend on voting blocs page"`, `git push`).
+5. Open https://mikkelflassen.github.io/DataViz/ a minute or two later and check that it looks right.
 
-   ```
-   git checkout -b anna/legend-size
-   ```
+If the push is **rejected** because someone else pushed first, run `git pull`, then push again. If `git pull` reports a **conflict**, two people changed the same lines: let Codex or VS Code help resolve the marked lines, check the page again in Live Server, commit and push.
 
-3. **Ask Codex** for the change in its side panel, e.g. "On the voting blocs page, make the legend text larger." Read what it proposes before accepting.
-4. **Check it** with Live Server. Click through the page you changed and at least one other page.
-5. **Commit and push** from Source Control (or `git add -A`, `git commit -m "Larger legend on voting blocs page"`, `git push -u origin anna/legend-size`).
-
-### Merging a change into main
-
-1. On GitHub, open the repo. A yellow bar offers **Compare & pull request** for the branch you just pushed. Click it, or go to **Pull requests → New pull request** and pick `main` ← your branch.
-2. Write one or two lines on what changed and which page to look at, then **Create pull request**.
-3. Someone else in the group opens the branch locally (`git fetch`, `git checkout anna/legend-size`) and checks it in Live Server, or at least reads the diff under **Files changed**.
-4. When it looks right, click **Merge pull request → Confirm merge**, then **Delete branch**.
-5. Everyone runs `git checkout main` and `git pull` before starting the next change.
-
-If GitHub says the branch **has conflicts**, two people changed the same lines. Pull `main` into your branch (`git checkout anna/legend-size`, `git pull origin main`), let Codex or VS Code help resolve the marked lines, check the page again, commit and push. The pull request updates by itself.
+To undo a change that broke the site, find its commit under **Source Control → Graph** (or `git log --oneline`) and run `git revert <commit>` followed by `git push`.
 
 To keep conflicts rare, agree who works on which page. Each page has its own `js/pages/<page>.js` and `css/<page>.css`, so two people on two different pages never collide. Shared files (`css/site.css`, `js/shared/`) are worth a heads-up in the group chat before changing them.
 
@@ -120,9 +108,17 @@ reads `data/raw/votes.csv` and rewrites `votes-finals.csv`, `jury-televote.csv`,
 
 ## How the numbers work
 
-Favoritism is the points a country gave minus the average the receiver got from all voters that year. It is then averaged over the finals both countries were in. The 2023 "rest of world" televote is left out, a country's own row (always 0) is dropped, and there was no contest in 2020.
+Favoritism is the points a country gave minus the average the receiver got from all voters that year. It is then averaged over the finals both countries were in.
+
+Points are standardised before averaging, because the points systems hand out very different amounts: one point per juror in the 1960s, 58 points per voter from 1975, and twice that since jury and televote were split in 2016. Each year's points are scaled so they have the same spread (standard deviation) as an average 1975–2015 final. Values stay in points on the familiar 12-point scale, and a 1960s final counts as much as a recent one. This happens in `loadVotes` in `js/shared/data.js`, so the map and the blocs page both use it. Totals in tooltips are the points actually given.
+
+The 2023 "rest of world" televote is left out, a country's own row (always 0) is dropped, and there was no contest in 2020.
 
 A pair needs enough shared finals before its average is shown: at least 5 for ranges of 20 years or more, 3 for 8 to 19 years and 1 for shorter ranges.
+
+With no country picked, the map shows how many points each country received per final: for each final, the mean points it got per voting country minus the mean for every entry in that final, averaged over the finals it was in, with the same minimum number of finals as for pairs. That is in points per voter like favoritism, so both views use the same red/blue scale; averaging per final keeps countries with many finals from looking stronger just for having been there more often. A country without data is grey, like the countries outside Eurovision, and cannot be hovered or selected: it was in no final in those years, or in too few finals (with no country selected) or too few shared finals with the selected one.
+
+There was no contest in 2020. The line charts keep 2020 on the time axis as a hollow point on a straight 2019–2021 line that fades out toward 2020 and back in (`js/shared/no-contest.js`).
 
 The map's colour scale is a symmetric log scale from −14 to +14 with constant 1. It is linear near 0 and logarithmic further out, because half of all pairs are within ±1 point while a few reach +13. Red and blue of the same strength mean the same number of points.
 
@@ -151,7 +147,7 @@ The scatterplot answers lecture 3's checklist like this. Both axes share one sca
 
 The line charts mark rule changes with vertical lines and keep the y-axis starting at 0. Chart 1 has the strip of voting systems directly under it, on the same time axis, so a jump in the line can be read against the rule change that caused it. Time is mapped to position on a linear axis throughout (lecture 9).
 
-The bias page title describes what is shown and leaves the conclusion to the reader. Hatching for pairs with too few shared finals is explicit encoding of missing data (lecture 6) instead of silently colouring them as 0.
+The bias page title describes what is shown and leaves the conclusion to the reader. Countries and pairs with too little data are greyed out (hatched in the blocs matrix) instead of being coloured as 0, an explicit encoding of missing data (lecture 6).
 
 ## Limits
 
