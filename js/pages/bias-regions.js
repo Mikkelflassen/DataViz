@@ -1,116 +1,94 @@
-// Favoritism towards countries in the voter's own region, per year (bias page, first chart).
+// Favoritism towards countries in the voter's own region (bias page, first chart).
 //
-// One line per region: the average standardised favoritism of the votes its countries gave to a
-// country in the same region (regions as on the blocs page, in the same colours). A dashed line is
-// every vote between two different regions. Calculated in scripts/build_data.py.
-// Switches: a centred 5-contest average or each contest; and for 2016-2023 the total of jury and
-// televote, the jury alone or the televote alone. Gaps in a line are years with too few votes
-// inside the region (see values()). Hovering a line or its label
-// fades the others (lecture 4, brushing); a guide shows every value for the year under the mouse.
+// Small multiples (lecture 9): one panel per region, all on the same scales. A line is the average
+// standardised favoritism of the votes the region's countries gave to a country in the same region
+// (regions as on the blocs page). Up to 2015 that is one line for all votes. From 2016 the jury and
+// the televote give separate sets of points, so the panel has a jury line and a televote line
+// there, in the jury page's colours. A dashed line in every panel is all votes between two
+// different regions, as a reference. Shading marks the mostly-televote years (1997-2008) and the
+// 50/50 years (2009-2015); before that juries voted, after it the two lines show jury and televote.
+// Values are pooled over five contests (the two before and after; never across 2016), so a year in
+// which only two countries of a region met counts for little. Calculated in scripts/build_data.py.
 /* global d3 */
 
-import { segmented } from '../shared/page.js';
-
-const W = 900, H = 400, M = { left: 48, right: 120, top: 20, bottom: 28 };
-const FIRST = 1957, LAST = 2023, WINDOW = 2, MIN_VOTES = 4, MIN_POOLED = 12;
-// same slots as REGION_SLOT on the blocs page, so a region keeps its colour across pages
+const FIRST = 1957, LAST = 2023, SPLIT = 2016, WINDOW = 2, MIN_POOLED = 12;
+const ORDER = ['Nordic', 'Western', 'Southern', 'Balkan', 'Central', 'Ex-Soviet'];
 const COLOUR = { Nordic: 'var(--bloc-1)', Balkan: 'var(--bloc-2)', 'Ex-Soviet': 'var(--bloc-3)', Southern: 'var(--bloc-4)', Western: 'var(--bloc-5)', Central: 'var(--bloc-6)' };
-const SPLIT = { all: 'Jury + televote', jury: 'Jury', tele: 'Televote' };
+// how the votes were cast (data/voting-systems.json has the points systems)
+export const METHODS = [
+  { from: 1957, to: 1996, label: 'Juries' },
+  { from: 1997, to: 2008, label: 'Mostly televote' },
+  { from: 2009, to: 2015, label: 'Jury + televote, 50/50' },
+  { from: 2016, to: 2023, label: 'Jury and televote apart' },
+];
+const COLS = 3, PW = 270, PH = 150, GX = 36, GY = 50, M = { left: 40, right: 12, top: 30, bottom: 26 };
 
 export async function renderRegions(tooltip) {
   const data = await d3.json('data/region-favoritism.json');
-  const series = [...data.regions, 'other'];
-  const label = s => (s === 'other' ? 'Other regions' : s);
-  const state = { smooth: true, split: 'all', focus: null };
 
-  const svg = d3.select('#regions').attr('viewBox', `0 0 ${W} ${H}`);
-  const x = d3.scaleLinear([FIRST, LAST], [M.left, W - M.right]);
-  const y = d3.scaleLinear().range([H - M.bottom, M.top]);
-  const gridG = svg.append('g').attr('class', 'grid');
-  svg.append('g').selectAll('text').data(d3.range(1960, 2030, 10)).join('text').attr('class', 'tick-label')
-    .attr('x', x).attr('y', H - 8).attr('text-anchor', 'middle').text(d => d);
-  svg.append('text').attr('class', 'note').attr('x', 4).attr('y', 12).text('↑ points above the average');
-  const linesG = svg.append('g');
-  const lines = linesG.selectAll('path').data(series).join('path')
-    .attr('class', s => `region-line${s === 'other' ? ' other' : ''}`).attr('stroke', s => COLOUR[s] ?? 'var(--fg-2)');
-  const ends = svg.append('g').selectAll('text').data(series).join('text')
-    .attr('class', s => `region-label${s === 'other' ? ' other' : ''}`).attr('fill', s => COLOUR[s] ?? 'var(--fg-2)').text(label);
-
-  // values per series for the current switches: [{y, v, n}] with v null where there is too little data.
-  // Each contest: the year's own average (at least MIN_VOTES votes). 5-contest average: all votes
-  // in the two contests before and after pooled, so years with few votes count for little, and a
-  // value is drawn when the window holds at least MIN_POOLED votes, within the years the region
-  // took part in.
-  function values() {
-    const raw = Object.fromEntries(series.map(s => [s, data.years.map(d => {
-      const cell = (d[state.split] ?? d.all)[s];
-      return { y: d.y, mean: cell ? cell[0] : 0, n: cell ? cell[1] : 0 };
-    })]));
-    return Object.fromEntries(series.map(s => {
-      const rows = raw[s];
-      const active = rows.filter(d => d.n > 0);
-      const [first, last] = [active[0]?.y, active.at(-1)?.y];
-      return [s, rows.map((d, i) => {
-        if (!state.smooth) return { y: d.y, n: d.n, v: d.n >= MIN_VOTES ? d.mean : null };
-        // with jury or televote picked, the window stays on one side of 2016 so it never mixes the
-        // combined votes before the split with one half of the votes after it
-        const near = rows.slice(Math.max(0, i - WINDOW), i + WINDOW + 1)
-          .filter(e => state.split === 'all' || (e.y >= 2016) === (d.y >= 2016));
-        const n = d3.sum(near, e => e.n);
-        const inside = d.y >= first && d.y <= last;
-        return { y: d.y, n, v: inside && n >= MIN_POOLED ? d3.sum(near, e => e.mean * e.n) / n : null };
-      })];
-    }));
-  }
-
-  function render() {
-    const vals = values();
-    const all = series.flatMap(s => vals[s].map(d => d.v)).filter(v => v !== null);
-    y.domain(d3.extent([...all, 0])).nice();
-    gridG.selectAll('g').data(y.ticks(5), d => d).join(
-      enter => { const g = enter.append('g'); g.append('line'); g.append('text').attr('class', 'tick-label'); return g; },
-    ).call(g => {
-      g.select('line').attr('x1', M.left).attr('x2', W - M.right).attr('y1', y).attr('y2', y).classed('zero', t => !t);
-      g.select('text').attr('x', M.left - 8).attr('y', t => y(t) + 4).attr('text-anchor', 'end').text(t => (t ? d3.format('+d')(t) : '0'));
+  // pooled 5-contest average for one region (or 'other') and one set of votes
+  function series(region, set) {
+    const rows = data.years.map(d => {
+      const cell = (d[set] ?? (set === 'all' ? null : undefined))?.[region];
+      return { y: d.y, mean: cell ? cell[0] : 0, n: cell ? cell[1] : 0, has: d[set] !== undefined };
+    }).filter(d => d.has && (set === 'all' ? d.y < SPLIT : d.y >= SPLIT));
+    const active = rows.filter(d => d.n > 0);
+    if (!active.length) return [];
+    return rows.map((d, i) => {
+      const near = rows.slice(Math.max(0, i - WINDOW), i + WINDOW + 1);
+      const n = d3.sum(near, e => e.n);
+      const inside = d.y >= active[0].y && d.y <= active.at(-1).y;
+      return { y: d.y, n, v: inside && n >= MIN_POOLED ? d3.sum(near, e => e.mean * e.n) / n : null };
     });
-    const line = d3.line().defined(d => d.v !== null).x(d => x(d.y)).y(d => y(d.v)).curve(d3.curveMonotoneX);
-    lines.transition().duration(350).attr('d', s => line(vals[s]));
-
-    // end labels at each line's last value, nudged apart so they never overlap
-    const last = series.map(s => { const d = vals[s].filter(e => e.v !== null).at(-1); return { s, x: x(d.y), y: y(d.v) }; })
-      .sort((a, b) => a.y - b.y);
-    for (let i = 1; i < last.length; i++) last[i].y = Math.max(last[i].y, last[i - 1].y + 14);
-    const at = new Map(last.map(d => [d.s, d]));
-    ends.transition().duration(350).attr('x', s => at.get(s).x + 8).attr('y', s => at.get(s).y + 4);
-    return vals;
   }
+  const lines = Object.fromEntries([...ORDER, 'other'].map(r => [r, { all: series(r, 'all'), jury: series(r, 'jury'), tele: series(r, 'tele') }]));
 
-  // focus one series: from its line or its label
-  function focus(s) {
-    state.focus = s;
-    lines.classed('is-dim', d => s !== null && d !== s).classed('is-focus', d => d === s);
-    ends.classed('is-dim', d => s !== null && d !== s);
-  }
-  lines.on('mouseenter', (e, s) => focus(s)).on('mouseleave', () => focus(null));
-  ends.on('mouseenter', (e, s) => focus(s)).on('mouseleave', () => focus(null));
+  const rows = Math.ceil(ORDER.length / COLS);
+  const W = M.left + COLS * PW + (COLS - 1) * GX + M.right;
+  const H = M.top + rows * PH + (rows - 1) * GY + M.bottom;
+  const svg = d3.select('#regions').attr('viewBox', `0 0 ${W} ${H}`);
+  const x = d3.scaleLinear([FIRST, LAST], [0, PW]);
+  const values = Object.values(lines).flatMap(l => [...l.all, ...l.jury, ...l.tele]).map(d => d.v).filter(v => v !== null);
+  const y = d3.scaleLinear(d3.extent([...values, 0]), [PH, 0]).nice();
+  const line = d3.line().defined(d => d.v !== null).x(d => x(d.y)).y(d => y(d.v)).curve(d3.curveMonotoneX);
 
-  // hover guide with every value for that year
-  let vals = render();
-  const guide = svg.insert('line', () => linesG.node()).attr('class', 'guide').attr('y1', M.top).attr('y2', H - M.bottom).attr('visibility', 'hidden');
-  svg.insert('rect', () => linesG.node()).attr('x', M.left).attr('y', M.top).attr('width', W - M.left - M.right).attr('height', H - M.top - M.bottom)
-    .attr('fill', 'transparent')
-    .on('mousemove', function (event) {
-      const year = Math.round(x.invert(d3.pointer(event, this)[0]));
-      const rows = series.map(s => ({ s, d: vals[s].find(e => e.y === year) })).filter(r => r.d && r.d.v !== null)
-        .sort((a, b) => b.d.v - a.d.v);
-      guide.attr('x1', x(year)).attr('x2', x(year)).attr('visibility', 'visible');
-      const split = year >= 2016 && state.split !== 'all' ? ` · ${SPLIT[state.split]}` : '';
-      tooltip.show(event, rows.length
-        ? `<b>${year}${split}</b><br>` + rows.map(r => `<span class="m">${label(r.s)} ${d3.format('+.1f')(r.d.v)}</span>`).join('<br>')
-        : `<b>${year}</b><br><span class="m">${year === 2020 ? 'No contest' : 'Too few votes'}</span>`);
+  const panel = svg.selectAll('g.panel').data(ORDER).join('g').attr('class', 'panel')
+    .attr('transform', (d, i) => `translate(${M.left + (i % COLS) * (PW + GX)},${M.top + Math.floor(i / COLS) * (PH + GY)})`);
+
+  // shading per voting method, grid, title
+  panel.append('g').selectAll('rect').data(METHODS).join('rect').attr('class', (d, i) => `band b${i}`)
+    .attr('x', d => x(d.from - 0.5)).attr('width', d => x(d.to + 0.5) - x(d.from - 0.5)).attr('y', 0).attr('height', PH);
+  const grid = panel.append('g').attr('class', 'grid').selectAll('g').data(y.ticks(4)).join('g');
+  grid.append('line').attr('x2', PW).attr('y1', y).attr('y2', y).classed('zero', t => !t);
+  grid.append('text').attr('class', 'tick-label').attr('x', -6).attr('y', t => y(t) + 3.5).attr('text-anchor', 'end')
+    .text(t => (t ? d3.format('+d')(t) : '0'));
+  panel.append('g').selectAll('text').data([1960, 1980, 2000, 2020]).join('text').attr('class', 'tick-label')
+    .attr('x', x).attr('y', PH + 14).attr('text-anchor', 'middle').text(d => d);
+  const title = panel.append('g').attr('transform', 'translate(0,-10)');
+  title.append('rect').attr('width', 10).attr('height', 10).attr('y', -9).attr('rx', 2).attr('fill', r => COLOUR[r]);
+  title.append('text').attr('class', 'panel-title').attr('x', 15).text(r => r);
+
+  // lines: other regions (reference), all votes up to 2015, jury and televote from 2016
+  panel.append('path').attr('class', 'rl other').attr('d', () => line(lines.other.all) + line(lines.other.jury.map((d, i) => ({ ...d, v: d.v === null ? null : (d.v + lines.other.tele[i].v) / 2 }))));
+  panel.append('path').attr('class', 'rl all').attr('d', r => line(lines[r].all));
+  panel.append('path').attr('class', 'rl jury').attr('d', r => line(lines[r].jury));
+  panel.append('path').attr('class', 'rl tele').attr('d', r => line(lines[r].tele));
+
+  // hover: a guide and the values for that year in the panel under the mouse
+  const guide = panel.append('line').attr('class', 'guide').attr('y1', 0).attr('y2', PH).attr('visibility', 'hidden');
+  panel.append('rect').attr('width', PW).attr('height', PH).attr('fill', 'transparent')
+    .on('mousemove', function (event, r) {
+      const year = Math.max(FIRST, Math.min(LAST, Math.round(x.invert(d3.pointer(event, this)[0]))));
+      d3.select(this.parentNode).select('.guide').attr('x1', x(year)).attr('x2', x(year)).attr('visibility', 'visible');
+      const at = (list) => list.find(d => d.y === year);
+      const fmt = d => (d && d.v !== null ? d3.format('+.1f')(d.v) : '–');
+      const method = METHODS.find(m => year >= m.from && year <= m.to).label;
+      const body = year === 2020 ? '<span class="m">No contest</span>'
+        : year >= SPLIT
+          ? `<span class="m">jury ${fmt(at(lines[r].jury))} · televote ${fmt(at(lines[r].tele))}</span>`
+          : `<span class="m">${fmt(at(lines[r].all))} points</span>`;
+      tooltip.show(event, `<b>${r} · ${year}</b><br>${body}<br><span class="m">other regions ${fmt(at(year >= SPLIT ? lines.other.tele : lines.other.all))}</span><br><span class="m">${method}</span>`);
     })
-    .on('mouseleave', () => { guide.attr('visibility', 'hidden'); tooltip.hide(); });
-
-  segmented(document.getElementById('smooth'), v => { state.smooth = v === 'avg'; vals = render(); });
-  segmented(document.getElementById('split'), v => { state.split = v; vals = render(); });
+    .on('mouseleave', function () { d3.select(this.parentNode).select('.guide').attr('visibility', 'hidden'); tooltip.hide(); });
+  void guide;
 }
