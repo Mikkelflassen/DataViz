@@ -22,21 +22,25 @@
   </header>
 
   <section class="stage" aria-labelledby="regions-title">
+    <div class="ttl">
+      <h2 id="regions-title">Extra points to countries in the same region, 1957–2023</h2>
+      <button type="button" class="help" aria-label="About this chart" aria-controls="h-regions" aria-expanded="false">?</button>
+    </div>
+    <div class="scroll"><svg id="regions" class="wide" role="img" aria-label="Line chart: per region and year, how many more points countries gave songs from their own region than the other countries gave those songs; dashed line for votes between regions"></svg></div>
+  </section>
+
+  <section class="stage" aria-labelledby="split-title">
     <div class="stage-head">
       <div class="ttl">
-        <h2 id="regions-title">Favoritism towards countries in the same region, 1957–2023</h2>
-        <button type="button" class="help" aria-label="About this chart" aria-controls="h-regions" aria-expanded="false">?</button>
+        <h2 id="split-title">Extra points to countries in the same region, 2016–2023: jury and televote</h2>
+        <button type="button" class="help" aria-label="About this chart" aria-controls="h-split" aria-expanded="false">?</button>
       </div>
       <div class="keys">
-        <span class="key"><i class="swatch line c-allv"></i>All votes</span>
-        <span class="key"><i class="swatch line c-jury"></i>Jury</span>
-        <span class="key"><i class="swatch line c-tele"></i>Televote</span>
-        <span class="key"><i class="swatch line dash c-other"></i>Other regions</span>
-        <span class="key"><i class="swatch c-televote-years"></i>Mostly televote</span>
-        <span class="key"><i class="swatch c-fifty-years"></i>Jury + televote 50/50</span>
+        <span class="key"><i class="swatch dot c-tele"></i>Televote</span>
+        <span class="key"><i class="swatch dot c-jury"></i>Jury</span>
       </div>
     </div>
-    <div class="scroll"><svg id="regions" class="wide" role="img" aria-label="Six small line charts, one per region: the average favoritism of votes to countries in the same region per year, with jury and televote apart from 2016 and a dashed line for votes between different regions"></svg></div>
+    <div class="scroll"><svg id="split-regions" class="wide" role="img" aria-label="Per region, the extra points to countries in the same region from the jury and from the televote, 2016–2023"></svg></div>
   </section>
 
   <section class="stage" aria-labelledby="bars-title">
@@ -69,7 +73,11 @@
   <p><b>Favoritism</b>: the points a country gave a song minus the average the other countries gave it. Greece gives Cyprus 12, the others give Cyprus 3 on average: +9.</p>
 </div>
 <div class="help-pop" id="h-regions" role="tooltip" hidden>
-  <p>Average favoritism of the votes a region's countries gave each other, in standardised points, pooled over five contests. Dashed: votes between different regions. Juries voted until 1996.</p>
+  <p><b>Extra points</b>: how many more points a country gave a song than the other countries gave the same song. Norway gives Sweden 10, the others give Sweden 4 on average: +6.</p>
+  <p>Each line: the average over all votes to a country in the same region, over five contests. Dashed: votes between regions. Hover a region's name for its countries.</p>
+</div>
+<div class="help-pop" id="h-split" role="tooltip" hidden>
+  <p>The same measure since 2016, when the jury and the televote each give their own points.</p>
 </div>
 <div class="help-pop" id="h-bars" role="tooltip" hidden>
   <p>Points standardised to the 12-point scale, as on the other pages: each year is scaled to the spread of an average 1975–2015 final.</p>
