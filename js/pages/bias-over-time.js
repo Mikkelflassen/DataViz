@@ -13,6 +13,7 @@
 
 import { startPage, segmented } from '../shared/page.js';
 import { createTooltip } from '../shared/tooltip.js';
+import { renderRegions } from './bias-regions.js';
 
 const W = 900, H = 340, M = { left: 48, right: 16, top: 16, bottom: 28 };
 const FIRST = 1957, LAST = 2023, WINDOW = 2;   // two contests either side
@@ -23,6 +24,7 @@ startPage(async () => {
   const name = new Map(countries.map(c => [c.id, c.name]));
   const nameOf = id => name.get(id) ?? id.toUpperCase();
   const tooltip = createTooltip();
+  renderRegions(tooltip);
   const state = { t: 5, share: false };   // threshold in standardised points: 5 to 12
 
   const svg = d3.select('#bars').attr('viewBox', `0 0 ${W} ${H}`);

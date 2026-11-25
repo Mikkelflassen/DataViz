@@ -21,6 +21,27 @@
     <button type="button" class="help" aria-label="Summary" aria-controls="h-page" aria-expanded="false">?</button>
   </header>
 
+  <section class="stage" aria-labelledby="regions-title">
+    <div class="stage-head">
+      <div class="ttl">
+        <h2 id="regions-title">Favoritism towards countries in the same region, 1957–2023</h2>
+        <button type="button" class="help" aria-label="About this chart" aria-controls="h-regions" aria-expanded="false">?</button>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="seg" id="smooth" role="group" aria-label="Smoothing">
+        <button type="button" data-value="avg" aria-pressed="true">5-contest average</button>
+        <button type="button" data-value="each" aria-pressed="false">Each contest</button>
+      </div>
+      <div class="seg" id="split" role="group" aria-label="2016–2023">
+        <button type="button" data-value="all" aria-pressed="true">Jury + televote</button>
+        <button type="button" data-value="jury" aria-pressed="false">Jury</button>
+        <button type="button" data-value="tele" aria-pressed="false">Televote</button>
+      </div>
+    </div>
+    <div class="scroll"><svg id="regions" class="wide" role="img" aria-label="Line chart: per region, the average favoritism of votes to countries in the same region, per year, and a dashed line for votes between different regions"></svg></div>
+  </section>
+
   <section class="stage" aria-labelledby="bars-title">
     <div class="stage-head">
       <div class="ttl">
@@ -49,6 +70,9 @@
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
   <p><b>Favoritism</b>: the points a country gave a song minus the average the other countries gave it. Greece gives Cyprus 12, the others give Cyprus 3 on average: +9.</p>
+</div>
+<div class="help-pop" id="h-regions" role="tooltip" hidden>
+  <p>Average favoritism of the votes a region's countries gave each other, in standardised points. Dashed: votes between different regions. The jury/televote switch applies from 2016.</p>
 </div>
 <div class="help-pop" id="h-bars" role="tooltip" hidden>
   <p>Points standardised to the 12-point scale, as on the other pages: each year is scaled to the spread of an average 1975–2015 final.</p>

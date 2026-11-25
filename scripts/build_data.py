@@ -7,6 +7,7 @@ Writes
   data/votes-finals.csv     one row per vote in a final, with its favoritism
   data/jury-televote.csv    2016-2023 finals with jury and televote points apart
   data/favoritism-years.json  votes far above the song's average, per year, for the bias page
+  data/region-favoritism.json favoritism towards the voter's own region, per year, for the bias page
 
 Only the standard library is used, so there is nothing to install.
 """
@@ -21,6 +22,7 @@ RAW = ROOT / "data" / "raw" / "votes.csv"
 OUT = ROOT / "data"
 
 TOP_VOTES = 5   # biggest votes per year kept for the tooltip on the bias page
+REGION_ORDER = ['Nordic', 'Western', 'Southern', 'Balkan', 'Central', 'Ex-Soviet']   # as listed on the bias page
 REFERENCE_YEARS = (1975, 2015)   # as in js/shared/data.js: the 12-point system before the split vote
 
 
@@ -115,6 +117,35 @@ def main():
             years.append({"y": y, "jury": summary(standardised_favs(rows, "jury")), "tele": summary(standardised_favs(rows, "tele"))})
     (OUT / "favoritism-years.json").write_text(json.dumps({"years": years, "reference": round(reference, 3)}, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     print(f"data/favoritism-years.json: {len(years)} years, reference spread {reference:.2f} points")
+
+    # ---- 4. bias page: favoritism towards countries in the voter's own region, per year
+    # Same favoritism as above (points minus the other countries' average for the song,
+    # standardised to the 12-point scale), averaged per region over the votes a country gave to a
+    # country in its own region (regions from countries.json, as on the blocs page), and over all
+    # votes between different regions. From 2016 three versions: jury + televote together (the
+    # total, as on the other pages), jury only and televote only.
+    region = {c["id"]: c["region"] for c in json.loads((OUT / "countries.json").read_text(encoding="utf-8"))}
+    regions = list(dict.fromkeys(c for c in REGION_ORDER))
+
+    def by_region(rows, field):
+        favs = standardised_favs(rows, field)
+        acc = defaultdict(list)
+        for g, t, f, _ in favs:
+            key = region[g] if region.get(g) == region.get(t) else "other"
+            acc[key].append(f)
+        return {k: [round(mean(v), 3), len(v)] for k, v in acc.items()}
+
+    out_years = []
+    for y in sorted(per_year):
+        rows = per_year[y]
+        if y < 2016:
+            out_years.append({"y": y, "all": by_region(rows, "points")})
+        else:
+            for r in rows:
+                r["both"] = r["jury"] + r["tele"]
+            out_years.append({"y": y, "all": by_region(rows, "both"), "jury": by_region(rows, "jury"), "tele": by_region(rows, "tele")})
+    (OUT / "region-favoritism.json").write_text(json.dumps({"regions": regions, "years": out_years}, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    print(f"data/region-favoritism.json: {len(out_years)} years, {len(regions)} regions")
 
 
 if __name__ == "__main__":

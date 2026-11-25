@@ -13,3 +13,11 @@ svg.wide { min-width: 720px; }
 .swatch.c-all { --c: var(--accent); }
 .trend { fill: none; stroke: var(--fg); stroke-width: 2.2; stroke-linejoin: round; pointer-events: none; }
 .swatch.c-trend { --c: var(--fg); }
+.region-line { fill: none; stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; transition: opacity .15s; }
+.region-line.other { stroke-width: 1.8; stroke-dasharray: 5 4; }
+.region-line.is-focus { stroke-width: 3.6; }
+.region-line.is-dim, .region-label.is-dim { opacity: .15; }
+.region-label { font-size: 12.5px; font-weight: 700; cursor: default; transition: opacity .15s; }
+.region-label.other { font-weight: 500; }
+#regions .guide { stroke: var(--fg-2); stroke-width: 1; pointer-events: none; }
+.note { font-size: 12px; fill: var(--muted); }
