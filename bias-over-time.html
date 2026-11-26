@@ -27,11 +27,12 @@
         <h2 id="regions-title">Extra points to countries in the same region, by who voted</h2>
         <button type="button" class="help" aria-label="About this chart" aria-controls="h-regions" aria-expanded="false">?</button>
       </div>
-      <div class="keys">
-        <span class="key"><i class="swatch c-jury-old"></i>Juries 1957–1996</span>
-        <span class="key"><i class="swatch c-jury"></i>Jury 2016–2023</span>
-        <span class="key"><i class="swatch c-tele-old"></i>Televote 2004–2008</span>
-        <span class="key"><i class="swatch c-tele"></i>Televote 2016–2023</span>
+      <div class="keys keys-regions">
+        <span class="key"><i class="swatch c-oi-sky"></i>Juries 1957–1996</span>
+        <span class="key"><i class="swatch c-oi-blue"></i>Jury 2016–2023</span>
+        <span class="key"><i class="swatch c-oi-orange"></i>Televote 2004–2008</span>
+        <span class="key"><i class="swatch c-oi-vermillion"></i>Televote 2016–2023</span>
+        <span class="key"><i class="swatch c-ci"></i>95% interval</span>
       </div>
     </div>
     <div class="scroll"><svg id="regions" class="wide" role="img" aria-label="Grouped bar chart: per region, the extra points countries gave songs from their own region, for juries 1957–1996, televote 2004–2008, and jury and televote 2016–2023"></svg></div>
@@ -68,7 +69,7 @@
 </div>
 <div class="help-pop" id="h-regions" role="tooltip" hidden>
   <p><b>Extra points</b>: how many more points a country gave a song than the other countries gave the same song. Norway gives Sweden 10, the others give Sweden 4 on average: +6.</p>
-  <p>Only years in which every country voted the same way. "–": too few votes. Hover a region's name for its countries.</p>
+  <p>Only years in which every country voted the same way. Regions with few votes lean on the average of all regions; the line through a bar shows how certain it is. Hover a region's name for its countries.</p>
 </div>
 <div class="help-pop" id="h-bars" role="tooltip" hidden>
   <p>Points standardised to the 12-point scale, as on the other pages: each year is scaled to the spread of an average 1975–2015 final.</p>

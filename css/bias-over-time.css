@@ -33,21 +33,23 @@ svg.wide { min-width: 720px; }
 #regions .guide { stroke: var(--fg-2); stroke-width: 1; pointer-events: none; }
 #regions .panel-title { font: 600 13px var(--body); fill: var(--fg); }
 .note { font-size: 12px; fill: var(--muted); }
-.vbar.jury-new .fill, .vbar.jury-old .fill { fill: var(--jury); }
-.vbar.tele-new .fill, .vbar.tele-old .fill { fill: var(--tele); }
-.vbar.jury-old .fill:not(.thin) { fill: url(#stripes-jury); }
-.vbar.tele-old .fill:not(.thin) { fill: url(#stripes-tele); }
-.vbar.jury-old .fill, .vbar.tele-old .fill { stroke-width: 1.5; }
-.vbar.jury-old .fill { stroke: var(--jury); }
-.vbar.tele-old .fill { stroke: var(--tele); }
-.stripe-base.jury { fill: var(--jury); }
-.stripe-base.tele { fill: var(--tele); }
-.stripe-gap { fill: var(--surface); }
-.vbar.thin .fill { fill: none !important; stroke: var(--line-strong) !important; stroke-dasharray: 2 2; stroke-width: 1; }
+/* Okabe-Ito colour-blind-safe palette, used as given and the same in light and dark mode */
+#regions, .keys-regions { --oi-sky: #56B4E9; --oi-blue: #0072B2; --oi-orange: #E69F00; --oi-vermillion: #D55E00; }
+.vbar.jury-old .fill { fill: var(--oi-sky); }
+.vbar.jury-new .fill { fill: var(--oi-blue); }
+.vbar.tele-old .fill { fill: var(--oi-orange); }
+.vbar.tele-new .fill { fill: var(--oi-vermillion); }
+.ci line { stroke: var(--fg); stroke-width: 1.4; }
+.swatch.c-ci { width: 12px; height: 12px; border: 0; background:
+  linear-gradient(var(--fg), var(--fg)) center / 1.4px 100% no-repeat,
+  linear-gradient(var(--fg), var(--fg)) center top / 7px 1.4px no-repeat,
+  linear-gradient(var(--fg), var(--fg)) center bottom / 7px 1.4px no-repeat; }
 .bval { font: 600 9.5px var(--mono); fill: var(--fg-2); letter-spacing: -.2px; }
 .bval.thin { fill: var(--muted); }
 .glabel { font-size: 13px; font-weight: 700; fill: var(--fg); cursor: help; text-decoration: underline dotted; text-underline-offset: 3px; outline: none; }
 .glabel:hover, .glabel:focus-visible { fill: var(--accent); }
 .glabel.other { font-weight: 500; fill: var(--fg-2); }
-.swatch.c-jury-old { background: repeating-linear-gradient(45deg, var(--jury) 0 2.6px, var(--surface) 2.6px 3.8px); border: 1.5px solid var(--jury); }
-.swatch.c-tele-old { background: repeating-linear-gradient(45deg, var(--tele) 0 2.6px, var(--surface) 2.6px 3.8px); border: 1.5px solid var(--tele); }
+.keys-regions .swatch.c-oi-sky { --c: var(--oi-sky); border: 0; }
+.keys-regions .swatch.c-oi-blue { --c: var(--oi-blue); border: 0; }
+.keys-regions .swatch.c-oi-orange { --c: var(--oi-orange); border: 0; }
+.keys-regions .swatch.c-oi-vermillion { --c: var(--oi-vermillion); border: 0; }
