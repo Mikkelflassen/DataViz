@@ -6,7 +6,6 @@ Run from the repo root:  python3 scripts/build_data.py
 Writes
   data/votes-finals.csv     one row per vote in a final, with its favoritism
   data/jury-televote.csv    2016-2023 finals with jury and televote points apart
-  data/favoritism-years.json  votes far above the song's average, per year, for the bias page
   data/region-bars.json      extra points to the voter's own region by kind of vote, for the bias page
 
 Only the standard library is used, so there is nothing to install.
@@ -23,7 +22,6 @@ ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "raw" / "votes.csv"
 OUT = ROOT / "data"
 
-TOP_VOTES = 5   # biggest votes per year kept for the tooltip on the bias page
 BOOTSTRAP = 2000   # resampling rounds for the bias page's 95% intervals
 REFERENCE_YEARS = (1975, 2015)   # as in js/shared/data.js: the 12-point system before the split vote
 
@@ -76,14 +74,12 @@ def main():
                 "" if r["jury_points"] == "" else int(float(r["jury_points"])),
                 int(float(r["tele_points"]))) for r in sorted(split, key=lambda r: (r["year"], r["giver"], r["receiver"]))])
 
-    # ---- 3. bias page: how many votes are far above the average for the song, per year
+    # ---- 3. bias page: standardised favoritism, used by section 4
     # Favoritism of a vote = its points minus the average the OTHER voting countries gave the same
     # song that year, standardised to the 12-point scale the way js/shared/data.js does it for the
     # other pages: each year's points are scaled so their spread (standard deviation) matches an
     # average 1975-2015 final. From 2016 the jury and the televote are separate sets, each scaled
-    # on its own and compared with the other juries / other televotes. For every threshold t from
-    # 0 to 12 standardised points (the page uses 5 to 12): how many votes had favoritism >= t.
-    # The biggest votes go along for the tooltip, with the points actually given.
+    # on its own and compared with the other juries / other televotes.
     per_year = defaultdict(list)
     for r in finals:
         if r["giver"] != "wld":
@@ -105,20 +101,6 @@ def main():
             pts = song[r["receiver"]]
             out.append((r["giver"], r["receiver"], k * (r[field] - (sum(pts) - r[field]) / (len(pts) - 1)), r[field]))
         return out
-
-    def summary(favs):
-        return {"n": len(favs), "c": [sum(f >= t - 1e-9 for _, _, f, _ in favs) for t in range(13)],
-                "top": [[g, t, round(f, 1), p] for g, t, f, p in sorted(favs, key=lambda x: -x[2])[:TOP_VOTES]]}
-
-    years = []
-    for y in sorted(per_year):
-        rows = per_year[y]
-        if y < 2016:
-            years.append({"y": y, "all": summary(standardised_favs(rows, "points"))})
-        else:
-            years.append({"y": y, "jury": summary(standardised_favs(rows, "jury")), "tele": summary(standardised_favs(rows, "tele"))})
-    (OUT / "favoritism-years.json").write_text(json.dumps({"years": years, "reference": round(reference, 3)}, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"data/favoritism-years.json: {len(years)} years, reference spread {reference:.2f} points")
 
     # ---- 4. bias page: extra points to the voter's own region, by who voted
     # Same favoritism as above (standardised, compared with the OTHER countries' average for the

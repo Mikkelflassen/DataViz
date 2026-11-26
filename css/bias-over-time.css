@@ -1,37 +1,5 @@
 /* Favoritism over time page */
 svg.wide { min-width: 720px; }
-
-.controls { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; }
-.threshold { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--fg-2); }
-.threshold b { font: 700 16px var(--mono); color: var(--fg); }
-.threshold input { width: 220px; accent-color: var(--accent); }
-
-.bar.all { fill: var(--accent); }
-.bar.jury { fill: var(--jury); }
-.bar.tele { fill: var(--tele); }
-.bar:hover { stroke: var(--fg); stroke-width: 1; }
-.swatch.c-all { --c: var(--accent); }
-.trend { fill: none; stroke: var(--fg); stroke-width: 2.2; stroke-linejoin: round; pointer-events: none; }
-.swatch.c-trend { --c: var(--fg); }
-.rline { fill: none; stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; transition: opacity .15s; }
-.rline.other { stroke-width: 1.6; stroke-dasharray: 5 4; }
-.rline.is-focus { stroke-width: 3.6; }
-.rline.is-dim, .rlabel.is-dim { opacity: .15; }
-.rlabel { font-size: 12.5px; font-weight: 700; cursor: default; transition: opacity .15s; }
-.rlabel.other { font-weight: 500; }
-.method rect { fill: var(--fg); fill-opacity: 0; }
-.method.m1 rect { fill-opacity: .05; }
-.method text { font-size: 11.5px; fill: var(--muted); }
-.drow .hit { fill: transparent; }
-.drow:hover .hit { fill: var(--fg); fill-opacity: .04; }
-.dlabel { font-size: 13px; font-weight: 700; }
-.drow.other .dlabel { font-weight: 500; }
-.dbar { stroke: var(--line-strong); stroke-width: 2.5; }
-.ddot { stroke: var(--surface); stroke-width: 1.5; }
-.ddot.jury { fill: var(--jury); }
-.ddot.tele { fill: var(--tele); }
-#regions .guide { stroke: var(--fg-2); stroke-width: 1; pointer-events: none; }
-#regions .panel-title { font: 600 13px var(--body); fill: var(--fg); }
 .note { font-size: 12px; fill: var(--muted); }
 /* Okabe-Ito colour-blind-safe palette, used as given and the same in light and dark mode */
 #regions, .keys-regions { --oi-sky: #56B4E9; --oi-blue: #0072B2; --oi-orange: #E69F00; --oi-vermillion: #D55E00; }
@@ -45,7 +13,6 @@ svg.wide { min-width: 720px; }
   linear-gradient(var(--fg), var(--fg)) center top / 7px 1.4px no-repeat,
   linear-gradient(var(--fg), var(--fg)) center bottom / 7px 1.4px no-repeat; }
 .bval { font: 600 9.5px var(--mono); fill: var(--fg-2); letter-spacing: -.2px; }
-.bval.thin { fill: var(--muted); }
 .glabel { font-size: 13px; font-weight: 700; fill: var(--fg); cursor: help; text-decoration: underline dotted; text-underline-offset: 3px; outline: none; }
 .glabel:hover, .glabel:focus-visible { fill: var(--accent); }
 .glabel.other { font-weight: 500; fill: var(--fg-2); }

@@ -37,31 +37,6 @@
     </div>
     <div class="scroll"><svg id="regions" class="wide" role="img" aria-label="Grouped bar chart: per region, the extra points countries gave songs from their own region, for juries 1957–1996, televote 2004–2008, and jury and televote 2016–2023"></svg></div>
   </section>
-
-  <section class="stage" aria-labelledby="bars-title">
-    <div class="stage-head">
-      <div class="ttl">
-        <h2 id="bars-title">Votes far above the other countries' average, 1957–2023</h2>
-        <button type="button" class="help" aria-label="About this chart" aria-controls="h-bars" aria-expanded="false">?</button>
-      </div>
-      <div class="keys">
-        <span class="key"><i class="swatch c-all"></i>All votes</span>
-        <span class="key"><i class="swatch c-jury"></i>Jury</span>
-        <span class="key"><i class="swatch c-tele"></i>Televote</span>
-        <span class="key"><i class="swatch line c-trend"></i>5-contest average</span>
-      </div>
-    </div>
-    <div class="controls">
-      <label class="threshold" for="threshold"><span>At least <b id="t-value">5</b> <span id="t-unit">points</span> above the average</span>
-        <input type="range" id="threshold" min="5" max="12" step="1" value="5">
-      </label>
-      <div class="seg" id="measure" role="group" aria-label="Show">
-        <button type="button" data-value="count" aria-pressed="true">Number of votes</button>
-        <button type="button" data-value="share" aria-pressed="false">Share of votes</button>
-      </div>
-    </div>
-    <div class="scroll"><svg id="bars" class="wide" role="img" aria-label="Bar chart: per year, the votes that were at least the chosen number of points above what the other countries gave the same song"></svg></div>
-  </section>
 </main>
 
 <div class="help-pop" id="h-page" role="tooltip" hidden>
@@ -70,9 +45,6 @@
 <div class="help-pop" id="h-regions" role="tooltip" hidden>
   <p><b>Extra points</b>: how many more points a country gave a song than the other countries gave the same song. Norway gives Sweden 10, the others give Sweden 4 on average: +6.</p>
   <p>Only years in which every country voted the same way. Regions with few votes lean on the average of all regions; the line through a bar shows how certain it is. Hover a region's name for its countries.</p>
-</div>
-<div class="help-pop" id="h-bars" role="tooltip" hidden>
-  <p>Points standardised to the 12-point scale, as on the other pages: each year is scaled to the spread of an average 1975–2015 final.</p>
 </div>
 </body>
 </html>
