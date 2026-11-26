@@ -10,7 +10,12 @@
 //   jury 2016-2023 and televote 2016-2023 (separate sets of points).
 // Mixed years (1997-2003: some juries; 2009-2015: jury and televote combined) are left out, since
 // their votes cannot be put down to either. Every bar is one 12-point set measured the same way.
-// A bar needs MIN_VOTES votes; with fewer it is an outline marked "too few votes".
+// A bar needs MIN_VOTES votes; with fewer it is an outline marked "–".
+// Colour says who voted (jury blue, televote orange, as on the jury page; the pair passes the
+// colour-blindness checks of the dataviz palette validator in light and dark mode). The period is
+// a texture, not a shade: the older periods are striped at 45°, 2016-2023 is solid, so no reader
+// has to tell two tints of one hue apart. Hovering or focusing a region's name shows its countries;
+// the bars carry their values as labels and have no hover box.
 /* global d3 */
 
 const MIN_VOTES = 25;
@@ -45,26 +50,40 @@ export async function renderRegions(tooltip) {
   const vals = groups.flatMap(g => g.bars.filter(b => b.ok).map(b => b.v));
   const y = d3.scaleLinear(d3.extent([...vals, 0]), [H - M.bottom, M.top]).nice();
 
+  // 45° stripes in the bar's own colour with thin surface-coloured gaps, for the older periods
+  const defs = svg.append('defs');
+  for (const hue of ['jury', 'tele']) {
+    const pat = defs.append('pattern').attr('id', `stripes-${hue}`).attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 6).attr('height', 6).attr('patternTransform', 'rotate(45)');
+    pat.append('rect').attr('class', `stripe-base ${hue}`).attr('width', 6).attr('height', 6);
+    pat.append('rect').attr('class', 'stripe-gap').attr('width', 2).attr('height', 6);
+  }
+
   const grid = svg.append('g').attr('class', 'grid').selectAll('g').data(y.ticks(6)).join('g');
   grid.append('line').attr('x1', M.left).attr('x2', W - M.right).attr('y1', y).attr('y2', y).classed('zero', t => !t);
   grid.append('text').attr('class', 'tick-label').attr('x', M.left - 8).attr('y', t => y(t) + 4).attr('text-anchor', 'end').text(t => (t ? d3.format('+d')(t) : '0'));
   svg.append('text').attr('class', 'note').attr('x', 4).attr('y', 12).text('↑ extra points');
 
   const group = svg.append('g').selectAll('g').data(groups).join('g').attr('transform', g => `translate(${x0(g.s)},0)`);
+  const tipFor = g => (g.s === 'other' ? '<b>Between regions</b><br><span class="m">Votes to a country in another region</span>'
+    : `<b>${g.s}</b><br><span class="m">${memberList(g.s)}</span>`);
   group.append('text').attr('class', g => `glabel${g.s === 'other' ? ' other' : ''}`).attr('x', x0.bandwidth() / 2).attr('y', H - M.bottom + 20)
-    .attr('text-anchor', 'middle').text(g => NAME(g.s))
-    .on('mousemove', (e, g) => g.s !== 'other' && tooltip.show(e, `<b>${g.s}</b><br><span class="m">${memberList(g.s)}</span>`))
-    .on('mouseleave', () => tooltip.hide());
+    .attr('text-anchor', 'middle').attr('tabindex', 0).attr('role', 'button').attr('aria-label', g => `${NAME(g.s)}: ${g.s === 'other' ? 'votes between regions' : memberList(g.s)}`)
+    .text(g => NAME(g.s))
+    .on('mousemove', (e, g) => tooltip.show(e, tipFor(g)))
+    .on('mouseleave', () => tooltip.hide())
+    .on('focus', function (e, g) {
+      const r = this.getBoundingClientRect();
+      tooltip.show({ clientX: r.left + r.width / 2, clientY: r.bottom }, tipFor(g));
+    })
+    .on('blur', () => tooltip.hide());
 
   const bar = group.selectAll('g.vbar').data(g => g.bars).join('g').attr('class', b => `vbar ${b.k.cls}${b.ok ? '' : ' thin'}`);
-  bar.append('rect').attr('x', b => x1(b.k.cls)).attr('width', x1.bandwidth())
+  bar.append('rect').attr('class', 'fill').attr('x', b => x1(b.k.cls)).attr('width', x1.bandwidth())
+    .attr('fill', b => (b.ok && b.k.cls.endsWith('old') ? `url(#stripes-${b.k.cls.startsWith('jury') ? 'jury' : 'tele'})` : null))
     .attr('y', b => (b.ok ? Math.min(y(b.v), y(0)) : y(0) - 4)).attr('height', b => (b.ok ? Math.abs(y(b.v) - y(0)) : 4));
   bar.filter(b => b.ok).append('text').attr('class', 'bval').attr('x', b => x1(b.k.cls) + x1.bandwidth() / 2)
     .attr('y', b => (b.v >= 0 ? y(b.v) - 5 : y(b.v) + 13)).attr('text-anchor', 'middle').text(b => signed(b.v));
   bar.filter(b => !b.ok).append('text').attr('class', 'bval thin').attr('x', b => x1(b.k.cls) + x1.bandwidth() / 2).attr('y', y(0) - 9)
     .attr('text-anchor', 'middle').text('–');
-  bar.append('rect').attr('class', 'hit').attr('x', b => x1(b.k.cls) - 2).attr('width', x1.bandwidth() + 4).attr('y', M.top).attr('height', H - M.bottom - M.top)
-    .on('mousemove', (e, b) => tooltip.show(e, `<b>${NAME(b.s)} · ${b.k.label}</b><br><span class="m">${b.k.rule}</span><br>`
-      + (b.ok ? `<span class="m">${signed(b.v)} extra points, ${b.n} votes</span>` : `<span class="m">Too few votes (${b.n})</span>`)))
-    .on('mouseleave', () => tooltip.hide());
 }
