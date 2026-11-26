@@ -33,3 +33,16 @@ svg.wide { min-width: 720px; }
 #regions .guide { stroke: var(--fg-2); stroke-width: 1; pointer-events: none; }
 #regions .panel-title { font: 600 13px var(--body); fill: var(--fg); }
 .note { font-size: 12px; fill: var(--muted); }
+.vbar.jury-old rect:not(.hit) { fill: color-mix(in srgb, var(--jury) 45%, var(--surface)); }
+.vbar.jury-new rect:not(.hit) { fill: var(--jury); }
+.vbar.tele-old rect:not(.hit) { fill: color-mix(in srgb, var(--tele) 45%, var(--surface)); }
+.vbar.tele-new rect:not(.hit) { fill: var(--tele); }
+.vbar.thin rect:not(.hit) { fill: none; stroke: var(--line-strong); stroke-dasharray: 2 2; }
+.vbar .hit { fill: transparent; }
+.vbar:hover rect:not(.hit) { stroke: var(--fg); stroke-width: 1; }
+.bval { font: 600 9.5px var(--mono); fill: var(--fg-2); letter-spacing: -.2px; }
+.bval.thin { fill: var(--muted); }
+.glabel { font-size: 13px; font-weight: 700; fill: var(--fg); cursor: default; }
+.glabel.other { font-weight: 500; fill: var(--fg-2); }
+.swatch.c-jury-old { --c: color-mix(in srgb, var(--jury) 45%, var(--surface)); }
+.swatch.c-tele-old { --c: color-mix(in srgb, var(--tele) 45%, var(--surface)); }
